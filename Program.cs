@@ -75,18 +75,17 @@ namespace TwitchBotConsole
                     #endregion
                     else
                     {
-
-                        if(FormattedMessage.message.StartsWith("!"))
+                        if (irc.filteringEnabled && _blacklist.checkForSpam(FormattedMessage.message))
+                        {
+                            irc.purgeMessage(FormattedMessage.user);
+                            irc.sendChatMessage("Probably spam FrankerZ");
+                        }
+                        else if(FormattedMessage.message.StartsWith("!"))
                         {
                             if (!irc.ignorelist.Contains(FormattedMessage.user))
                             {
                                 #region ModulesAndFunctions
-                                if (irc.filteringEnabled && _blacklist.checkForSpam(FormattedMessage.message))
-                                {
-                                    irc.purgeMessage(FormattedMessage.user);
-                                    irc.sendChatMessage("Probably spam FrankerZ");
-                                }
-                                else if (FormattedMessage.message.StartsWith("!commands", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!help", StringComparison.InvariantCultureIgnoreCase))
+                                if (FormattedMessage.message.StartsWith("!commands", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!help", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     irc.sendChatMessage("The list of commands is available at http://pastebin.com/a8J09cFT");
                                 }
