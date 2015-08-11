@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
-using System.Timers;
 using System.Diagnostics;
 
 namespace TwitchBotConsole
@@ -33,8 +32,10 @@ namespace TwitchBotConsole
                 _timer.Interval = 60*1000;
                 if (irc.intervalMessagesEnabled)
                 {
+                    _intervals.sendIrc(irc);
+                    Trace.WriteLine("Enabling interval messages");
                     _timer.Start();
-                    _timer.Elapsed += new ElapsedEventHandler(_intervals.timerSender);
+                    _timer.Elapsed += new System.Timers.ElapsedEventHandler(_intervals.timerSender);
                 }
 
                 Leaderboards _leaderboards = new Leaderboards();
@@ -75,10 +76,13 @@ namespace TwitchBotConsole
                     #endregion
                     else
                     {
-                        if (irc.filteringEnabled && _blacklist.checkForSpam(FormattedMessage.message))
+                        if (irc.filteringEnabled && !irc.moderators.Contains(FormattedMessage.user))
                         {
-                            irc.purgeMessage(FormattedMessage.user);
-                            irc.sendChatMessage("Probably spam FrankerZ");
+                            if(!irc.trustedUsers.Contains(FormattedMessage.user) && _blacklist.checkForSpam(FormattedMessage.message))
+                            {
+                                irc.purgeMessage(FormattedMessage.user);
+                                irc.sendChatMessage("Probably spam FrankerZ");
+                            }
                         }
                         else if(FormattedMessage.message.StartsWith("!"))
                         {
@@ -145,10 +149,13 @@ namespace TwitchBotConsole
                                 {
                                     irc.ignoreListRemove(FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!saveConfigFile", StringComparison.InvariantCultureIgnoreCase))
+                                else if (FormattedMessage.message.StartsWith("!trustedAdd ", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!permit ", StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    if (irc.supermod.Contains(FormattedMessage.user))
-                                        irc.SaveConfig();
+                                    irc.trustedUserAdd(FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!trustedRemove ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    irc.trustedUsersRemove(FormattedMessage);
                                 }
                                 #endregion
                                 #region LeaderboardsAndShortcuts

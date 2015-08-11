@@ -30,6 +30,7 @@ namespace TwitchBotConsole
     {
         static string configfile = "config.cfg";
         static string ignoredfile = "ignored_users.txt";
+        static string trustedfile = "trusted_users.txt";
         public config _config;
         public bool configFileExisted = false;
         public double AskDelay = 30.0d;
@@ -44,6 +45,7 @@ namespace TwitchBotConsole
         public List<string> supermod = new List<string>();
         public List<string> moderators = new List<string>();
         public List<string> ignorelist = new List<string>();
+        public List<string> trustedUsers = new List<string>();
 
         private string userName;
         private string channel;
@@ -85,6 +87,7 @@ namespace TwitchBotConsole
             }
 
             loadIgnoredList();
+            loadTrustedList();
         }
         #endregion
 
@@ -158,6 +161,71 @@ namespace TwitchBotConsole
         public void banMessage(string user)
         {
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.ban " + user);
+        }
+        #endregion
+
+        #region trustedUsers
+        public void trustedUserAdd(ReadMessage msg)
+        {
+            if (moderators.Contains(msg.user))
+            {
+                string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+                if (!moderators.Contains(helper[1].ToLower()))
+                {
+                    if (!trustedUsers.Contains(helper[1].ToLower()))
+                    {
+                        trustedUsers.Add(helper[1].ToLower());
+                        saveTrustedList();
+                        sendChatMessage("Added " + helper[1] + " to trusted list.");
+                    }
+                    else
+                    {
+                        sendChatMessage(helper[1] + " is already on trusted list.");
+                    }
+                }
+            }
+        }
+
+        public void trustedUsersRemove(ReadMessage msg)
+        {
+            if (moderators.Contains(msg.user))
+            {
+                string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+
+                if (trustedUsers.Contains(helper[1].ToLower()))
+                {
+                    trustedUsers.Remove(helper[1].ToLower());
+                    saveTrustedList();
+                    sendChatMessage("Removed " + helper[1] + " from trusted list.");
+                }
+                else
+                {
+                    sendChatMessage(helper[1] + " is not present on trusted list.");
+                }
+            }
+        }
+
+        private void loadTrustedList()
+        {
+            trustedUsers.Clear();
+            if (File.Exists(@trustedfile))
+            {
+                StreamReader SR = new StreamReader(@trustedfile);
+                string line = "";
+
+                while ((line = SR.ReadLine()) != null)
+                {
+                    if (line != "")
+                        trustedUsers.Add(line.ToLower());
+                }
+                SR.Close();
+                SR.Dispose();
+            } 
+        }
+
+        private void saveTrustedList()
+        {
+            File.WriteAllLines(@trustedfile, trustedUsers);
         }
         #endregion
 

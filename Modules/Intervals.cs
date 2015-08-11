@@ -17,11 +17,7 @@ namespace TwitchBotConsole
 
         public Intervals()
         {
-            if(!File.Exists(@intervalsFile))
-            {
-                File.Create(@intervalsFile);
-            }
-            else
+            if (File.Exists(@intervalsFile))
             {
                 StreamReader SR = new StreamReader(@intervalsFile);
                 string line = "";
@@ -36,9 +32,12 @@ namespace TwitchBotConsole
                             time.Add(interval);
                             srcTime.Add(interval);
                             intervalMessage.Add(helper[1]);
+                            Console.WriteLine("Loaded interval message: \'" + helper[1] + "\' with a time of " + interval.ToString() + " minutes");
                         }
                     }
                 }
+                SR.Close();
+                SR.Dispose();
             }
         }
 
@@ -143,7 +142,7 @@ namespace TwitchBotConsole
                 _irc.sendChatMessage(msg.user + ": Insufficient rights!");
         }
 
-        internal void sendIrc(IrcClient _irc)
+        public void sendIrc(IrcClient _irc)
         {
             irc = _irc;
         }
