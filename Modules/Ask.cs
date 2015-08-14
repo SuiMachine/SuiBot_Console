@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 namespace TwitchBotConsole
 {
     class Ask
-    {      
+    {
+        Dictionary<string,Tuple<DateTime,bool>> _ask = new Dictionary<string,Tuple<DateTime,bool>>();
+
         string[] AnswersTime = { "Never!", "Soon... FrankerZ", "At nein o\'clock FrankerZ" };
         string[] AnswersGeneric = { "Yes", "No", "Maybe" };
         string[] AnswersItem = { "Wurst", "BrustWurst", "Wall", "Chair", "Toilet Paper", "Potato" };
         string[] AnswersPerson = { "Your mom FrankerZ", "Your dad FrankerZ" };
         string[] AnswersPlace = { "Here!", "There!", "At your home", "In your bed SoonerLater", "At ESA! ESA HYPE!!! PogChamp" };
-        List<string> _AskUsernames = new List<string>();
-        List<DateTime> _AskLastMassage = new List<DateTime>();
-        List<bool> _AskNotified = new List<bool>();
+
 
         Random rnd = new Random(DateTime.UtcNow.Millisecond);
 
@@ -24,36 +24,34 @@ namespace TwitchBotConsole
             int id;
             string[] helper = msg.message.Split(new char[] { ' ' }, 2);
             DateTime lastSendMsg = DateTime.UtcNow;
-            int userID;
             bool _notified = false;
             double timedifference;
 
-            if(_AskUsernames.Contains(msg.user))
+            if(_ask.ContainsKey(msg.user))
             {
-                userID = _AskUsernames.IndexOf(msg.user);
-                lastSendMsg = _AskLastMassage[userID];
-                _notified = _AskNotified[userID];            
+                var temp = _ask[msg.user];
+                lastSendMsg = temp.Item1;
+                _notified = temp.Item2;
             }
             else
             {
                 lastSendMsg = DateTime.MinValue;
-                _AskUsernames.Add(msg.user);
-                _AskLastMassage.Add(lastSendMsg);
-                _AskNotified.Add(false);
-                userID = _AskUsernames.IndexOf(msg.user);            
+                _notified = false;
+                _ask.Add(msg.user, new Tuple<DateTime,bool>(lastSendMsg, _notified));         
             }
 
             if(!irc.safeAskMode)
             {
-
                 timedifference = (DateTime.UtcNow - lastSendMsg).TotalSeconds;
 
                 if (timedifference < irc.AskDelay)
                 {
                     if (!_notified)
                     {
+                        var temp = _ask[msg.user];
+                        temp = new Tuple<DateTime, bool>(temp.Item1, true);
                         irc.sendChatMessage(msg.user + ": You have to wait " + (Math.Round((lastSendMsg - DateTime.UtcNow).TotalSeconds + irc.AskDelay, 2)).ToString() + " second(s).");
-                        _AskNotified[userID] = true;
+                        _ask[msg.user] = temp;
                     }
                 }
                 else
@@ -83,8 +81,8 @@ namespace TwitchBotConsole
                         id = rnd.Next(0, AnswersGeneric.Length);
                         irc.sendChatMessage(msg.user + ": " + AnswersGeneric[id]);
                     }
-                    _AskLastMassage[userID] = DateTime.UtcNow;
-                    _AskNotified[userID] = false;
+
+                    _ask[msg.user] = new Tuple<DateTime, bool>(DateTime.UtcNow, false);
                 }
             }
             else
@@ -97,8 +95,10 @@ namespace TwitchBotConsole
                     {
                         if (!_notified)
                         {
+                            var temp = _ask[msg.user];
+                            temp = new Tuple<DateTime, bool>(temp.Item1, true);
                             irc.sendChatMessage(msg.user + ": You have to wait " + (Math.Round((lastSendMsg - DateTime.UtcNow).TotalSeconds + irc.AskDelay, 2)).ToString() + " second(s).");
-                            _AskNotified[userID] = true;
+                            _ask[msg.user] = temp;
                         }
                     }
                     else
@@ -128,8 +128,8 @@ namespace TwitchBotConsole
                             id = rnd.Next(0, AnswersGeneric.Length);
                             irc.sendChatMessage(msg.user + ": " + AnswersGeneric[id]);
                         }
-                        _AskLastMassage[userID] = DateTime.UtcNow;
-                        _AskNotified[userID] = false;
+
+                        _ask[msg.user] = new Tuple<DateTime, bool>(DateTime.UtcNow, false);
                     }
                 }
             }

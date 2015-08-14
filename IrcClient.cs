@@ -28,6 +28,7 @@ namespace TwitchBotConsole
 
     class IrcClient
     {
+        bool loading_status = true;
         static string configfile = "config.cfg";
         static string ignoredfile = "ignored_users.txt";
         static string trustedfile = "trusted_users.txt";
@@ -66,7 +67,9 @@ namespace TwitchBotConsole
             else
             {
                 configFileExisted = true;
-                if(loadConfig())
+                loadConfig();
+
+                if(loading_status)
                 {
                     this.userName = _config.username;
 
@@ -88,6 +91,7 @@ namespace TwitchBotConsole
 
             loadIgnoredList();
             loadTrustedList();
+            
         }
         #endregion
 
@@ -297,7 +301,6 @@ namespace TwitchBotConsole
         }
         #endregion
 
-        #region ConfigFilesFunctions
         public void LoadExampleConfig()
         {
             _config.server = "irc.twitch.tv";
@@ -335,7 +338,7 @@ namespace TwitchBotConsole
             File.WriteAllText(@configfile, output);
         }
 
-        public bool loadConfig()
+        public void loadConfig()
         {
             bool LoadedProperly = true;
             StreamReader SR = new StreamReader(@configfile);
@@ -447,6 +450,7 @@ namespace TwitchBotConsole
                         if (bool.TryParse(helper[1], out loadedBool))
                         {
                             safeAskMode = loadedBool;
+                            
                         }
                         else
                         {
@@ -479,6 +483,7 @@ namespace TwitchBotConsole
                         if (bool.TryParse(helper[1], out loadedBool))
                         {
                             intervalMessagesEnabled = loadedBool;
+
                         }
                         else
                         {
@@ -487,11 +492,15 @@ namespace TwitchBotConsole
                     }
                 }
             }
+            Trace.WriteLine("Filtering: " + filteringEnabled.ToString());
+            Trace.WriteLine("Safe ask mode: " + safeAskMode.ToString());
+            Trace.WriteLine("Quotes: " + quoteEnabled.ToString());
+            Trace.WriteLine("Slots: " + slotsEnable.ToString());
+            Trace.WriteLine("Interval messages: " + intervalMessagesEnabled.ToString());
             SR.Close();
             SR.Dispose();
 
-            return LoadedProperly;
+            loading_status = LoadedProperly;
         }
-        #endregion
     }
 }

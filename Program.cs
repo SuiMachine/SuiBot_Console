@@ -76,13 +76,10 @@ namespace TwitchBotConsole
                     #endregion
                     else
                     {
-                        if (irc.filteringEnabled && !irc.moderators.Contains(FormattedMessage.user))
+                        if (irc.filteringEnabled && !irc.moderators.Contains(FormattedMessage.user) && !irc.trustedUsers.Contains(FormattedMessage.user) && _blacklist.checkForSpam(FormattedMessage.message))
                         {
-                            if(!irc.trustedUsers.Contains(FormattedMessage.user) && _blacklist.checkForSpam(FormattedMessage.message))
-                            {
-                                irc.purgeMessage(FormattedMessage.user);
-                                irc.sendChatMessage("Probably spam FrankerZ");
-                            }
+                            irc.purgeMessage(FormattedMessage.user);
+                            irc.sendChatMessage("Probably spam FrankerZ");
                         }
                         else if(FormattedMessage.message.StartsWith("!"))
                         {
@@ -129,7 +126,7 @@ namespace TwitchBotConsole
                                 {
                                     _ask.answerAsk(irc, FormattedMessage);
                                 }
-                                else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!slots ", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!slots", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _slots.PlaySlots(irc, FormattedMessage);
                                 }
@@ -159,7 +156,7 @@ namespace TwitchBotConsole
                                 }
                                 #endregion
                                 #region LeaderboardsAndShortcuts
-                                else if (FormattedMessage.message.StartsWith("!leaderboard ", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!lb ", StringComparison.InvariantCultureIgnoreCase))
+                                else if (FormattedMessage.message.StartsWith("!leaderboard ", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!lb ", StringComparison.InvariantCultureIgnoreCase)  || FormattedMessage.message.StartsWith("!wr ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
                                     _leaderboards.recieveData(irc, FormattedMessage);
