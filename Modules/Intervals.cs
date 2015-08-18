@@ -32,7 +32,7 @@ namespace TwitchBotConsole
                             time.Add(interval);
                             srcTime.Add(interval);
                             intervalMessage.Add(helper[1]);
-                            Console.WriteLine("Loaded interval message: \'" + helper[1] + "\' with a time of " + interval.ToString() + " minutes");
+                            Console.WriteLine("Loaded interval message: \'" + helper[1] + "\' with a time of " + interval.ToString() + " minutes.\n");
                         }
                     }
                 }

@@ -40,12 +40,6 @@ namespace TwitchBotConsole
 
                 Leaderboards _leaderboards = new Leaderboards();
 
-                /*                Timer saveTimer = new Timer();
-                saveTimer.Interval = 10 * 60 * 1000;
-                saveTimer.Start();
-                timer.Elapsed += new ElapsedEventHandler();
-                _intervals.sendIrc(irc);*/
-
                 while (botRun)
                 {
                     string rawMessage = irc.readRawMessage();
@@ -126,7 +120,7 @@ namespace TwitchBotConsole
                                 {
                                     _ask.answerAsk(irc, FormattedMessage);
                                 }
-                                else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!slots", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!slots ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _slots.PlaySlots(irc, FormattedMessage);
                                 }
@@ -211,6 +205,11 @@ namespace TwitchBotConsole
                                 else if (FormattedMessage.message.StartsWith("!customCvars", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _customCvars.showCustomCvars(irc, FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!killBot", StringComparison.InvariantCultureIgnoreCase) && irc.supermod.Contains(FormattedMessage.user))
+                                {
+                                    irc.sendChatMessage("Goodbye! BibleThump");
+                                    botRun = false;
                                 }
                                 else
                                     _customCvars.cvarPerform(irc, FormattedMessage);

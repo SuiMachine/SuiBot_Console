@@ -115,9 +115,9 @@ namespace TwitchBotConsole
                 int coinsVal;
                 if (int.TryParse(helper[2], out coinsVal))
                 {
-                    if (User.Contains(helper[1]))
+                    if (User.Contains(helper[1].ToLower()))
                     {
-                        userID = User.IndexOf(helper[1]);
+                        userID = User.IndexOf(helper[1].ToLower());
                         Coins[userID] = Coins[userID] + coinsVal;
                         irc.sendChatMessage(msg.user + ": Added " + coinsVal.ToString() + " coin(s) to a user " + helper[1]);
                     }

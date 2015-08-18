@@ -19,9 +19,6 @@ namespace TwitchBotConsole
             blacklist_fullphrase.Add("Hey has anyone been reading the whole 'Asian Masculinity' thing on Reddit?".ToLower());
             blacklist_fullphrase.Add("For Asian guys, have you seen the Asian Gamer Chicks subreddit?".ToLower());
 
-            //StartsWith
-            blacklist_startswith.Add("why don't you put a banner for goldmine? (http://goo.gl/".ToLower());
-
             //Words
             blacklist_words.Add("http://apo.af/".ToLower());
             blacklist_words.Add("http://www.apo.af/".ToLower());

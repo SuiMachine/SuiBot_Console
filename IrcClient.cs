@@ -229,7 +229,7 @@ namespace TwitchBotConsole
 
         private void saveTrustedList()
         {
-            File.WriteAllLines(@trustedfile, trustedUsers);
+            File.WriteAllLines(trustedfile, trustedUsers);
         }
         #endregion
 
