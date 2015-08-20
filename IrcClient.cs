@@ -123,6 +123,11 @@ namespace TwitchBotConsole
             sendIrcRawMessage(":" + userName + "!" + userName + "@" +userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
         }
 
+        public void sendChatMessage_NoDelays(string message)
+        {
+            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
+        }
+
         public ReadMessage readMessage(string input_message)
         {
             FormattedMessage.user = "";

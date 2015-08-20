@@ -54,6 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Modules\Quotes.cs" />
     <Compile Include="Modules\Slots.cs" />
+    <Compile Include="Modules\Votes.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

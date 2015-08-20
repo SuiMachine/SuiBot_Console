@@ -26,6 +26,7 @@ namespace TwitchBotConsole
                 Blacklist _blacklist = new Blacklist();
                 Slots _slots = new Slots();
                 CustomCvars _customCvars = new CustomCvars();
+                Votes _votes = new Votes();
 
                 Intervals _intervals = new Intervals();
                 System.Timers.Timer _timer = new System.Timers.Timer();
@@ -82,7 +83,7 @@ namespace TwitchBotConsole
                                 #region ModulesAndFunctions
                                 if (FormattedMessage.message.StartsWith("!commands", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!help", StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    irc.sendChatMessage("The list of commands is available at http://pastebin.com/a8J09cFT");
+                                    irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
                                 }
                                 else if (irc.quoteEnabled && FormattedMessage.message.StartsWith("!addquote ", StringComparison.InvariantCultureIgnoreCase))
                                 {
@@ -147,6 +148,36 @@ namespace TwitchBotConsole
                                 else if (FormattedMessage.message.StartsWith("!trustedRemove ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     irc.trustedUsersRemove(FormattedMessage);
+                                }
+                                #endregion
+                                #region Votes
+                                else if(FormattedMessage.message.StartsWith("!callVote ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _votes.callVote(irc, FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!voteOptions ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _votes.setOptions(irc, FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!voteOpen", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _votes.voteOpen(irc, FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!voteClose", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _votes.voteClose(irc, FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!voteDisplay", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _votes.displayVote(irc, FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!voteResults", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _votes.displayResults(irc, FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!vote ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _votes.Vote(irc, FormattedMessage);
                                 }
                                 #endregion
                                 #region LeaderboardsAndShortcuts
