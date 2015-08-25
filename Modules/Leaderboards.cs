@@ -33,13 +33,85 @@ namespace TwitchBotConsole
                     {
                         string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
                         var game = srlClient.Games.SearchGame(name: additionalhelper[0]);
+                        if (additionalhelper[1].ToLower().StartsWith("cat"))
+                        {
+                            string output = "Categories are:";
+                            int id=1;
+                            foreach(var element in game.Categories)
+                            {
+                                output = output + " [" + id.ToString() + "]" + element.ToString();
+                                id++;
+                            }
+							irc.sendChatMessage(output);
+                        }
+                        else if(additionalhelper[1].ToLower().StartsWith("level"))
+                        {
+                            int indexGameLevelStart = additionalhelper[1].IndexOf(':');
+                            if(indexGameLevelStart>0)
+                            {
+                                string[] levelHelper = additionalhelper[1].Split(new char[] { ':' }, 2);
+                                int id=0;
+                                if(int.TryParse(levelHelper[1], out id))
+                                {
+                                    id--;
+                                    if(game.Levels.Count>id)
+                                    {
+                                        var _level = game.Levels[id];
 
-                        var _category = game.Categories.First(category => category.Name.ToLower() == additionalhelper[1].ToLower());
+                                        if (_level.Categories[0].WorldRecord != null)
+                                        {
+                                            var worldRecord = _level.Categories[0].WorldRecord;
 
-                        //Finding the World Record of the category
-                        var worldRecord = _category.WorldRecord;
+                                            irc.sendChatMessage("World record for " + game + " for a level " + _level.Name + " is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _level.WebLink.AbsoluteUri);
+                                        }
+                                        else
+                                            irc.sendChatMessage("Currently there is no world record for this level " + _level.WebLink.AbsoluteUri);
+                                    }
+                                    else
+                                        irc.sendChatMessage("Wrong level ID.");
+                                }
+                                else
+                                    irc.sendChatMessage("Failed to parse level ID");
+                            }
+                            else
+                            {
+                                var _levels = game.Levels;
+                                int i=0;
+                                foreach(var category in _levels[0].Categories)
+                                {
+                                    Console.WriteLine(i.ToString() + ". " + category);
+                                    i++;
+                                }
+                            }
 
-                        irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.Name + ". http://www.speedrun.com/" + helper[1]);
+                        }
+                        else
+                        {
+                            int id=0;
+                            if(int.TryParse(additionalhelper[1], out id))
+                            {
+                                id--;
+                                if(game.Categories.Count > id)
+                                {
+                                    var _category = game.Categories[id];
+
+                                    if (_category.WorldRecord != null)
+                                    {
+                                        //Finding the World Record of the category
+                                        var worldRecord = _category.WorldRecord;
+
+                                        irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
+                                    }
+                                    else
+                                        irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
+                                }
+                                else
+                                    irc.sendChatMessage("Wrong category ID!");
+                            }
+                            else
+                                irc.sendChatMessage("Failed to parse category ID.");
+
+                        }
                     }
                     else
                     {
@@ -47,10 +119,15 @@ namespace TwitchBotConsole
 
                         var _category = game.Categories[0];
 
-                        //Finding the World Record of the category
-                        var worldRecord = _category.WorldRecord;
+                        if (_category.WorldRecord != null)
+                        {
+                            //Finding the World Record of the category
+                            var worldRecord = _category.WorldRecord;
 
-						irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.Name + ". http://www.speedrun.com/" + helper[1].Replace(" ", "_"));
+                            irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + game.WebLink.AbsoluteUri);
+                        }
+                        else
+                            irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
                     }
                 }
                 catch(Exception ex)
