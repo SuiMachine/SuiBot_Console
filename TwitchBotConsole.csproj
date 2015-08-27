@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Json_status.cs" />
     <Compile Include="Modules\CustomCvars.cs" />
     <Compile Include="Modules\Leaderboards.cs" />
     <Compile Include="Modules\Ask.cs" />

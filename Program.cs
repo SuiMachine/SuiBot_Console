@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace TwitchBotConsole
 {
     class Program
     {
+        bool streamIsOnline = false;
+
         static void Main(string[] args)
         {
             bool botRun = true;
@@ -29,17 +32,26 @@ namespace TwitchBotConsole
                 Votes _votes = new Votes();
 
                 Intervals _intervals = new Intervals();
+
+                Json_status _jsonStatus = new Json_status();
+                _jsonStatus.SendChannel(irc._config.channel);
+                System.Timers.Timer _statusCheckTimer = new System.Timers.Timer();
+                _statusCheckTimer.Interval = 5 * 60 * 1000;             //every 5 minutes
+                _statusCheckTimer.Start();
+                _statusCheckTimer.Elapsed += new System.Timers.ElapsedEventHandler(_jsonStatus.TimerTick);
+
                 System.Timers.Timer _timer = new System.Timers.Timer();
                 _timer.Interval = 60*1000;
                 if (irc.intervalMessagesEnabled)
                 {
-                    _intervals.sendIrc(irc);
-                    Trace.WriteLine("Enabling interval messages");
+                    _intervals.sendIrc(irc, _jsonStatus);
                     _timer.Start();
                     _timer.Elapsed += new System.Timers.ElapsedEventHandler(_intervals.timerSender);
                 }
 
                 Leaderboards _leaderboards = new Leaderboards();
+
+
 
                 while (botRun)
                 {
@@ -179,6 +191,10 @@ namespace TwitchBotConsole
                                 {
                                     _votes.Vote(irc, FormattedMessage);
                                 }
+                                else if (FormattedMessage.message.StartsWith("!updateJsonInfo", StringComparison.InvariantCultureIgnoreCase) && irc.moderators.Contains(FormattedMessage.user))
+                                {
+                                    _jsonStatus.requestUpdate(irc);
+                                }
                                 #endregion
                                 #region LeaderboardsAndShortcuts
                                 else if (FormattedMessage.message.StartsWith("!leaderboard ", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!lb ", StringComparison.InvariantCultureIgnoreCase)  || FormattedMessage.message.StartsWith("!wr ", StringComparison.InvariantCultureIgnoreCase))
@@ -254,6 +270,8 @@ namespace TwitchBotConsole
             {
                 Console.WriteLine("No config file found. An example config file was created");
             }
+
+
         }
     }
 }
