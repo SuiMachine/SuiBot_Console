@@ -11,7 +11,7 @@ namespace TwitchBotConsole
     {
         IrcClient irc;
         Json_status json;
-        bool prevChannelOnline = true;
+        bool prevChannelOnline = false;
         List<int> time = new List<int>();
         List<int> srcTime = new List<int>();
         List<string> intervalMessage = new List<string>();
