@@ -12,6 +12,7 @@ namespace TwitchBotConsole
         IrcClient irc;
         Json_status json;
         bool prevChannelOnline = false;
+        string previousGame = "";
         List<int> time = new List<int>();
         List<int> srcTime = new List<int>();
         List<string> intervalMessage = new List<string>();
@@ -55,6 +56,12 @@ namespace TwitchBotConsole
                         irc.sendChatMessage(intervalMessage[i]);
                         time[i] = srcTime[i];
                     }
+                }
+
+                if(json.game != previousGame)
+                {
+                    irc.sendChatMessage("The game is: " + json.game);
+                    previousGame = json.game;
                 }
             }
             else if(json.isOnline!= prevChannelOnline)

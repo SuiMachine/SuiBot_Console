@@ -36,7 +36,7 @@ namespace TwitchBotConsole
         public bool configFileExisted = false;
         public double AskDelay = 30.0d;
         public double SlotsDelay = 30.0d;
-        public int SlotsInitialCoins = 100;
+        public uint SlotsInitialCoins = 100;
         public bool quoteEnabled = true;
         public bool safeAskMode = true;
         public bool filteringEnabled = true;

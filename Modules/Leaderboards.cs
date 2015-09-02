@@ -11,6 +11,7 @@ namespace TwitchBotConsole
     {
         IrcClient irc;
         ReadMessage msg;
+        Json_status json;
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
         {
@@ -20,7 +21,7 @@ namespace TwitchBotConsole
 
         public void getLeaderboard()
         {
-            if (irc.moderators.Contains(msg.user))
+            if (irc.moderators.Contains(msg.user) || irc.trustedUsers.Contains(msg.user))
             {
                 var srlClient = new SpeedrunComClient();
                 int indexGameStart = msg.message.IndexOf(' ');
@@ -28,106 +29,128 @@ namespace TwitchBotConsole
 
                 try
                 {
-                    string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-                    if (indexGameStart > 0 && indexGameCathegoryStart > 0)
+                    if(indexGameStart > 0)
                     {
-                        string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
-                        var game = srlClient.Games.SearchGame(name: additionalhelper[0]);
-                        if (additionalhelper[1].ToLower().StartsWith("cat"))
+                        string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+                        if (indexGameCathegoryStart > 0 && Char.IsWhiteSpace(msg.message.ElementAt(indexGameStart + 1)))
                         {
-                            string output = "Categories are:";
-                            int id=1;
-                            foreach(var element in game.Categories)
+                            string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
+                            var game = srlClient.Games.SearchGame(name: additionalhelper[0]);
+                            if (additionalhelper[1].ToLower().StartsWith("cat"))
                             {
-                                output = output + " [" + id.ToString() + "]" + element.ToString();
-                                id++;
-                            }
-							irc.sendChatMessage(output);
-                        }
-                        else if(additionalhelper[1].ToLower().StartsWith("level"))
-                        {
-                            int indexGameLevelStart = additionalhelper[1].IndexOf(':');
-                            if(indexGameLevelStart>0)
-                            {
-                                string[] levelHelper = additionalhelper[1].Split(new char[] { ':' }, 2);
-                                int id=0;
-                                if(int.TryParse(levelHelper[1], out id))
+                                string output = "Categories are:";
+                                int id = 1;
+                                foreach (var element in game.Categories)
                                 {
-                                    id--;
-                                    if(game.Levels.Count>id)
+                                    output = output + " [" + id.ToString() + "]" + element.ToString();
+                                    id++;
+                                }
+                                irc.sendChatMessage(output);
+                            }
+                            else if (additionalhelper[1].ToLower().StartsWith("level"))
+                            {
+                                int indexGameLevelStart = additionalhelper[1].IndexOf(':');
+                                if (indexGameLevelStart > 0)
+                                {
+                                    string[] levelHelper = additionalhelper[1].Split(new char[] { ':' }, 2);
+                                    int id = 0;
+                                    if (int.TryParse(levelHelper[1], out id))
                                     {
-                                        var _level = game.Levels[id];
-
-                                        if (_level.Categories[0].WorldRecord != null)
+                                        id--;
+                                        if (game.Levels.Count > id)
                                         {
-                                            var worldRecord = _level.Categories[0].WorldRecord;
+                                            var _level = game.Levels[id];
 
-                                            irc.sendChatMessage("World record for " + game + " for a level " + _level.Name + " is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _level.WebLink.AbsoluteUri);
+                                            if (_level.Categories[0].WorldRecord != null)
+                                            {
+                                                var worldRecord = _level.Categories[0].WorldRecord;
+
+                                                irc.sendChatMessage("World record for " + game + " for a level " + _level.Name + " is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _level.WebLink.AbsoluteUri);
+                                            }
+                                            else
+                                                irc.sendChatMessage("Currently there is no world record for this level " + _level.WebLink.AbsoluteUri);
                                         }
                                         else
-                                            irc.sendChatMessage("Currently there is no world record for this level " + _level.WebLink.AbsoluteUri);
+                                            irc.sendChatMessage("Wrong level ID.");
                                     }
                                     else
-                                        irc.sendChatMessage("Wrong level ID.");
+                                        irc.sendChatMessage("Failed to parse level ID");
                                 }
                                 else
-                                    irc.sendChatMessage("Failed to parse level ID");
+                                {
+                                    var _levels = game.Levels;
+                                    int i = 0;
+                                    foreach (var category in _levels[0].Categories)
+                                    {
+                                        Console.WriteLine(i.ToString() + ". " + category);
+                                        i++;
+                                    }
+                                }
+
                             }
                             else
                             {
-                                var _levels = game.Levels;
-                                int i=0;
-                                foreach(var category in _levels[0].Categories)
+                                int id = 0;
+                                if (int.TryParse(additionalhelper[1], out id))
                                 {
-                                    Console.WriteLine(i.ToString() + ". " + category);
-                                    i++;
-                                }
-                            }
+                                    id--;
+                                    if (game.Categories.Count > id)
+                                    {
+                                        var _category = game.Categories[id];
 
+                                        if (_category.WorldRecord != null)
+                                        {
+                                            //Finding the World Record of the category
+                                            var worldRecord = _category.WorldRecord;
+
+                                            irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
+                                        }
+                                        else
+                                            irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
+                                    }
+                                    else
+                                        irc.sendChatMessage("Wrong category ID!");
+                                }
+                                else
+                                    irc.sendChatMessage("Failed to parse category ID.");
+
+                            }
                         }
                         else
                         {
-                            int id=0;
-                            if(int.TryParse(additionalhelper[1], out id))
+                            var game = srlClient.Games.SearchGame(name: helper[1]);
+
+                            var _category = game.Categories[0];
+
+                            if (_category.WorldRecord != null)
                             {
-                                id--;
-                                if(game.Categories.Count > id)
-                                {
-                                    var _category = game.Categories[id];
+                                //Finding the World Record of the category
+                                var worldRecord = _category.WorldRecord;
 
-                                    if (_category.WorldRecord != null)
-                                    {
-                                        //Finding the World Record of the category
-                                        var worldRecord = _category.WorldRecord;
-
-                                        irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
-                                    }
-                                    else
-                                        irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
-                                }
-                                else
-                                    irc.sendChatMessage("Wrong category ID!");
+                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + game.WebLink.AbsoluteUri);
                             }
                             else
-                                irc.sendChatMessage("Failed to parse category ID.");
-
+                                irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
                         }
                     }
                     else
                     {
-                        var game = srlClient.Games.SearchGame(name: helper[1]);
-
-                        var _category = game.Categories[0];
-
-                        if (_category.WorldRecord != null)
+                        if(json.game != String.Empty)
                         {
-                            //Finding the World Record of the category
-                            var worldRecord = _category.WorldRecord;
+                            var game = srlClient.Games.SearchGame(name: json.game);
 
-                            irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + game.WebLink.AbsoluteUri);
+                            var _category = game.Categories[0];
+
+                            if (_category.WorldRecord != null)
+                            {
+                                //Finding the World Record of the category
+                                var worldRecord = _category.WorldRecord;
+
+                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + game.WebLink.AbsoluteUri);
+                            }
+                            else
+                                irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
                         }
-                        else
-                            irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
                     }
                 }
                 catch(Exception ex)
@@ -140,6 +163,11 @@ namespace TwitchBotConsole
             {
                 irc.sendChatMessage("You don't have permissions to perform this command");
             }
+        }
+
+        internal void SendJsonPointer(Json_status _jsonStatus)
+        {
+            json = _jsonStatus;
         }
     }
 }

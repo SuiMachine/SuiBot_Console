@@ -11,6 +11,7 @@ namespace TwitchBotConsole
     class Json_status
     {
         public bool isOnline = true;
+        public string game = "";
         string sUrl = "";
 
         public void SendChannel(string channel)
@@ -34,7 +35,19 @@ namespace TwitchBotConsole
             if(res.Contains("display_name"))
             {
                 isOnline = true;
-                Console.WriteLine("Checked stream status. Is online.");
+                string temp = Convert.ToString(res);
+                int indexStart = temp.IndexOf("game");
+                if(indexStart>0)
+                {
+                    indexStart = indexStart + 7;
+                    int indexEnd = temp.IndexOf(",", indexStart)-1;
+                    game = temp.Substring(indexStart, indexEnd-indexStart);
+                    Console.WriteLine("Stream is online, game: " + game);
+                }
+                else
+                {
+                    Console.WriteLine("Checked stream status. Is online.");
+                }
             }
             else
             {
@@ -51,7 +64,14 @@ namespace TwitchBotConsole
         internal void requestUpdate(IrcClient irc)
         {
             getStatus();
-            irc.sendChatMessage("New isOnline status is - " + isOnline.ToString());
+            if(game!=string.Empty)
+            {
+                irc.sendChatMessage("New isOnline status is - " + isOnline.ToString() + " and the game is: " + game);
+            }
+            else
+            {
+                irc.sendChatMessage("New isOnline status is - " + isOnline.ToString());
+            }
         }
     }
 }

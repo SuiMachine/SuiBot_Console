@@ -12,7 +12,7 @@ namespace TwitchBotConsole
         Random rnd = new Random(DateTime.UtcNow.Millisecond);
 
         List<string> User = new List<string>();
-        List<int> Coins = new List<int>();
+        List<uint> Coins = new List<uint>();
         List<DateTime> LastPlayed = new List<DateTime>();
         public string[] emotes = { "FrankerZ", "OpieOP", "ResidentSleeper", "BibleThump" };
 
@@ -49,8 +49,8 @@ namespace TwitchBotConsole
             else
             {
                 string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-                int coinsBet = 0;
-                if (int.TryParse(helper[1], out coinsBet))
+                uint coinsBet = 0;
+                if (uint.TryParse(helper[1], out coinsBet))
                 {
                     if (coinsBet > 0)
                     {
@@ -89,7 +89,7 @@ namespace TwitchBotConsole
         public void DisplayCoins(IrcClient irc, ReadMessage msg)
         {
             int userID;
-            int coinsVal;
+            uint coinsVal;
             if (User.Contains(msg.user))
             {
                 userID = User.IndexOf(msg.user);
@@ -112,8 +112,8 @@ namespace TwitchBotConsole
                 string[] helper = msg.message.Split(new char[] { ' ' }, 3);
 
                 int userID;
-                int coinsVal;
-                if (int.TryParse(helper[2], out coinsVal))
+                uint coinsVal;
+                if (uint.TryParse(helper[2], out coinsVal))
                 {
                     if (User.Contains(helper[1].ToLower()))
                     {

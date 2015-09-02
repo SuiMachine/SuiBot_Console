@@ -12,8 +12,6 @@ namespace TwitchBotConsole
 {
     class Program
     {
-        bool streamIsOnline = false;
-
         static void Main(string[] args)
         {
             bool botRun = true;
@@ -197,10 +195,11 @@ namespace TwitchBotConsole
                                 }
                                 #endregion
                                 #region LeaderboardsAndShortcuts
-                                else if (FormattedMessage.message.StartsWith("!leaderboard ", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!lb ", StringComparison.InvariantCultureIgnoreCase)  || FormattedMessage.message.StartsWith("!wr ", StringComparison.InvariantCultureIgnoreCase))
+                                else if (FormattedMessage.message.StartsWith("!leaderboard", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!lb", StringComparison.InvariantCultureIgnoreCase)  || FormattedMessage.message.StartsWith("!wr", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
                                     _leaderboards.recieveData(irc, FormattedMessage);
+                                    _leaderboards.SendJsonPointer(_jsonStatus);
                                     lbThread.Start();
                                 }
                                 else if (FormattedMessage.message.StartsWith("!hitman3", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!hitmancontracts", StringComparison.InvariantCultureIgnoreCase))
