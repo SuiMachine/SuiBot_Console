@@ -14,6 +14,19 @@ namespace TwitchBotConsole
         ReadMessage msg;
         Json_status json;
 
+        Dictionary<string, string> proxyName = new Dictionary<string, string>();
+
+        public Leaderboards()
+        {
+            loadProxyNames();
+        }
+
+        private void loadProxyNames()
+        {
+            proxyName.Add("Star Wars: Jedi Knight - Jedi Academy", "jka");
+            proxyName.Add("Darksiders II", "Darksiders 2");
+        }
+
         public void recieveData(IrcClient _irc, ReadMessage _msg)
         {
             irc = _irc;
@@ -96,7 +109,6 @@ namespace TwitchBotConsole
 
                             if (_category.WorldRecord != null)
                             {
-                                //Finding the World Record of the category
                                 var worldRecord = _category.WorldRecord;
 
                                             if(worldRecord.Players.Count>1)
@@ -117,10 +129,10 @@ namespace TwitchBotConsole
                         }
                     }
                     else
-                    {
+                    {   //Find a best time from default cathegory, based on currently played game on Twitch
                         if(json.game != String.Empty)
                         {
-                            var game = srlClient.Games.SearchGame(name: json.game);
+                            var game = srlClient.Games.SearchGame(name: getProxyName(json.game));
 
                             var _category = game.Categories[0];
 
@@ -164,6 +176,18 @@ namespace TwitchBotConsole
         internal void SendJsonPointer(Json_status _jsonStatus)
         {
             json = _jsonStatus;
+        }
+
+        string getProxyName(string name)
+        {
+            string proxy;
+            if (proxyName.ContainsKey(name))
+            {
+                proxy = proxyName[name];
+            }
+            else
+                proxy = name;
+            return proxy;
         }
     }
 }
