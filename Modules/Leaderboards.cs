@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SpeedrunComSharp;
+using System.Diagnostics;
 
 namespace TwitchBotConsole
 {
@@ -32,7 +33,7 @@ namespace TwitchBotConsole
                     if(indexGameStart > 0)
                     {
                         string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-                        if (indexGameCathegoryStart > 0 && Char.IsWhiteSpace(msg.message.ElementAt(indexGameStart + 1)))
+                        if (indexGameCathegoryStart > 0 && msg.message.ElementAt(indexGameCathegoryStart+1) != ' ')
                         {
                             string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
                             var game = srlClient.Games.SearchGame(name: additionalhelper[0]);
@@ -46,47 +47,6 @@ namespace TwitchBotConsole
                                     id++;
                                 }
                                 irc.sendChatMessage(output);
-                            }
-                            else if (additionalhelper[1].ToLower().StartsWith("level"))
-                            {
-                                int indexGameLevelStart = additionalhelper[1].IndexOf(':');
-                                if (indexGameLevelStart > 0)
-                                {
-                                    string[] levelHelper = additionalhelper[1].Split(new char[] { ':' }, 2);
-                                    int id = 0;
-                                    if (int.TryParse(levelHelper[1], out id))
-                                    {
-                                        id--;
-                                        if (game.Levels.Count > id)
-                                        {
-                                            var _level = game.Levels[id];
-
-                                            if (_level.Categories[0].WorldRecord != null)
-                                            {
-                                                var worldRecord = _level.Categories[0].WorldRecord;
-
-                                                irc.sendChatMessage("World record for " + game + " for a level " + _level.Name + " is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _level.WebLink.AbsoluteUri);
-                                            }
-                                            else
-                                                irc.sendChatMessage("Currently there is no world record for this level " + _level.WebLink.AbsoluteUri);
-                                        }
-                                        else
-                                            irc.sendChatMessage("Wrong level ID.");
-                                    }
-                                    else
-                                        irc.sendChatMessage("Failed to parse level ID");
-                                }
-                                else
-                                {
-                                    var _levels = game.Levels;
-                                    int i = 0;
-                                    foreach (var category in _levels[0].Categories)
-                                    {
-                                        Console.WriteLine(i.ToString() + ". " + category);
-                                        i++;
-                                    }
-                                }
-
                             }
                             else
                             {
@@ -103,7 +63,19 @@ namespace TwitchBotConsole
                                             //Finding the World Record of the category
                                             var worldRecord = _category.WorldRecord;
 
-                                            irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
+                                            if(worldRecord.Players.Count>1)
+                                            {
+                                                string players = "" + worldRecord.Players[0].User;
+                                                int i = 1;
+                                                for (; i<worldRecord.Players.Count-1; i++)
+                                                {
+                                                    players = players + ", " + worldRecord.Players[i].User;
+                                                }
+                                                players = players + " and " + worldRecord.Players[i].User;
+                                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
+                                            }
+                                            else
+                                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
                                         }
                                         else
                                             irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
@@ -127,8 +99,19 @@ namespace TwitchBotConsole
                                 //Finding the World Record of the category
                                 var worldRecord = _category.WorldRecord;
 
-                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + game.WebLink.AbsoluteUri);
-                            }
+                                            if(worldRecord.Players.Count>1)
+                                            {
+                                                string players = "" + worldRecord.Players[0].User;
+                                                int i = 1;
+                                                for (; i<worldRecord.Players.Count-1; i++)
+                                                {
+                                                    players = players + ", " + worldRecord.Players[i].User;
+                                                }
+                                                players = players + " and " + worldRecord.Players[i].User;
+                                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
+                                            }
+                                            else
+                                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);                            }
                             else
                                 irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
                         }
@@ -146,7 +129,19 @@ namespace TwitchBotConsole
                                 //Finding the World Record of the category
                                 var worldRecord = _category.WorldRecord;
 
-                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + game.WebLink.AbsoluteUri);
+                                if (worldRecord.Players.Count > 1)
+                                {
+                                    string players = "" + worldRecord.Players[0].User;
+                                    int i = 1;
+                                    for (; i < worldRecord.Players.Count - 1; i++)
+                                    {
+                                        players = players + ", " + worldRecord.Players[i].User;
+                                    }
+                                    players = players + " and " + worldRecord.Players[i].User;
+                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
+                                }
+                                else
+                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
                             }
                             else
                                 irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
@@ -156,6 +151,7 @@ namespace TwitchBotConsole
                 catch(Exception ex)
                 {
                     irc.sendChatMessage("Nothing found. Maybe you'd like to visit http://speedrun.com and look for it yourself FrankerZ");
+                    Debug.WriteLine(ex.ToString());
                 }
 
             }
