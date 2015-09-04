@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("TwitchBotConsole")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Acer")]
+[assembly: AssemblyCompany("SuicideMachine")]
 [assembly: AssemblyProduct("TwitchBotConsole")]
-[assembly: AssemblyCopyright("Copyright © Acer 2015")]
+[assembly: AssemblyCopyright("SuicideMachine")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

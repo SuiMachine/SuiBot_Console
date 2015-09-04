@@ -48,7 +48,7 @@ namespace TwitchBotConsole
                 }
 
                 Leaderboards _leaderboards = new Leaderboards();
-
+                _leaderboards.SendJsonPointer(_jsonStatus);
 
 
                 while (botRun)
@@ -199,7 +199,6 @@ namespace TwitchBotConsole
                                 {
                                     Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
                                     _leaderboards.recieveData(irc, FormattedMessage);
-                                    _leaderboards.SendJsonPointer(_jsonStatus);
                                     lbThread.Start();
                                 }
                                 else if (FormattedMessage.message.StartsWith("!hitman3", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!hitmancontracts", StringComparison.InvariantCultureIgnoreCase))
