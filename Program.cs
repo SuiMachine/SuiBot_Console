@@ -189,6 +189,18 @@ namespace TwitchBotConsole
                                 {
                                     _votes.Vote(irc, FormattedMessage);
                                 }
+                                else if (FormattedMessage.message.StartsWith("!deathCounter", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    irc.DeathCounterDisplay(FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!deathAdd", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    irc.DeathCounterAdd(FormattedMessage);
+                                }
+                                else if (FormattedMessage.message.StartsWith("!deathRemove", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    irc.DeathCounterRemove(FormattedMessage);
+                                }
                                 else if (FormattedMessage.message.StartsWith("!updateJsonInfo", StringComparison.InvariantCultureIgnoreCase) && irc.moderators.Contains(FormattedMessage.user))
                                 {
                                     _jsonStatus.requestUpdate(irc);

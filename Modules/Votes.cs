@@ -9,7 +9,6 @@ namespace TwitchBotConsole
     class Votes
     {
         string voteObjective = "";
-        int voteType = 0;
         List<string> usersVoted = new List<string>();
         List<string> options = new List<string>();
         List<int> votes = new List<int>();
@@ -27,18 +26,12 @@ namespace TwitchBotConsole
                     usersVoted.Clear();
                     options.Clear();
                     votes.Clear();
-                    voteType = 0;
                 }
                 else
                 {
                     irc.sendChatMessage("A vote is currently active. Please close the vote, first.");
                 }
             }
-        }
-
-        public void setType(IrcClient irc, ReadMessage msg)
-        {
-            //stub
         }
 
         public void setOptions(IrcClient irc, ReadMessage msg)

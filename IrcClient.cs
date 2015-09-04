@@ -32,6 +32,7 @@ namespace TwitchBotConsole
         static string configfile = "config.cfg";
         static string ignoredfile = "ignored_users.txt";
         static string trustedfile = "trusted_users.txt";
+        static string deathSave = "deaths.txt";
         public config _config;
         public bool configFileExisted = false;
         public double AskDelay = 30.0d;
@@ -42,6 +43,8 @@ namespace TwitchBotConsole
         public bool filteringEnabled = true;
         public bool slotsEnable = true;
         public bool intervalMessagesEnabled = true;
+        public uint deaths = 0;
+        public uint delayBetweenAddedDeaths = 10;
 
         public List<string> supermod = new List<string>();
         public List<string> moderators = new List<string>();
@@ -56,6 +59,7 @@ namespace TwitchBotConsole
         private StreamReader inputStream;
         private StreamWriter outputStream;
         DateTime LastSend;
+        DateTime DeathLastAdded;
 
         #region Constructor
         public IrcClient()
@@ -68,6 +72,7 @@ namespace TwitchBotConsole
             {
                 configFileExisted = true;
                 loadConfig();
+                loadDeaths();
 
                 if(loading_status)
                 {
@@ -339,8 +344,82 @@ namespace TwitchBotConsole
             output = output + "\nSafeAskMode:" + safeAskMode.ToString();
             output = output + "\nSlotsEnabled:" + slotsEnable.ToString();
             output = output + "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString();
+            output = output + "\nDeathCounterSafetyDelay: " + delayBetweenAddedDeaths.ToString();
 
             File.WriteAllText(@configfile, output);
+        }
+
+        internal void DeathCounterAdd(ReadMessage formattedMessage)
+        {
+            if(moderators.Contains(formattedMessage.user) || trustedUsers.Contains(formattedMessage.user))
+            {
+                if((DateTime.UtcNow-DeathLastAdded).TotalSeconds > delayBetweenAddedDeaths)
+                {
+                    if (formattedMessage.message.StartsWith("!deathAdd "))
+                    {
+                        string[] helper = formattedMessage.message.Split(new char[] { ' ' }, 2);
+                        uint temp;
+                        if(uint.TryParse(helper[1], out temp))
+                        {
+                            deaths = deaths + temp;
+                            sendChatMessage("Added " + temp.ToString() + " deaths. Current number of deaths: " + deaths.ToString());
+                            DeathLastAdded = DateTime.UtcNow;
+                            saveDeaths();
+                        }
+                        else
+                            sendChatMessage(FormattedMessage.user + ": Invalid syntax?");
+                    }
+                    else
+                    {
+                        deaths++;
+                        sendChatMessage("Added 1 death. Current number of deaths: " + deaths.ToString());
+                        DeathLastAdded = DateTime.UtcNow;
+                        saveDeaths();
+                    }
+                }
+                else
+                {
+                    sendChatMessage("Ignored adding a death (for safety).");
+                }
+            }
+        }
+
+        internal void DeathCounterDisplay(ReadMessage formattedMessage)
+        {
+            sendChatMessage("Current number of deaths: " + deaths.ToString());
+        }
+
+        internal void DeathCounterRemove(ReadMessage formattedMessage)
+        {
+            if (moderators.Contains(formattedMessage.user) || trustedUsers.Contains(formattedMessage.user))
+            {
+                if (formattedMessage.message.StartsWith("!deathRemove "))
+                {
+                    string[] helper = formattedMessage.message.Split(new char[] { ' ' }, 2);
+                    uint temp;
+                    if (uint.TryParse(helper[1], out temp))
+                    {
+                        if (deaths < temp)
+                        {
+                            sendChatMessage("Value is higher than the current number of deaths!");
+                        }
+                        else
+                        {
+                            deaths = deaths - temp;
+                            sendChatMessage("Removed " + temp.ToString() + " deaths. Current number of deaths: " + deaths.ToString());
+                            saveDeaths();
+                        }
+                    }
+                    else
+                        sendChatMessage(FormattedMessage.user + ": Invalid syntax?");
+                }
+                else
+                {
+                    deaths--;
+                    sendChatMessage("Removed 1 death. Current number of deaths: " + deaths.ToString());
+                    saveDeaths();
+                }
+            }
         }
 
         public void loadConfig()
@@ -496,16 +575,62 @@ namespace TwitchBotConsole
                         }
                     }
                 }
+                else if (line.StartsWith("DeathCounterSafetyDelay:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        uint loadedValue;
+                        if (uint.TryParse(helper[1], out loadedValue))
+                        {
+                            delayBetweenAddedDeaths = loadedValue;
+                        }
+                        else
+                        {
+                            delayBetweenAddedDeaths = 10;
+                        }
+                    }
+                }
             }
             Trace.WriteLine("Filtering: " + filteringEnabled.ToString());
             Trace.WriteLine("Safe ask mode: " + safeAskMode.ToString());
             Trace.WriteLine("Quotes: " + quoteEnabled.ToString());
             Trace.WriteLine("Slots: " + slotsEnable.ToString());
             Trace.WriteLine("Interval messages: " + intervalMessagesEnabled.ToString());
+            Trace.WriteLine("DeathCounterSafetyDelay: " + delayBetweenAddedDeaths.ToString());
             SR.Close();
             SR.Dispose();
 
             loading_status = LoadedProperly;
+        }
+
+        private void loadDeaths()
+        {
+            if(File.Exists(deathSave))
+            {
+                StreamReader SR = new StreamReader(@deathSave);
+                string line;
+                while ((line = SR.ReadLine()) != null)
+                {
+                    if(line.StartsWith("Deaths:"))
+                    {
+                        uint temp;
+                        string[] helper = line.Split(new char[] { ':' }, 2);
+                        if(uint.TryParse(helper[1], out temp))
+                        {
+                            deaths = temp;
+                        }
+                    }
+                }
+                SR.Close();
+                SR.Dispose();
+            }
+        }
+
+        private void saveDeaths()
+        {
+            string output = "Deaths:" + deaths.ToString();
+            File.WriteAllText(@deathSave, output);
         }
     }
 }
