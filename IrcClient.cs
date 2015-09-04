@@ -43,6 +43,7 @@ namespace TwitchBotConsole
         public bool filteringEnabled = true;
         public bool slotsEnable = true;
         public bool intervalMessagesEnabled = true;
+        public bool deathCounterEnabled = false;
         public uint deaths = 0;
         public uint delayBetweenAddedDeaths = 10;
 
@@ -344,6 +345,7 @@ namespace TwitchBotConsole
             output = output + "\nSafeAskMode:" + safeAskMode.ToString();
             output = output + "\nSlotsEnabled:" + slotsEnable.ToString();
             output = output + "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString();
+            output = output + "\nDeathCounterEnabled: " + deathCounterEnabled.ToString();
             output = output + "\nDeathCounterSafetyDelay: " + delayBetweenAddedDeaths.ToString();
 
             File.WriteAllText(@configfile, output);
@@ -575,6 +577,22 @@ namespace TwitchBotConsole
                         }
                     }
                 }
+                else if (line.StartsWith("DeathCounterEnabled:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        bool boolValue;
+                        if (bool.TryParse(helper[1], out boolValue))
+                        {
+                            deathCounterEnabled = boolValue;
+                        }
+                        else
+                        {
+                            deathCounterEnabled = false;
+                        }
+                    }
+                }
                 else if (line.StartsWith("DeathCounterSafetyDelay:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
@@ -597,7 +615,6 @@ namespace TwitchBotConsole
             Trace.WriteLine("Quotes: " + quoteEnabled.ToString());
             Trace.WriteLine("Slots: " + slotsEnable.ToString());
             Trace.WriteLine("Interval messages: " + intervalMessagesEnabled.ToString());
-            Trace.WriteLine("DeathCounterSafetyDelay: " + delayBetweenAddedDeaths.ToString());
             SR.Close();
             SR.Dispose();
 

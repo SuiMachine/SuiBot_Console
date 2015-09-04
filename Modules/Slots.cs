@@ -11,9 +11,8 @@ namespace TwitchBotConsole
     {
         Random rnd = new Random(DateTime.UtcNow.Millisecond);
 
-        List<string> User = new List<string>();
-        List<uint> Coins = new List<uint>();
-        List<DateTime> LastPlayed = new List<DateTime>();
+        Dictionary<string, Tuple<uint, DateTime>> userCoins = new Dictionary<string, Tuple<uint, DateTime>>();
+
         public string[] emotes = { "FrankerZ", "OpieOP", "ResidentSleeper", "BibleThump" };
 
         public Slots()
@@ -22,29 +21,25 @@ namespace TwitchBotConsole
 
         public void PlaySlots(IrcClient irc, ReadMessage msg)
         {
-            DateTime lastPlayedCurrent = DateTime.UtcNow;
-            int userID;
+            Tuple<uint, DateTime> values;
+
             double timedifference;
 
-            if (User.Contains(msg.user))
+            if (userCoins.ContainsKey(msg.user))
             {
-                userID = User.IndexOf(msg.user);
-                lastPlayedCurrent = LastPlayed[userID];
+                values = userCoins[msg.user];
             }
             else
             {
-                lastPlayedCurrent = DateTime.MinValue;
-                User.Add(msg.user);
-                LastPlayed.Add(lastPlayedCurrent);
-                Coins.Add(irc.SlotsInitialCoins);
-                userID = User.IndexOf(msg.user);
+                values = new Tuple<uint, DateTime>(irc.SlotsInitialCoins, DateTime.MinValue);
+                userCoins.Add(msg.user, values);
             }
 
-            timedifference = (DateTime.UtcNow - lastPlayedCurrent).TotalSeconds;
+            timedifference = (DateTime.UtcNow - values.Item2).TotalSeconds;
 
             if (timedifference < irc.SlotsDelay)
             {
-                irc.sendChatMessage(msg.user + ": You have to wait " + (Math.Round((lastPlayedCurrent - DateTime.UtcNow).TotalSeconds + irc.SlotsDelay, 2)).ToString() + " second(s).");
+                irc.sendChatMessage(msg.user + ": You have to wait " + (Math.Round((values.Item2 - DateTime.UtcNow).TotalSeconds + irc.SlotsDelay, 2)).ToString() + " second(s).");
             }
             else
             {
@@ -54,7 +49,7 @@ namespace TwitchBotConsole
                 {
                     if (coinsBet > 0)
                     {
-                        if (coinsBet > Coins[userID])
+                        if (coinsBet > values.Item1)
                         {
                             irc.sendChatMessage(msg.user + ": You don't have that many coins!");
                         }
@@ -67,15 +62,15 @@ namespace TwitchBotConsole
                             if (results[0] == results[1] && results[0] == results[2])
                             {
                                 irc.sendChatMessage(msg.user + ": " + emotes[results[0]] + " , " + emotes[results[1]] + " , " + emotes[results[2]] + " - Congratulations, you win " + (coinsBet * 100).ToString() + " coin(s)!");
-                                Coins[userID] = Coins[userID] + coinsBet * 100;
+                                Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1+coinsBet*100, DateTime.Now);
+                                userCoins[msg.user] = newValues;
                             }
                             else
                             {
                                 irc.sendChatMessage(msg.user + ": " + emotes[results[0]] + " , " + emotes[results[1]] + " , " + emotes[results[2]] + " - you loose, " + coinsBet.ToString() + " coin(s)!");
-                                Coins[userID] = Coins[userID] - coinsBet;
+                                Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1 - coinsBet, DateTime.Now);
+                                userCoins[msg.user] = newValues;
                             }
-                            LastPlayed[userID] = DateTime.UtcNow;
-                            Trace.WriteLine("Setting new lastplayed at: " + LastPlayed[userID]);
                         }
                     }
                     else
@@ -88,21 +83,18 @@ namespace TwitchBotConsole
 
         public void DisplayCoins(IrcClient irc, ReadMessage msg)
         {
-            int userID;
-            uint coinsVal;
-            if (User.Contains(msg.user))
+            Tuple<uint, DateTime> values;
+
+            if (userCoins.ContainsKey(msg.user))
             {
-                userID = User.IndexOf(msg.user);
+                values = userCoins[msg.user];
             }
             else
             {
-                User.Add(msg.user);
-                LastPlayed.Add(DateTime.MinValue);
-                Coins.Add(irc.SlotsInitialCoins);
-                userID = User.IndexOf(msg.user);
+                values = new Tuple<uint, DateTime>(irc.SlotsInitialCoins, DateTime.MinValue);
+                userCoins[msg.user] = values;
             }
-            coinsVal = Coins[userID];
-            irc.sendChatMessage(msg.user + ": You have " + coinsVal.ToString() + " coin(s).");
+            irc.sendChatMessage(msg.user + ": You have " + values.Item1.ToString() + " coin(s).");
         }
 
         public void AddCoins(IrcClient irc, ReadMessage msg)
@@ -110,15 +102,16 @@ namespace TwitchBotConsole
             if (irc.moderators.Contains(msg.user))
             {
                 string[] helper = msg.message.Split(new char[] { ' ' }, 3);
-
-                int userID;
                 uint coinsVal;
+                Tuple<uint, DateTime> values;
+
                 if (uint.TryParse(helper[2], out coinsVal))
                 {
-                    if (User.Contains(helper[1].ToLower()))
+                    if(userCoins.ContainsKey(helper[1].ToLower()))
                     {
-                        userID = User.IndexOf(helper[1].ToLower());
-                        Coins[userID] = Coins[userID] + coinsVal;
+                        values = userCoins[helper[1].ToLower()];
+                        Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1+coinsVal, values.Item2);
+                        userCoins[helper[1].ToLower()] = newValues;
                         irc.sendChatMessage(msg.user + ": Added " + coinsVal.ToString() + " coin(s) to a user " + helper[1]);
                     }
                     else

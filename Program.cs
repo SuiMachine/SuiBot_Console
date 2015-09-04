@@ -26,6 +26,7 @@ namespace TwitchBotConsole
                 _quotes.loadQuotesFromFile();
                 Blacklist _blacklist = new Blacklist();
                 Slots _slots = new Slots();
+                Bet _bet = new Bet(irc, _slots);
                 CustomCvars _customCvars = new CustomCvars();
                 Votes _votes = new Votes();
 

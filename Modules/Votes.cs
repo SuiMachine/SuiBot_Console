@@ -9,9 +9,8 @@ namespace TwitchBotConsole
     class Votes
     {
         string voteObjective = "";
-        List<string> usersVoted = new List<string>();
-        List<string> options = new List<string>();
-        List<int> votes = new List<int>();
+        Dictionary<string, uint> userVoted = new Dictionary<string, uint>();
+        List<string> voteOptions = new List<string>();
         bool voteActive = false;
 
         public void callVote(IrcClient irc, ReadMessage msg)
@@ -22,10 +21,9 @@ namespace TwitchBotConsole
                 if (!voteActive)
                 {
                     voteObjective = helper[1];
-                    irc.sendChatMessage("Vote object set to: '" + voteObjective + "'. Vote type set to default.");
-                    usersVoted.Clear();
-                    options.Clear();
-                    votes.Clear();
+                    irc.sendChatMessage("Vote object set to: '" + voteObjective + "'.");
+                    userVoted.Clear();
+                    voteOptions.Clear();
                 }
                 else
                 {
@@ -38,8 +36,7 @@ namespace TwitchBotConsole
         {
             if (irc.moderators.Contains(msg.user))
             {
-                options.Clear();
-                votes.Clear();
+                voteOptions.Clear();
                 string[] starter = msg.message.Split(new char[] { ' ' }, 2);
                 var count = starter[1].Count(x => x == ':');
                 if (count > 0)
@@ -47,8 +44,7 @@ namespace TwitchBotConsole
                     string[] voteOptions = starter[1].Split(':');
                     for (int i = 0; i < voteOptions.Length; i++)
                     {
-                        options.Add(voteOptions[i]);
-                        votes.Add(0);
+                        this.voteOptions.Add(voteOptions[i]);
                     }
                 }
                 else
@@ -62,23 +58,34 @@ namespace TwitchBotConsole
         {
             if (voteActive)
             {
-                if (!usersVoted.Contains(msg.user))
+                if (!userVoted.ContainsKey(msg.user))
                 {
-                    int value;
+                    uint value;
                     string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-                    if (int.TryParse(helper[1], out value))
+                    if (uint.TryParse(helper[1], out value))
                     {
                         value--;
-                        if (value >= 0 && value < options.Count)
+                        if (value >= 0 && value < voteOptions.Count)
                         {
-                            usersVoted.Add(msg.user);
-                            votes[value] = votes[value] + 1;
-                            Console.WriteLine("User " + msg.user + "voted for " + value + 1.ToString());
+                            userVoted.Add(msg.user, value);
+                            Console.WriteLine("User " + msg.user + " voted for " + (value + 1).ToString());
                         }
                     }
                 }
                 else
-                    irc.sendChatMessage(msg.user + ": You have already voted!");
+                {
+                    uint value;
+                    string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+                    if (uint.TryParse(helper[1], out value))
+                    {
+                        value--;
+                        if (value >= 0 && value < voteOptions.Count)
+                        {
+                            userVoted[msg.user] = value;
+                            Console.WriteLine("User " + msg.user + " changed his vote to: " + (value + 1).ToString());
+                        }
+                    }
+                }
             }
             else
                 irc.sendChatMessage("There is no currently active vote!");
@@ -110,9 +117,9 @@ namespace TwitchBotConsole
                 {
                     voteActive = true;
                     irc.sendChatMessage_NoDelays("Vote opened: " + voteObjective);
-                    for (int i = 0; i < options.Count; i++)
+                    for (int i = 0; i < voteOptions.Count; i++)
                     {
-                        irc.sendChatMessage_NoDelays((i + 1).ToString() + ". " + options[i]);
+                        irc.sendChatMessage_NoDelays((i + 1).ToString() + ". " + voteOptions[i]);
                     }
                 }
                 else
@@ -124,14 +131,14 @@ namespace TwitchBotConsole
 
         public void displayVote(IrcClient irc, ReadMessage msg)
         {
-            if (irc.moderators.Contains(msg.user))
+            if (irc.moderators.Contains(msg.user) || irc.trustedUsers.Contains(msg.user))
             {
                 if (voteActive)
                 {
                     irc.sendChatMessage_NoDelays(voteObjective);
-                    for (int i = 0; i < options.Count; i++)
+                    for (int i = 0; i < voteOptions.Count; i++)
                     {
-                        irc.sendChatMessage_NoDelays((i + 1).ToString() + ". " + options[i]);
+                        irc.sendChatMessage_NoDelays((i + 1).ToString() + ". " + voteOptions[i]);
                     }
                 }
             }
@@ -141,19 +148,21 @@ namespace TwitchBotConsole
         {
             if (irc.moderators.Contains(msg.user))
             {
+                int numberOfVotes = userVoted.Count;
                 if (voteActive)
                 {
                     irc.sendChatMessage("A vote is currently active. Close the vote, first!");
                 }
                 else
                 {
-                    if (voteObjective != String.Empty && votes.Count > 1)
+                    if (voteObjective != String.Empty && numberOfVotes > 0)
                     {
-                        int sum = 0;
                         irc.sendChatMessage_NoDelays("Results for: '" + voteObjective + "' are:");
-                        for (int i = 0; i < votes.Count; i++)                ///Get a sum
+
+                        uint[] results = new uint[voteOptions.Count];
+                        foreach(uint element in userVoted.Values)
                         {
-                            sum = sum + votes[i];
+                            results[element]++;
                         }
                         int[] resultsNum = new int[3] { -1, -1, -1 };
                         string[] resultOption = new string[3];
@@ -161,27 +170,27 @@ namespace TwitchBotConsole
                         resultsNum[0] = -1;
                         resultOption[0] = "";
 
-                        for (int i = 0; i < votes.Count; i++)
+                        for (int i = 0; i < results.Length; i++)
                         {
-                            if (resultsNum[0] < votes[i])
+                            if (resultsNum[0] < results[i])
                             {
                                 resultsNum[2] = resultsNum[1];
                                 resultOption[2] = resultOption[1];
                                 resultsNum[1] = resultsNum[0];
                                 resultOption[1] = resultOption[0];
-                                resultsNum[0] = votes[i];
-                                resultOption[0] = options[i];
+                                resultsNum[0] =  (int)results[i];
+                                resultOption[0] = voteOptions[i];
                             }
-                            else if (resultsNum[1] < votes[i])
+                            else if (resultsNum[1] < results[i])
                             {
                                 resultsNum[2] = resultsNum[1];
                                 resultOption[2] = resultOption[1];
-                                resultsNum[1] = votes[i];
+                                resultsNum[1] = (int)results[i];
                                 resultOption[1] = resultOption[i];
                             }
-                            else if (resultsNum[2] < votes[i])
+                            else if (resultsNum[2] < results[i])
                             {
-                                resultsNum[2] = votes[i];
+                                resultsNum[2] = (int)results[i];
                                 resultOption[2] = resultOption[i];
                             }
                         }
@@ -190,7 +199,7 @@ namespace TwitchBotConsole
                         {
                             if (resultsNum[i] > 0)
                             {
-                                double prec = Math.Round(((resultsNum[i] * 1.0 / sum) * 100), 2);
+                                double prec = Math.Round(((resultsNum[i] * 1.0 / numberOfVotes) * 100), 2);
                                 irc.sendChatMessage_NoDelays((i+1).ToString() + ". " + resultOption[i] + " (" + prec.ToString() + "%).");
                             }
                         }
