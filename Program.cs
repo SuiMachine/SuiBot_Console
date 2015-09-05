@@ -25,8 +25,9 @@ namespace TwitchBotConsole
                 Quotes _quotes = new Quotes();
                 _quotes.loadQuotesFromFile();
                 Blacklist _blacklist = new Blacklist();
-                Slots _slots = new Slots();
-                Bet _bet = new Bet(irc, _slots);
+                Coins _coins = new Coins();
+                Slots _slots = new Slots(_coins);
+                Bet _bet = new Bet(_coins);
                 CustomCvars _customCvars = new CustomCvars();
                 Votes _votes = new Votes();
 
@@ -138,11 +139,11 @@ namespace TwitchBotConsole
                                 }
                                 else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!coins", StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    _slots.DisplayCoins(irc, FormattedMessage);
+                                    _coins.DisplayCoins(irc, FormattedMessage);
                                 }
                                 else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!addCoins ", StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    _slots.AddCoins(irc, FormattedMessage);
+                                    _coins.AddCoins(irc, FormattedMessage);
                                 }
                                 else if (FormattedMessage.message.StartsWith("!ignoreAdd ", StringComparison.InvariantCultureIgnoreCase))
                                 {

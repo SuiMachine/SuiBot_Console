@@ -61,7 +61,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Modules\Bet.cs" />
+    <Compile Include="Modules\Coins\Coins.cs" />
+    <Compile Include="Modules\Coins\Bet.cs" />
     <Compile Include="Json_status.cs" />
     <Compile Include="Modules\CustomCvars.cs" />
     <Compile Include="Modules\Leaderboards.cs" />
@@ -72,7 +73,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Modules\Quotes.cs" />
-    <Compile Include="Modules\Slots.cs" />
+    <Compile Include="Modules\Coins\Slots.cs" />
     <Compile Include="Modules\Votes.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -8,17 +8,18 @@ namespace TwitchBotConsole
 {
     class Bet
     {
-        IrcClient irc;
-        Slots slots;
+        Coins coins;
+        Dictionary<string, Tuple<uint, DateTime>> userCoins;
+
         private bool betRunning = false;
 
-        public Bet(IrcClient _irc,Slots _Slots)
+        public Bet(Coins _coins)
         {
-            irc = _irc;
-            slots = _Slots;
+            coins = _coins;
+            userCoins = coins.userCoins;
         }
 
-        public void callBet(ReadMessage msg)
+        public void callBet(IrcClient irc, ReadMessage msg)
         {
             if(irc.moderators.Contains(msg.user))
             {
