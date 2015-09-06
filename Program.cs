@@ -207,11 +207,21 @@ namespace TwitchBotConsole
                                 {
                                     _jsonStatus.requestUpdate(irc);
                                 }
+                                else if (FormattedMessage.message.StartsWith("!speedrunName ", StringComparison.InvariantCultureIgnoreCase) && irc.supermod.Contains(FormattedMessage.user))
+                                {
+                                    irc.updateSpeedrunName(FormattedMessage);
+                                }
                                 #endregion
                                 #region LeaderboardsAndShortcuts
                                 else if (FormattedMessage.message.StartsWith("!leaderboard", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!lb", StringComparison.InvariantCultureIgnoreCase)  || FormattedMessage.message.StartsWith("!wr", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
+                                    _leaderboards.recieveData(irc, FormattedMessage);
+                                    lbThread.Start();
+                                }
+                                else if (FormattedMessage.message.StartsWith("!pb", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getPB));
                                     _leaderboards.recieveData(irc, FormattedMessage);
                                     lbThread.Start();
                                 }

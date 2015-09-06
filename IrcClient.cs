@@ -33,6 +33,7 @@ namespace TwitchBotConsole
         static string ignoredfile = "ignored_users.txt";
         static string trustedfile = "trusted_users.txt";
         static string deathSave = "deaths.txt";
+        public string SpeedrunName = "";
         public config _config;
         public bool configFileExisted = false;
         public double AskDelay = 30.0d;
@@ -107,6 +108,8 @@ namespace TwitchBotConsole
             this.channel = channel;
             outputStream.WriteLine("JOIN #" + channel);
             outputStream.Flush();
+            if (SpeedrunName == String.Empty)
+                SpeedrunName = channel;
         }
 
         public void sendIrcRawMessage(string message)
@@ -335,7 +338,7 @@ namespace TwitchBotConsole
 
         public void SaveConfig()
         {
-            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel + "\n\n";
+            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel + "\nSpeedrunName" + SpeedrunName +"\n";
             for (int i = 0; i < supermod.Count; i++)
             {
                 output = output + "\nSuperMod:" + supermod[i];
@@ -383,6 +386,17 @@ namespace TwitchBotConsole
                 {
                     sendChatMessage("Ignored adding a death (for safety).");
                 }
+            }
+        }
+
+        internal void updateSpeedrunName(ReadMessage msg)
+        {
+            string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+            if (helper[1] != "")
+            {
+                SpeedrunName = helper[1];
+                sendChatMessage("Speedrun.com name for a streamer set to: " + helper[1]);
+                SaveConfig();
             }
         }
 
@@ -484,15 +498,29 @@ namespace TwitchBotConsole
                     else
                         _config.channel = helper[1].ToLower();
                 }
+                else if (line.StartsWith("SpeedrunName:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        SpeedrunName = helper[1];
+                    }
+                    else
+                    {
+                        SpeedrunName = "";
+                    }
+                }
                 else if(line.StartsWith("SuperMod:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
                     if (helper[1] != "")
                     {
-                        if (!supermod.Contains(helper[1]))
-                            supermod.Add(helper[1].ToLower());
-                        if (!moderators.Contains(helper[1]))
-                            moderators.Add(helper[1].ToLower());
+                        supermod.Add(helper[1].ToLower());
+                        moderators.Add(helper[1].ToLower());
+                    }
+                    else
+                    {
+                        Console.WriteLine("SuperMod string was empty");
                     }
                 }
                 else if (line.StartsWith("PhraseFiltering:"))

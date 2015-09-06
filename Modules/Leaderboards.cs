@@ -25,6 +25,8 @@ namespace TwitchBotConsole
         {
             proxyName.Add("Star Wars: Jedi Knight - Jedi Academy", "jka");
             proxyName.Add("Darksiders II", "Darksiders 2");
+            proxyName.Add("GTA3", "gtaiii");
+            proxyName.Add("GTA 3", "gtaiii");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
@@ -171,6 +173,88 @@ namespace TwitchBotConsole
             {
                 irc.sendChatMessage("You don't have permissions to perform this command");
             }
+        }
+
+        public void getPB()
+        {
+            if (irc.moderators.Contains(msg.user) || irc.trustedUsers.Contains(msg.user))
+            {
+                if(irc.SpeedrunName!="")
+                {
+                    var srlClient = new SpeedrunComClient();
+                    int indexGameStart = msg.message.IndexOf(' ');
+                    int indexGameCathegoryStart = msg.message.IndexOf(':');
+
+                    try
+                    {
+                        if (indexGameStart > 0)
+                        {   //Find a PB from a user provided game
+                            string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+                            var game = srlClient.Games.SearchGame(name: helper[1]);
+                            if (game != null)
+                            {
+                                var gameID = game.ID;
+                                var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
+                                if (playersPB.Count > 0)
+                                {
+                                    irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
+
+                                }
+                                else
+                                {
+                                    irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
+                                }
+                            }
+                            else
+                            {
+                                irc.sendChatMessage("Sorry. No game found. Wonna go to http://speedrun.com and look for it yourself? FrankerZ");
+                            }
+                        }
+                        else
+                        {   //Find a PB in currently streamed game
+                            if (json.game != String.Empty)
+                            {
+                                var game = srlClient.Games.SearchGame(name: getProxyName(json.game));
+                                if (game != null)
+                                {
+                                    var gameID = game.ID;
+                                    var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
+                                    if (playersPB.Count > 0)
+                                    {
+                                        irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
+
+                                    }
+                                    else
+                                    {
+                                        irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
+                                    }
+                                }
+                                else
+                                {
+                                    irc.sendChatMessage("Sorry. No game found. Wonna go to http://speedrun.com and look for it yourself? FrankerZ");
+                                }
+
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Nothing found. Maybe you'd like to visit http://speedrun.com and look for it yourself FrankerZ");
+                        Debug.WriteLine(ex.ToString());
+                    }
+
+                }
+                else
+                {
+                    irc.sendChatMessage("You don't have permissions to perform this command");
+                }
+            }
+            else
+            {
+                irc.sendChatMessage("Speedrun.com name wasn't set. Can't find PB!");
+            }
+
         }
 
         internal void SendJsonPointer(Json_status _jsonStatus)
