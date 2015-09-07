@@ -188,26 +188,83 @@ namespace TwitchBotConsole
                     try
                     {
                         if (indexGameStart > 0)
-                        {   //Find a PB from a user provided game
+                        {
                             string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-                            var game = srlClient.Games.SearchGame(name: helper[1]);
-                            if (game != null)
-                            {
-                                var gameID = game.ID;
-                                var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
-                                if (playersPB.Count > 0)
-                                {
-                                    irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
 
-                                }
-                                else
+                            if (indexGameCathegoryStart > 0 && msg.message.ElementAt(indexGameCathegoryStart + 1) != ' ')
+                            {
+                                string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
+                                var game = srlClient.Games.SearchGame(name: additionalhelper[0]);
+
+                                if(game != null)
                                 {
-                                    irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
+                                    var gameID = game.ID;
+
+                                    if (additionalhelper[1].ToLower().StartsWith("cat"))
+                                    {   //Display categories
+                                        string output = "Categories are:";
+                                        int id = 1;
+                                        foreach (var element in game.Categories)
+                                        {
+                                            output = output + " [" + id.ToString() + "]" + element.ToString();
+                                            id++;
+                                        }
+                                        irc.sendChatMessage(output);
+                                    }
+                                    else
+                                    {   //Display PB from a category
+                                        int id = 0;
+                                        if (int.TryParse(additionalhelper[1], out id))
+                                        {
+                                            id--;
+                                            if (game.Categories.Count > id && id >=0)
+                                            {
+                                                var _category = game.Categories[id];
+                                                string categoryName = _category.Name;
+                                                var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
+                                                int numberOfPBs = playersPB.Count;
+                                                int i = 0;
+                                                for(i=0;i<numberOfPBs;i++)
+                                                {
+                                                    if(playersPB[i].Category.Name == categoryName)
+                                                        break;
+                                                }
+
+                                                if(i<numberOfPBs)
+                                                {
+                                                    irc.sendChatMessage("Strimmer PB for " +playersPB[i].Game.Name + " ("+ playersPB[i].Category.Name + ") is: " + playersPB[i].Times.Primary);
+                                                }
+                                            }
+                                            else
+                                                irc.sendChatMessage("Wrong category ID!");
+                                        }
+                                        else
+                                            irc.sendChatMessage("Failed to parse category ID.");
+                                    }
+
                                 }
                             }
                             else
                             {
-                                irc.sendChatMessage("Sorry. No game found. Wonna go to http://speedrun.com and look for it yourself? FrankerZ");
+                                //Find a PB from a user provided game
+                                var game = srlClient.Games.SearchGame(name: helper[1]);
+                                if (game != null)
+                                {
+                                    var gameID = game.ID;
+                                    var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
+                                    if (playersPB.Count > 0)
+                                    {
+                                        irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
+                                    }
+                                    else
+                                    {
+                                        irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
+                                    }
+                                }
+                                else
+                                {
+                                    irc.sendChatMessage("Sorry. No game found. Wonna go to http://speedrun.com and look for it yourself? FrankerZ");
+                                }
                             }
                         }
                         else
