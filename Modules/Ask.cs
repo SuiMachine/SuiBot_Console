@@ -10,11 +10,38 @@ namespace TwitchBotConsole
     {
         Dictionary<string,Tuple<DateTime,bool>> _ask = new Dictionary<string,Tuple<DateTime,bool>>();
 
-        string[] AnswersTime = { "Never!", "Soon... FrankerZ", "At nein o\'clock FrankerZ" };
-        string[] AnswersGeneric = { "Yes", "No", "Maybe" };
-        string[] AnswersItem = { "Wurst", "BrustWurst", "Wall", "Chair", "Toilet Paper", "Potato" };
-        string[] AnswersPerson = { "Your mom FrankerZ", "Your dad FrankerZ" };
-        string[] AnswersPlace = { "Here!", "There!", "At your home", "In your bed SoonerLater", "At ESA! ESA HYPE!!! PogChamp" };
+        string[] AnswersTime = {
+            "Never!",
+            "Soon... FrankerZ",
+            "At nein o\'clock FrankerZ"
+        };
+
+        string[] AnswersGeneric = {
+            "Yes",
+            "No",
+            "Maybe" };
+
+        string[] AnswersItem = {
+            "Wurst",
+            "BrustWurst",
+            "Wall",
+            "Chair",
+            "Toilet Paper",
+            "Potato",
+            "A chair"
+        };
+
+        string[] AnswersPerson = {
+            "Your mom FrankerZ",
+            "Your dad FrankerZ"
+        };
+        string[] AnswersPlace = {
+            "Here!",
+            "There!",
+            "At your home",
+            "In your bed SoonerLater",
+            "At ESA! ESA HYPE!!! PogChamp"
+        };
 
 
         Random rnd = new Random(DateTime.UtcNow.Millisecond);
@@ -108,7 +135,7 @@ namespace TwitchBotConsole
                             id = rnd.Next(0, AnswersTime.Length);
                             irc.sendChatMessage(msg.user + ": " + AnswersTime[id]);
                         }
-                        else if (helper[1].StartsWith("What", StringComparison.InvariantCultureIgnoreCase))
+                        else if (helper[1].StartsWith("What", StringComparison.InvariantCultureIgnoreCase) || helper[1].StartsWith("Wat", StringComparison.InvariantCultureIgnoreCase))
                         {
                             id = rnd.Next(0, AnswersItem.Length);
                             irc.sendChatMessage(msg.user + ": " + AnswersItem[id]);

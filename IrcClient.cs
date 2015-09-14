@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace TwitchBotConsole
 {
@@ -241,6 +242,11 @@ namespace TwitchBotConsole
             } 
         }
 
+        internal void set(ReadMessage msg)
+        {
+            throw new NotImplementedException();
+        }
+
         private void saveTrustedList()
         {
             File.WriteAllLines(trustedfile, trustedUsers);
@@ -338,7 +344,7 @@ namespace TwitchBotConsole
 
         public void SaveConfig()
         {
-            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel + "\nSpeedrunName" + SpeedrunName +"\n";
+            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel + "\nSpeedrunName:" + SpeedrunName +"\n";
             for (int i = 0; i < supermod.Count; i++)
             {
                 output = output + "\nSuperMod:" + supermod[i];
@@ -346,10 +352,11 @@ namespace TwitchBotConsole
             output = output + "\n\nPhraseFiltering:" + filteringEnabled.ToString();
             output = output + "\nQuotesEnabled:" + quoteEnabled.ToString();
             output = output + "\nSafeAskMode:" + safeAskMode.ToString();
+            output = output + "\nGamesDelay:" + GamesDelay.ToString();
             output = output + "\nSlotsEnabled:" + slotsEnable.ToString();
             output = output + "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString();
-            output = output + "\nDeathCounterEnabled: " + deathCounterEnabled.ToString();
-            output = output + "\nDeathCounterSafetyDelay: " + delayBetweenAddedDeaths.ToString();
+            output = output + "\nDeathCounterEnabled:" + deathCounterEnabled.ToString();
+            output = output + "\nDeathCounterSafetyDelay:" + delayBetweenAddedDeaths.ToString();
 
             File.WriteAllText(@configfile, output);
         }
@@ -569,6 +576,22 @@ namespace TwitchBotConsole
                         else
                         {
                             safeAskMode = true;
+                        }
+                    }
+                }
+                else if (line.StartsWith("GamesDelay:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        double delay;
+                        if (double.TryParse(helper[1], out delay))
+                        {
+                            GamesDelay = delay;
+                        }
+                        else
+                        {
+                            GamesDelay = 30d;
                         }
                     }
                 }

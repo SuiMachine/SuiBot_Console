@@ -132,7 +132,15 @@ namespace TwitchBotConsole
                                 else if (FormattedMessage.message.StartsWith("!ask ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _ask.answerAsk(irc, FormattedMessage);
+                                }/*
+                                else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!show ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    irc.show(FormattedMessage);
                                 }
+                                else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!set ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    irc.set(FormattedMessage);
+                                }*/
                                 else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!slots ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _slots.PlaySlots(irc, FormattedMessage);

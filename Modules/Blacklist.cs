@@ -19,6 +19,13 @@ namespace TwitchBotConsole
             blacklist_fullphrase.Add("Hey has anyone been reading the whole 'Asian Masculinity' thing on Reddit?".ToLower());
             blacklist_fullphrase.Add("For Asian guys, have you seen the Asian Gamer Chicks subreddit?".ToLower());
 
+            //Start with
+            blacklist_startswith.Add("░");
+
+            //Ends with
+            blacklist_endswith.Add("░");
+
+
             //Words
             blacklist_words.Add("http://apo.af/".ToLower());
             blacklist_words.Add("http://www.apo.af/".ToLower());
@@ -26,6 +33,13 @@ namespace TwitchBotConsole
             blacklist_words.Add("http://www.bit.ly/".ToLower());
 			blacklist_words.Add("http://goo.gl/".ToLower());
 			blacklist_words.Add("http://www.goo.gl/".ToLower());
+            blacklist_words.Add("http://ow.ly/".ToLower());
+            blacklist_words.Add("http://www.ow.ly/".ToLower());
+            blacklist_words.Add("http://tinyurl.com/".ToLower());
+            blacklist_words.Add("http://www.tinyurl.com/".ToLower());
+            blacklist_words.Add("http://t.co/".ToLower());
+            blacklist_words.Add("http://www.t.co/".ToLower());
+
         }
         
         public bool checkForSpam(string recievedmessage)

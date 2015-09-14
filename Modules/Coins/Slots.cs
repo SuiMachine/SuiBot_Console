@@ -62,13 +62,13 @@ namespace TwitchBotConsole
                         if (results[0] == results[1] && results[0] == results[2])
                         {
                             irc.sendChatMessage(msg.user + ": " + emotes[results[0]] + " , " + emotes[results[1]] + " , " + emotes[results[2]] + " - Congratulations, you win " + (coinsBet * 100).ToString() + " coin(s)!");
-                            Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1 + coinsBet * 100, DateTime.Now);
+                            Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1 + coinsBet * 100, DateTime.UtcNow);
                             userCoins[msg.user] = newValues;
                         }
                         else
                         {
-                            irc.sendChatMessage(msg.user + ": " + emotes[results[0]] + " , " + emotes[results[1]] + " , " + emotes[results[2]] + " - you loose, " + coinsBet.ToString() + " coin(s)!");
-                            Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1 - coinsBet, DateTime.Now);
+                            irc.sendChatMessage(msg.user + ": " + emotes[results[0]] + " , " + emotes[results[1]] + " , " + emotes[results[2]] + " - you lose, " + coinsBet.ToString() + " coin(s)!");
+                            Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1 - coinsBet, DateTime.UtcNow);
                             userCoins[msg.user] = newValues;
                         }
                     }

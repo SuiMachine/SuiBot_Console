@@ -23,6 +23,7 @@ namespace TwitchBotConsole
             userCoins = coins.userCoins;
         }
 
+        #region ModeratorFunctions
         public void callBet(IrcClient irc, ReadMessage msg)
         {
             if(irc.moderators.Contains(msg.user))
@@ -85,6 +86,50 @@ namespace TwitchBotConsole
             }
         }
 
+        public void openBet(IrcClient irc, ReadMessage msg)
+        {
+            if (irc.moderators.Contains(msg.user))
+            {
+                if (betRunning)
+                {
+                    betRunning = true;
+                    irc.sendChatMessage("Bets are now opened.");
+                }
+                else
+                    irc.sendChatMessage("A bet is already running.");
+            }
+        }
+
+        public void closeBet(IrcClient irc, ReadMessage msg)
+        {
+            if(irc.moderators.Contains(msg.user))
+            {
+                if (betRunning)
+                {
+                    betRunning = false;
+                    irc.sendChatMessage("Bets are now closed.");
+                }
+                else
+                    irc.sendChatMessage("A bet isn't currently running.");
+            }
+        }
+
+        public void betAnswer(IrcClient irc, ReadMessage msg)
+        {
+            if (irc.moderators.Contains(msg.user))
+            {
+                if(!betRunning)
+                {
+                    betEnded = true;
+                }
+                else
+                {
+                    irc.sendChatMessage("A bet is currently running.");
+                }
+            }
+        }
+        #endregion
+
         public void playerBets(IrcClient irc, ReadMessage msg)
         {
             Tuple<uint, DateTime> values;
@@ -130,6 +175,7 @@ namespace TwitchBotConsole
                                 betData.Add(msg.user, userBet);
                                 Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1 - valueCoins, DateTime.Now);
                                 userCoins[msg.user] = newValues;
+                                irc.sendChatMessage(msg.user + ": You've bet " + valueCoins.ToString() + " coin(s) on " + betOn.ToString());
                             }
                             else
                                 irc.sendChatMessage(msg.user + ": You don't have enough coins!");
