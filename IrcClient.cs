@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Diagnostics;
-using System.Reflection;
 
 namespace TwitchBotConsole
 {
@@ -240,11 +239,6 @@ namespace TwitchBotConsole
                 SR.Close();
                 SR.Dispose();
             } 
-        }
-
-        internal void set(ReadMessage msg)
-        {
-            throw new NotImplementedException();
         }
 
         private void saveTrustedList()
@@ -699,6 +693,11 @@ namespace TwitchBotConsole
         {
             string output = "Deaths:" + deaths.ToString();
             File.WriteAllText(@deathSave, output);
+        }
+
+        public static object GetPropValue(object src, string propName)
+        {
+            return src.GetType().GetProperty(propName).GetValue(src, null);
         }
     }
 }

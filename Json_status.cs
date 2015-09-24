@@ -11,7 +11,9 @@ namespace TwitchBotConsole
     class Json_status
     {
         public bool isOnline = true;
+        public bool isForcedPage = false;
         public string game = "";
+        public string forcedGame = "";
         string sUrl = "";
 
         public void SendChannel(string channel)
@@ -71,6 +73,26 @@ namespace TwitchBotConsole
             else
             {
                 irc.sendChatMessage("New isOnline status is - " + isOnline.ToString());
+            }
+        }
+
+        internal void forcedGameFunction(IrcClient irc,ReadMessage msg)
+        {
+            if(irc.moderators.Contains(msg.user))
+            {
+                if(msg.message.Contains(' '))
+                {
+                    string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+                    forcedGame = helper[1];
+                    isForcedPage = true;
+                    irc.sendChatMessage("Forcing a game set to: " + helper[1]);
+                }
+                else
+                {
+                    forcedGame = string.Empty;
+                    isForcedPage = false;
+                    irc.sendChatMessage("Disabled forcing speedrun.con game");
+                }
             }
         }
     }

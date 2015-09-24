@@ -132,7 +132,35 @@ namespace TwitchBotConsole
                     }
                     else
                     {   //Find a best time from default cathegory, based on currently played game on Twitch
-                        if(json.game != String.Empty)
+                        if (json.isForcedPage)
+                        {
+                            var game = srlClient.Games.SearchGame(name: getProxyName(json.forcedGame));
+
+                            var _category = game.Categories[0];
+
+                            if (_category.WorldRecord != null)
+                            {
+                                //Finding the World Record of the category
+                                var worldRecord = _category.WorldRecord;
+
+                                if (worldRecord.Players.Count > 1)
+                                {
+                                    string players = "" + worldRecord.Players[0].User;
+                                    int i = 1;
+                                    for (; i < worldRecord.Players.Count - 1; i++)
+                                    {
+                                        players = players + ", " + worldRecord.Players[i].User;
+                                    }
+                                    players = players + " and " + worldRecord.Players[i].User;
+                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
+                                }
+                                else
+                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
+                            }
+                            else
+                                irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
+                        }
+                        else if (json.game != String.Empty)
                         {
                             var game = srlClient.Games.SearchGame(name: getProxyName(json.game));
 
@@ -160,6 +188,8 @@ namespace TwitchBotConsole
                             else
                                 irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
                         }
+                        else
+                            irc.sendChatMessage("Currently there is no active game.");
                     }
                 }
                 catch(Exception ex)
@@ -269,9 +299,29 @@ namespace TwitchBotConsole
                         }
                         else
                         {   //Find a PB in currently streamed game
-                            if (json.game != String.Empty)
+                            if (json.isForcedPage)
+                            {
+                                var game = srlClient.Games.SearchGame(name: getProxyName(json.forcedGame));
+
+                                if (game != null)
+                                {
+                                    var gameID = game.ID;
+                                    var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
+                                    if (playersPB.Count > 0)
+                                    {
+                                        irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
+
+                                    }
+                                    else
+                                    {
+                                        irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
+                                    }
+                                }
+                            }
+                            else if (json.game != String.Empty)
                             {
                                 var game = srlClient.Games.SearchGame(name: getProxyName(json.game));
+
                                 if (game != null)
                                 {
                                     var gameID = game.ID;
@@ -290,8 +340,9 @@ namespace TwitchBotConsole
                                 {
                                     irc.sendChatMessage("Sorry. No game found. Wonna go to http://speedrun.com and look for it yourself? FrankerZ");
                                 }
-
                             }
+                            else
+                                irc.sendChatMessage("Currently there is no active game.");
                         }
 
                     }

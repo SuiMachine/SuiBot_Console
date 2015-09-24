@@ -132,15 +132,7 @@ namespace TwitchBotConsole
                                 else if (FormattedMessage.message.StartsWith("!ask ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _ask.answerAsk(irc, FormattedMessage);
-                                }/*
-                                else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!show ", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    irc.show(FormattedMessage);
                                 }
-                                else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!set ", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    irc.set(FormattedMessage);
-                                }*/
                                 else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!slots ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _slots.PlaySlots(irc, FormattedMessage);
@@ -232,6 +224,10 @@ namespace TwitchBotConsole
                                     Thread lbThread = new Thread(new ThreadStart(_leaderboards.getPB));
                                     _leaderboards.recieveData(irc, FormattedMessage);
                                     lbThread.Start();
+                                }
+                                else if (FormattedMessage.message.StartsWith("!forceSpeedrunPage", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _jsonStatus.forcedGameFunction(irc, FormattedMessage);
                                 }
                                 else if (FormattedMessage.message.StartsWith("!hitman3", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!hitmancontracts", StringComparison.InvariantCultureIgnoreCase))
                                 {
