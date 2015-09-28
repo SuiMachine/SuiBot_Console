@@ -24,7 +24,7 @@ namespace TwitchBotConsole
                 Ask _ask = new Ask();
                 Quotes _quotes = new Quotes();
                 _quotes.loadQuotesFromFile();
-                Blacklist _blacklist = new Blacklist();
+                Blacklist _blacklist = new Blacklist(irc);
                 Coins _coins = new Coins();
                 Slots _slots = new Slots(_coins);
                 Bet _bet = new Bet(_coins);
@@ -86,14 +86,15 @@ namespace TwitchBotConsole
                         if (irc.filteringEnabled && !irc.moderators.Contains(FormattedMessage.user) && !irc.trustedUsers.Contains(FormattedMessage.user) && _blacklist.checkForSpam(FormattedMessage.message))
                         {
                             irc.purgeMessage(FormattedMessage.user);
-                            irc.sendChatMessage("Probably spam FrankerZ");
+                            if(irc.filteringRespond)
+                                irc.sendChatMessage("Probably spam FrankerZ");
                         }
                         else if(FormattedMessage.message.StartsWith("!"))
                         {
                             if (!irc.ignorelist.Contains(FormattedMessage.user))
                             {
                                 #region ModulesAndFunctions
-                                if (FormattedMessage.message.StartsWith("!commands", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!help", StringComparison.InvariantCultureIgnoreCase))
+                                if (irc.vocalMode && (FormattedMessage.message.StartsWith( "!commands", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!help", StringComparison.InvariantCultureIgnoreCase)))
                                 {
                                     irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
                                 }
@@ -117,6 +118,7 @@ namespace TwitchBotConsole
                                 {
                                     _quotes.getNumberOfQuotes(irc);
                                 }
+                                #region intervalMessages
                                 else if (irc.intervalMessagesEnabled && FormattedMessage.message.StartsWith("!intervalMessageAdd", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _intervals.AddIntervalMessage(irc, FormattedMessage);
@@ -129,10 +131,12 @@ namespace TwitchBotConsole
                                 {
                                     _intervals.RemoveIntervalMessage(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!ask ", StringComparison.InvariantCultureIgnoreCase))
+                                #endregion
+                                else if (irc.vocalMode && FormattedMessage.message.StartsWith("!ask ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _ask.answerAsk(irc, FormattedMessage);
                                 }
+                                #region Slots
                                 else if (irc.slotsEnable && FormattedMessage.message.StartsWith("!slots ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _slots.PlaySlots(irc, FormattedMessage);
@@ -145,6 +149,7 @@ namespace TwitchBotConsole
                                 {
                                     _coins.AddCoins(irc, FormattedMessage);
                                 }
+                                #endregion
                                 else if (FormattedMessage.message.StartsWith("!ignoreAdd ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     irc.ignoreListAdd(FormattedMessage);
@@ -163,43 +168,44 @@ namespace TwitchBotConsole
                                 }
                                 #endregion
                                 #region Votes
-                                else if(FormattedMessage.message.StartsWith("!callVote ", StringComparison.InvariantCultureIgnoreCase))
+                                else if(irc.voteEnabled && FormattedMessage.message.StartsWith("!callVote ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _votes.callVote(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!voteOptions ", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.voteEnabled && FormattedMessage.message.StartsWith("!voteOptions ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _votes.setOptions(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!voteOpen", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.voteEnabled && FormattedMessage.message.StartsWith("!voteOpen", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _votes.voteOpen(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!voteClose", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.voteEnabled && FormattedMessage.message.StartsWith("!voteClose", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _votes.voteClose(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!voteDisplay", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.voteEnabled && FormattedMessage.message.StartsWith("!voteDisplay", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _votes.displayVote(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!voteResults", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.voteEnabled && FormattedMessage.message.StartsWith("!voteResults", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _votes.displayResults(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!vote ", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.voteEnabled && FormattedMessage.message.StartsWith("!vote ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _votes.Vote(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!deathCounter", StringComparison.InvariantCultureIgnoreCase))
+                                #endregion
+                                else if (irc.deathCounterEnabled && FormattedMessage.message.StartsWith("!deathCounter", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     irc.DeathCounterDisplay(FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!deathAdd", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.deathCounterEnabled && FormattedMessage.message.StartsWith("!deathAdd", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     irc.DeathCounterAdd(FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!deathRemove", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.deathCounterEnabled && FormattedMessage.message.StartsWith("!deathRemove", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     irc.DeathCounterRemove(FormattedMessage);
                                 }
@@ -207,77 +213,48 @@ namespace TwitchBotConsole
                                 {
                                     _jsonStatus.requestUpdate(irc);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!speedrunName ", StringComparison.InvariantCultureIgnoreCase) && irc.supermod.Contains(FormattedMessage.user))
-                                {
-                                    irc.updateSpeedrunName(FormattedMessage);
-                                }
-                                #endregion
                                 #region LeaderboardsAndShortcuts
-                                else if (FormattedMessage.message.StartsWith("!leaderboard", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!lb", StringComparison.InvariantCultureIgnoreCase)  || FormattedMessage.message.StartsWith("!wr", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.leaderBoardEnabled && (FormattedMessage.message.StartsWith("!leaderboard", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!lb", StringComparison.InvariantCultureIgnoreCase)  || FormattedMessage.message.StartsWith("!wr", StringComparison.InvariantCultureIgnoreCase)))
                                 {
                                     Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
                                     _leaderboards.recieveData(irc, FormattedMessage);
                                     lbThread.Start();
                                 }
-                                else if (FormattedMessage.message.StartsWith("!pb", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.leaderBoardEnabled && FormattedMessage.message.StartsWith("!pb", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     Thread lbThread = new Thread(new ThreadStart(_leaderboards.getPB));
                                     _leaderboards.recieveData(irc, FormattedMessage);
                                     lbThread.Start();
                                 }
-                                else if (FormattedMessage.message.StartsWith("!forceSpeedrunPage", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.leaderBoardEnabled && FormattedMessage.message.StartsWith("!forceSpeedrunPage", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _jsonStatus.forcedGameFunction(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!hitman3", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!hitmancontracts", StringComparison.InvariantCultureIgnoreCase))
+                                else if (FormattedMessage.message.StartsWith("!speedrunName ", StringComparison.InvariantCultureIgnoreCase) && irc.supermod.Contains(FormattedMessage.user))
                                 {
-                                    ReadMessage tempMsg;
-                                    tempMsg.user = FormattedMessage.user;
-                                    tempMsg.message = "!lb hitman3";
-                                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
-                                    _leaderboards.recieveData(irc, tempMsg);
-                                    lbThread.Start();
-                                }
-                                else if (FormattedMessage.message.StartsWith("!hbm", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!hitmanbloodmoney", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!bloodmoney", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    ReadMessage tempMsg;
-                                    tempMsg.user = FormattedMessage.user;
-                                    tempMsg.message = "!lb hitmanbloodmoney";
-                                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
-                                    _leaderboards.recieveData(irc, tempMsg);
-                                    lbThread.Start();
-                                }
-                                else if (FormattedMessage.message.StartsWith("!hitman2", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    ReadMessage tempMsg;
-                                    tempMsg.user = FormattedMessage.user;
-                                    tempMsg.message = "!lb hitman2";
-                                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
-                                    _leaderboards.recieveData(irc, tempMsg);
-                                    lbThread.Start();
-                                }
-                                else if (FormattedMessage.message.StartsWith("!hitmanC47", StringComparison.InvariantCultureIgnoreCase) || FormattedMessage.message.StartsWith("!hitmancodename47", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    ReadMessage tempMsg;
-                                    tempMsg.user = FormattedMessage.user;
-                                    tempMsg.message = "!lb hitman1";
-                                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
-                                    _leaderboards.recieveData(irc, tempMsg);
-                                    lbThread.Start();
+                                    irc.updateSpeedrunName(FormattedMessage);
                                 }
                                 #endregion
                                 #region CustomCvars
-                                else if (FormattedMessage.message.StartsWith("!addCvar ", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.vocalMode && FormattedMessage.message.StartsWith("!addCvar ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _customCvars.addCustomCvar(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!removeCvar ", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.vocalMode && FormattedMessage.message.StartsWith("!removeCvar ", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _customCvars.removeCustomCvar(irc, FormattedMessage);
                                 }
-                                else if (FormattedMessage.message.StartsWith("!customCvars", StringComparison.InvariantCultureIgnoreCase))
+                                else if (irc.vocalMode && FormattedMessage.message.StartsWith("!customCvars", StringComparison.InvariantCultureIgnoreCase))
                                 {
                                     _customCvars.showCustomCvars(irc, FormattedMessage);
+                                }
+                                else if(irc.filteringEnabled && FormattedMessage.message.StartsWith("!filterAdd ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _blacklist.AddFilter(FormattedMessage);
+                                }
+                                else if(irc.filteringEnabled && FormattedMessage.message.StartsWith("!filterRemove ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    _blacklist.RemoveFilter(FormattedMessage);
                                 }
                                 else if (FormattedMessage.message.StartsWith("!killBot", StringComparison.InvariantCultureIgnoreCase) && irc.supermod.Contains(FormattedMessage.user))
                                 {
@@ -296,8 +273,6 @@ namespace TwitchBotConsole
             {
                 Console.WriteLine("No config file found. An example config file was created");
             }
-
-
         }
     }
 }

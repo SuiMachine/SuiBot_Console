@@ -60,13 +60,12 @@ namespace TwitchBotConsole
 
                 if(json.game != previousGame)
                 {
-                    irc.sendChatMessage("The game is: " + json.game);
+                    //irc.sendChatMessage("The game is: " + json.game);
                     previousGame = json.game;
                 }
             }
             else if(json.isOnline!= prevChannelOnline)
             {
-                irc.sendChatMessage("Channel status changed to Offline. Disabling interval messages. If this is Twitch error - wait a moment and do !updateJsonInfo or simply wait 5 min for the next update.");
                 prevChannelOnline = json.isOnline;
             }
         }

@@ -42,11 +42,15 @@ namespace TwitchBotConsole
         public bool quoteEnabled = true;
         public bool safeAskMode = true;
         public bool filteringEnabled = true;
-        public bool slotsEnable = true;
+        public bool filteringRespond = false;
+        public bool slotsEnable = false;
         public bool intervalMessagesEnabled = true;
         public bool deathCounterEnabled = false;
         public uint deaths = 0;
         public uint delayBetweenAddedDeaths = 10;
+        public bool leaderBoardEnabled = false;
+        public bool vocalMode = true;
+        public bool voteEnabled = true;
 
         public List<string> supermod = new List<string>();
         public List<string> moderators = new List<string>();
@@ -343,14 +347,18 @@ namespace TwitchBotConsole
             {
                 output = output + "\nSuperMod:" + supermod[i];
             }
-            output = output + "\n\nPhraseFiltering:" + filteringEnabled.ToString();
-            output = output + "\nQuotesEnabled:" + quoteEnabled.ToString();
-            output = output + "\nSafeAskMode:" + safeAskMode.ToString();
-            output = output + "\nGamesDelay:" + GamesDelay.ToString();
-            output = output + "\nSlotsEnabled:" + slotsEnable.ToString();
-            output = output + "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString();
-            output = output + "\nDeathCounterEnabled:" + deathCounterEnabled.ToString();
-            output = output + "\nDeathCounterSafetyDelay:" + delayBetweenAddedDeaths.ToString();
+            output = output + "\n\nVocalMode:" + vocalMode.ToString()
+                +"\nPhraseFiltering:" + filteringEnabled.ToString()
+                + "\nFilteringResponse:" + filteringRespond.ToString()
+                + "\nQuotesEnabled:" + quoteEnabled.ToString()
+                + "\nSafeAskMode:" + safeAskMode.ToString()
+                + "\nGamesDelay:" + GamesDelay.ToString()
+                + "\nSlotsEnabled:" + slotsEnable.ToString()
+                + "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString()
+                + "\nDeathCounterEnabled:" + deathCounterEnabled.ToString()
+                + "\nDeathCounterSafetyDelay:" + delayBetweenAddedDeaths.ToString()
+                + "\nLeaderboardEnabled:" + leaderBoardEnabled.ToString()
+                + "\nVotesEnabled:" + voteEnabled.ToString();
 
             File.WriteAllText(@configfile, output);
         }
@@ -524,6 +532,22 @@ namespace TwitchBotConsole
                         Console.WriteLine("SuperMod string was empty");
                     }
                 }
+                else if (line.StartsWith("VocalMode:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        bool loadedValue;
+                        if (bool.TryParse(helper[1], out loadedValue))
+                        {
+                            vocalMode = loadedValue;
+                        }
+                        else
+                        {
+                            vocalMode = false;
+                        }
+                    }
+                }
                 else if (line.StartsWith("PhraseFiltering:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
@@ -537,6 +561,22 @@ namespace TwitchBotConsole
                         else
                         {
                             filteringEnabled = false;
+                        }
+                    }
+                }
+                else if (line.StartsWith("FilteringResponse:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        bool loadedBool;
+                        if (bool.TryParse(helper[1], out loadedBool))
+                        {
+                            filteringRespond = loadedBool;
+                        }
+                        else
+                        {
+                            filteringRespond = false;
                         }
                     }
                 }
@@ -651,6 +691,38 @@ namespace TwitchBotConsole
                         else
                         {
                             delayBetweenAddedDeaths = 10;
+                        }
+                    }
+                }
+                else if (line.StartsWith("LeaderboardEnabled:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        bool loadedValue;
+                        if (bool.TryParse(helper[1], out loadedValue))
+                        {
+                            leaderBoardEnabled =  loadedValue;
+                        }
+                        else
+                        {
+                            leaderBoardEnabled = false;
+                        }
+                    }
+                }
+                else if (line.StartsWith("VotesEnabled:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        bool loadedValue;
+                        if (bool.TryParse(helper[1], out loadedValue))
+                        {
+                            voteEnabled = loadedValue;
+                        }
+                        else
+                        {
+                            voteEnabled = false;
                         }
                     }
                 }

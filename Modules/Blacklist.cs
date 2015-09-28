@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,65 +9,22 @@ namespace TwitchBotConsole
 {
     class Blacklist
     {
+        string filterFile = "filter.txt";
+
+        IrcClient irc;
         List<string> blacklist_fullphrase = new List<string>();
         List<string> blacklist_startswith = new List<string>();
         List<string> blacklist_endswith = new List<string>();
         List<string> blacklist_words = new List<string>();
 
-        public Blacklist()
+        public Blacklist(IrcClient _irc)
         {
-            //Full phrases
-            blacklist_fullphrase.Add("Hey has anyone been reading the whole 'Asian Masculinity' thing on Reddit?".ToLower());
-            blacklist_fullphrase.Add("For Asian guys, have you seen the Asian Gamer Chicks subreddit?".ToLower());
+            irc = _irc;
 
-            //Start with
-            blacklist_startswith.Add("░");
-
-            //Ends with
-            blacklist_endswith.Add("░");
-
-
-            //Words (mostly URL shorteners)
-            blacklist_words.Add("apo.af/".ToLower());
-            blacklist_words.Add("bit.ly/".ToLower());
-			blacklist_words.Add("goo.gl/".ToLower());
-            blacklist_words.Add("ow.ly/".ToLower());
-            blacklist_words.Add("tinyurl.com/".ToLower());
-            blacklist_words.Add("t.co/".ToLower());
-            blacklist_words.Add("shortr.org/".ToLower());
-			blacklist_words.Add("sh.st/".ToLower());
-            blacklist_words.Add("sh.st/".ToLower());
-            blacklist_words.Add("bit.do/".ToLower());
-            blacklist_words.Add("lnkd.in/".ToLower());
-            blacklist_words.Add("db.tt/".ToLower());
-            blacklist_words.Add("qr.ae/".ToLower());
-            blacklist_words.Add("adf.ly/".ToLower());
-            blacklist_words.Add("adf.ly/".ToLower());
-            blacklist_words.Add("cur.lv/".ToLower());
-            blacklist_words.Add("bitly.com/".ToLower());
-            blacklist_words.Add("adcrun.ch/".ToLower());
-            blacklist_words.Add("ity.im/".ToLower());
-            blacklist_words.Add("q.gs/".ToLower());
-            blacklist_words.Add("viralurl.com/".ToLower());
-            blacklist_words.Add("is.gd/".ToLower());
-            blacklist_words.Add("vur.me/".ToLower());
-            blacklist_words.Add("bc.vc/".ToLower());
-            blacklist_words.Add("twitthis.com/".ToLower());
-            blacklist_words.Add("u.to/".ToLower());
-            blacklist_words.Add("j.mp/".ToLower());
-            blacklist_words.Add("buzurl.com/".ToLower());
-            blacklist_words.Add("cutt.us/".ToLower());
-            blacklist_words.Add("u.bb/".ToLower());
-            blacklist_words.Add("yourls.org/".ToLower());
-            blacklist_words.Add("x.co/".ToLower());
-            blacklist_words.Add("adcraft.com/".ToLower());
-            blacklist_words.Add("virl.ws/".ToLower());
-            blacklist_words.Add("scrnch.me/".ToLower());
-            blacklist_words.Add("1url.com/".ToLower());
-            blacklist_words.Add("7vd.cn/".ToLower());
-            blacklist_words.Add("dft.ba/".ToLower());
-            blacklist_words.Add("aka.gr/".ToLower());
-            blacklist_words.Add("tr.im/".ToLower());
+            if (File.Exists(filterFile))
+            {
+                loadBlacklist();
+            }
         }
         
         public bool checkForSpam(string recievedmessage)
@@ -86,14 +44,248 @@ namespace TwitchBotConsole
             }
         }
 
+        enum addingToEnum : byte
+        {
+            phrase,
+            startswith,
+            endswith,
+            word
+        }
+
         private void loadBlacklist()
         {
+            StreamReader SR = new StreamReader(filterFile);
+            string line;
+
+            byte addingToVal = 0;
+
+            while((line = SR.ReadLine()) != null)
+            {
+                if(line == "")
+                {
+                    //Console.WriteLine("Skipping");
+                    continue;
+                }
+                else if(line == "####PHRASE########")
+                {
+                    addingToVal = (byte)addingToEnum.phrase;
+                    //Console.WriteLine("Set to: PHRASE");
+                }
+                else if(line == "####STARTSWITH####")
+                {
+                    addingToVal = (byte)addingToEnum.startswith;
+                    //Console.WriteLine("Set to: STARTWITH");
+                }
+                else if (line == "####ENDSWITH######")
+                {
+                    addingToVal = (byte)addingToEnum.endswith;
+                    //Console.WriteLine("Set to: ENDSWITH");
+                }
+                else if(line == "####WORDS#########")
+                {
+                    addingToVal = (byte)addingToEnum.word;
+                    //Console.WriteLine("Set to: WORDS");
+                }
+                else if(line.StartsWith(":"))
+                {
+                    string filter = line.Substring(1, line.Length - 1);
+
+                    if(addingToVal == (byte)addingToEnum.phrase)
+                    {
+                        if(!blacklist_fullphrase.Contains(filter.ToLower()))
+                        {
+                            blacklist_fullphrase.Add(filter);
+                            //Console.WriteLine("Adding: " + filter);
+                        }
+                    }
+                    else if(addingToVal == (byte)addingToEnum.startswith)
+                    {
+                        if (!blacklist_startswith.Contains(filter.ToLower()))
+                        {
+                            blacklist_startswith.Add(filter);
+                            //Console.WriteLine("Adding: " + filter);
+                        }
+                    }
+                    else if(addingToVal == (byte)addingToEnum.endswith)
+                    {
+                        if (!blacklist_words.Contains(filter.ToLower()))
+                        {
+                            blacklist_words.Add(filter);
+                            //Console.WriteLine("Adding: " + filter);
+                        }
+                    }
+                    else if(addingToVal == (byte)addingToEnum.word)
+                    {
+                        if (!blacklist_startswith.Contains(filter.ToLower()))
+                        {
+                            blacklist_startswith.Add(filter);
+                            //Console.WriteLine("Adding: " + filter);
+                        }
+                    }
+                }
+            }
+            SR.Close();
+            SR.Dispose();
 
         }
 
         private void saveBlacklist()
         {
- 
+            string output = 
+                "####PHRASE########" + "\n" +
+                getStringFromList(blacklist_fullphrase) +
+                "\n" + "####STARTSWITH####" + "\n" +
+                getStringFromList(blacklist_startswith) +
+                "\n" + "####ENDSWITH######" + "\n" +
+                getStringFromList(blacklist_endswith) +
+                "\n" + "####WORDS#########" + "\n" +
+                getStringFromList(blacklist_words);
+
+            File.WriteAllText(@filterFile, output);
+
+        }
+
+        private string getStringFromList(List<string> ListWithElements)
+        {
+            StringBuilder text = new StringBuilder();
+            foreach(string element in ListWithElements)
+            {
+                text.Append(":").Append(element).Append("\n");
+            }
+            return text.ToString();
+        }
+
+        internal void AddFilter(ReadMessage msg)
+        {
+            if(irc.moderators.Contains(msg.user))
+            {
+                string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+                if (helper[1].StartsWith("[") && helper[1].EndsWith("]"))
+                {
+                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (!blacklist_fullphrase.Contains(filter))
+                    {
+                        blacklist_fullphrase.Add(filter);
+                        irc.sendChatMessage("Added new full phrase filter: " + filter);
+                        saveBlacklist();
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("Such full phrase filter already exists!");
+                    }
+                }
+                else if (helper[1].StartsWith("*") && helper[1].EndsWith("]"))
+                {
+                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (!blacklist_startswith.Contains(filter))
+                    {
+                        blacklist_startswith.Add(filter);
+                        irc.sendChatMessage("Added new 'starts with' filter: " + filter);
+                        saveBlacklist();
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("Such 'starts with' filter already exists!");
+                    }
+                }
+                else if (helper[1].StartsWith("[") && helper[1].EndsWith("*"))
+                {
+                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (!blacklist_endswith.Contains(filter))
+                    {
+                        blacklist_endswith.Add(filter);
+                        irc.sendChatMessage("Added new 'ends with' filter: " + filter);
+                        saveBlacklist();
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("Such 'ends with' filter already exists!");
+                    }
+                }
+                else if (helper[1].StartsWith("*") && helper[1].EndsWith("*"))
+                {
+                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (!blacklist_words.Contains(filter))
+                    {
+                        blacklist_words.Add(filter);
+                        irc.sendChatMessage("Added new word filter: " + filter);
+                        saveBlacklist();
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("Such word filter already exists!");
+                    }
+                }
+                else
+                    irc.sendChatMessage("Failed to add a new filter. Wrong syntax?");
+            }
+        }
+
+        internal void RemoveFilter(ReadMessage msg)
+        {
+            if (irc.moderators.Contains(msg.user))
+            {
+                string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+
+                if (helper[1].StartsWith("[") && helper[1].EndsWith("]"))
+                {
+                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (blacklist_fullphrase.Contains(filter))
+                    {
+                        blacklist_fullphrase.Remove(filter);
+                        irc.sendChatMessage("Removed full phrase filter: " + filter);
+                        saveBlacklist();
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("No filter found");
+                    }
+                }
+                else if (helper[1].StartsWith("*") && helper[1].EndsWith("]"))
+                {
+                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (blacklist_startswith.Contains(filter))
+                    {
+                        blacklist_startswith.Remove(filter);
+                        irc.sendChatMessage("Removed 'starts with' filter: " + filter);
+                        saveBlacklist();
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("No filter found");
+                    }
+                }
+                else if (helper[1].StartsWith("[") && helper[1].EndsWith("*"))
+                {
+                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (blacklist_endswith.Contains(filter))
+                    {
+                        blacklist_endswith.Remove(filter);
+                        irc.sendChatMessage("Removed 'ends with' filter: " + filter);
+                        saveBlacklist();
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("No filter found");
+                    }
+                }
+                else if (helper[1].StartsWith("*") && helper[1].EndsWith("*"))
+                {
+                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (blacklist_words.Contains(filter))
+                    {
+                        blacklist_words.Remove(filter);
+                        irc.sendChatMessage("Removed word filter: " + filter);
+                        saveBlacklist();
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("No filter found");
+                    }
+                }
+                else
+                    irc.sendChatMessage("Wrong syntax?");
+            }
         }
     }
 }
