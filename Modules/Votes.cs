@@ -41,10 +41,10 @@ namespace TwitchBotConsole
                 var count = starter[1].Count(x => x == ':');
                 if (count > 0)
                 {
-                    string[] voteOptions = starter[1].Split(':');
-                    for (int i = 0; i < voteOptions.Length; i++)
+                    string[] voteOptionsTemp = starter[1].Split(':');
+                    for (int i = 0; i < voteOptionsTemp.Length; i++)
                     {
-                        this.voteOptions.Add(voteOptions[i]);
+                        voteOptions.Add(voteOptionsTemp[i]);
                     }
                 }
                 else

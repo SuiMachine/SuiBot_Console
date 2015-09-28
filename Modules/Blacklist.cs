@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -63,28 +64,28 @@ namespace TwitchBotConsole
             {
                 if(line == "")
                 {
-                    //Console.WriteLine("Skipping");
+                    Debug.WriteLine("Skipping");
                     continue;
                 }
                 else if(line == "####PHRASE########")
                 {
                     addingToVal = (byte)addingToEnum.phrase;
-                    //Console.WriteLine("Set to: PHRASE");
+                    Debug.WriteLine("Set to: PHRASE");
                 }
                 else if(line == "####STARTSWITH####")
                 {
                     addingToVal = (byte)addingToEnum.startswith;
-                    //Console.WriteLine("Set to: STARTWITH");
+                    Debug.WriteLine("Set to: STARTWITH");
                 }
                 else if (line == "####ENDSWITH######")
                 {
                     addingToVal = (byte)addingToEnum.endswith;
-                    //Console.WriteLine("Set to: ENDSWITH");
+                    Debug.WriteLine("Set to: ENDSWITH");
                 }
                 else if(line == "####WORDS#########")
                 {
                     addingToVal = (byte)addingToEnum.word;
-                    //Console.WriteLine("Set to: WORDS");
+                    Debug.WriteLine("Set to: WORDS");
                 }
                 else if(line.StartsWith(":"))
                 {
@@ -95,7 +96,7 @@ namespace TwitchBotConsole
                         if(!blacklist_fullphrase.Contains(filter.ToLower()))
                         {
                             blacklist_fullphrase.Add(filter);
-                            //Console.WriteLine("Adding: " + filter);
+                            Debug.WriteLine("Adding: " + filter + " " + addingToVal.ToString());
                         }
                     }
                     else if(addingToVal == (byte)addingToEnum.startswith)
@@ -103,35 +104,35 @@ namespace TwitchBotConsole
                         if (!blacklist_startswith.Contains(filter.ToLower()))
                         {
                             blacklist_startswith.Add(filter);
-                            //Console.WriteLine("Adding: " + filter);
+                            Debug.WriteLine("Adding: " + filter + " " + addingToVal.ToString());
                         }
                     }
                     else if(addingToVal == (byte)addingToEnum.endswith)
                     {
-                        if (!blacklist_words.Contains(filter.ToLower()))
+                        if (!blacklist_endswith.Contains(filter.ToLower()))
                         {
-                            blacklist_words.Add(filter);
-                            //Console.WriteLine("Adding: " + filter);
+                            blacklist_endswith.Add(filter);
+                            Debug.WriteLine("Adding: " + filter + " " + addingToVal.ToString());
                         }
                     }
                     else if(addingToVal == (byte)addingToEnum.word)
                     {
-                        if (!blacklist_startswith.Contains(filter.ToLower()))
+                        if (!blacklist_words.Contains(filter.ToLower()))
                         {
-                            blacklist_startswith.Add(filter);
-                            //Console.WriteLine("Adding: " + filter);
+                            blacklist_words.Add(filter);
+                            Debug.WriteLine("Adding: " + filter + " " +addingToVal.ToString());
                         }
                     }
+                    line = "";
                 }
             }
             SR.Close();
             SR.Dispose();
-
         }
 
         private void saveBlacklist()
         {
-            string output = 
+            string output =
                 "####PHRASE########" + "\n" +
                 getStringFromList(blacklist_fullphrase) +
                 "\n" + "####STARTSWITH####" + "\n" +
@@ -141,17 +142,18 @@ namespace TwitchBotConsole
                 "\n" + "####WORDS#########" + "\n" +
                 getStringFromList(blacklist_words);
 
-            File.WriteAllText(@filterFile, output);
-
+            File.WriteAllText(filterFile, output);
         }
 
         private string getStringFromList(List<string> ListWithElements)
         {
             StringBuilder text = new StringBuilder();
+            text.Clear();
             foreach(string element in ListWithElements)
             {
                 text.Append(":").Append(element).Append("\n");
             }
+
             return text.ToString();
         }
 
@@ -160,64 +162,65 @@ namespace TwitchBotConsole
             if(irc.moderators.Contains(msg.user))
             {
                 string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-                if (helper[1].StartsWith("[") && helper[1].EndsWith("]"))
+                if(helper[1].Length > 3)
                 {
-                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
-                    if (!blacklist_fullphrase.Contains(filter))
+                    string tempFilter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                    if (helper[1].StartsWith("[") && helper[1].EndsWith("]"))
                     {
-                        blacklist_fullphrase.Add(filter);
-                        irc.sendChatMessage("Added new full phrase filter: " + filter);
-                        saveBlacklist();
+                        if (!blacklist_fullphrase.Contains(tempFilter))
+                        {
+                            blacklist_fullphrase.Add(tempFilter);
+                            irc.sendChatMessage("Added new full phrase filter: " + tempFilter);
+                            saveBlacklist();
+                        }
+                        else
+                        {
+                            irc.sendChatMessage("Such full phrase filter already exists!");
+                        }
+                    }
+                    else if (helper[1].StartsWith("*") && helper[1].EndsWith("]"))
+                    {
+                        if (!blacklist_startswith.Contains(tempFilter))
+                        {
+                            blacklist_startswith.Add(tempFilter);
+                            irc.sendChatMessage("Added new 'starts with' filter: " + tempFilter);
+                            saveBlacklist();
+                        }
+                        else
+                        {
+                            irc.sendChatMessage("Such 'starts with' filter already exists!");
+                        }
+                    }
+                    else if (helper[1].StartsWith("[") && helper[1].EndsWith("*"))
+                    {
+                        if (!blacklist_endswith.Contains(tempFilter))
+                        {
+                            blacklist_endswith.Add(tempFilter);
+                            irc.sendChatMessage("Added new 'ends with' filter: " + tempFilter);
+                            saveBlacklist();
+                        }
+                        else
+                        {
+                            irc.sendChatMessage("Such 'ends with' filter already exists!");
+                        }
+                    }
+                    else if (helper[1].StartsWith("*") && helper[1].EndsWith("*"))
+                    {
+                        string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
+                        if (!blacklist_words.Contains(filter))
+                        {
+                            blacklist_words.Add(filter);
+                            irc.sendChatMessage("Added new word filter: " + filter);
+                            saveBlacklist();
+                        }
+                        else
+                        {
+                            irc.sendChatMessage("Such word filter already exists!");
+                        }
                     }
                     else
-                    {
-                        irc.sendChatMessage("Such full phrase filter already exists!");
-                    }
+                        irc.sendChatMessage("Failed to add a new filter. Wrong syntax?");
                 }
-                else if (helper[1].StartsWith("*") && helper[1].EndsWith("]"))
-                {
-                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
-                    if (!blacklist_startswith.Contains(filter))
-                    {
-                        blacklist_startswith.Add(filter);
-                        irc.sendChatMessage("Added new 'starts with' filter: " + filter);
-                        saveBlacklist();
-                    }
-                    else
-                    {
-                        irc.sendChatMessage("Such 'starts with' filter already exists!");
-                    }
-                }
-                else if (helper[1].StartsWith("[") && helper[1].EndsWith("*"))
-                {
-                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
-                    if (!blacklist_endswith.Contains(filter))
-                    {
-                        blacklist_endswith.Add(filter);
-                        irc.sendChatMessage("Added new 'ends with' filter: " + filter);
-                        saveBlacklist();
-                    }
-                    else
-                    {
-                        irc.sendChatMessage("Such 'ends with' filter already exists!");
-                    }
-                }
-                else if (helper[1].StartsWith("*") && helper[1].EndsWith("*"))
-                {
-                    string filter = helper[1].Substring(1, helper[1].Length - 2).ToLower();
-                    if (!blacklist_words.Contains(filter))
-                    {
-                        blacklist_words.Add(filter);
-                        irc.sendChatMessage("Added new word filter: " + filter);
-                        saveBlacklist();
-                    }
-                    else
-                    {
-                        irc.sendChatMessage("Such word filter already exists!");
-                    }
-                }
-                else
-                    irc.sendChatMessage("Failed to add a new filter. Wrong syntax?");
             }
         }
 

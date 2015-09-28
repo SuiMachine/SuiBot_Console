@@ -740,7 +740,7 @@ namespace TwitchBotConsole
 
         private void loadDeaths()
         {
-            if(File.Exists(deathSave))
+            if(File.Exists(@deathSave))
             {
                 StreamReader SR = new StreamReader(@deathSave);
                 string line;
