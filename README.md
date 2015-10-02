@@ -14,4 +14,5 @@ Credits
   * [SuicideMachine](http://twitch.tv/suicidemachine)
   * [HardlySober](https://www.youtube.com/watch?v=Ss-OzV9aUZg) - who provided a base on which this bot was built.
   * Bot uses [SpeedrunComSharp](https://github.com/LiveSplit/SpeedrunComSharp) libary, written by CryZe.
+  * Thanks to 5paceToast for cleaning up my main method.
   
