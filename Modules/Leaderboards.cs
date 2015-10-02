@@ -27,6 +27,12 @@ namespace TwitchBotConsole
             proxyName.Add("Darksiders II", "Darksiders 2");
             proxyName.Add("GTA3", "gtaiii");
             proxyName.Add("GTA 3", "gtaiii");
+            proxyName.Add("Zork", "Zork I: The Great Underground Empire");
+            proxyName.Add("Zork I", "Zork I: The Great Underground Empire");
+            proxyName.Add("Zork 2", "Zork II: The Wizard of Frobozz");
+            proxyName.Add("Zork II", "Zork II: The Wizard of Frobozz");
+            proxyName.Add("Zork 3", "Zork III: The Dungeon Master");
+            proxyName.Add("Zork III", "Zork III: The Dungeon Master");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
@@ -105,7 +111,7 @@ namespace TwitchBotConsole
                         }
                         else
                         {
-                            var game = srlClient.Games.SearchGame(name: helper[1]);
+                            var game = srlClient.Games.SearchGame(name: getProxyName(helper[1]));
 
                             var _category = game.Categories[0];
 

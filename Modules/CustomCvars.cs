@@ -20,19 +20,22 @@ namespace TwitchBotConsole
 
         public void cvarPerform(IrcClient irc, ReadMessage msg)
         {
-            string helper = msg.message.Substring(1, msg.message.Length - 1).ToLower();
+            if(msg.message.Length>2)
+            {
+                string helper = msg.message.Substring(1, msg.message.Length - 1).ToLower();
 
-            if (cvarslist.ContainsKey(helper))
-            {
-                string message;
-                cvarslist.TryGetValue(helper, out message);
-                irc.sendChatMessage(message);
-            }
-            else if (irc.moderators.Contains(msg.user) && restrictedCvars.ContainsKey(helper))
-            {
-                string message;
-                restrictedCvars.TryGetValue(helper, out message);
-                irc.sendChatMessage(message);
+                if (cvarslist.ContainsKey(helper))
+                {
+                    string message;
+                    cvarslist.TryGetValue(helper, out message);
+                    irc.sendChatMessage(message);
+                }
+                else if (irc.moderators.Contains(msg.user) && restrictedCvars.ContainsKey(helper))
+                {
+                    string message;
+                    restrictedCvars.TryGetValue(helper, out message);
+                    irc.sendChatMessage(message);
+                }
             }
         }
 

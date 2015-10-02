@@ -13,13 +13,19 @@ namespace TwitchBotConsole
         string[] AnswersTime = {
             "Never!",
             "Soon... FrankerZ",
-            "At nein o\'clock FrankerZ"
+            "At nein o\'clock FrankerZ",
+            "Only on a monday FrankerZ"
         };
 
         string[] AnswersGeneric = {
             "Yes",
             "No",
-            "Maybe" };
+            "Maybe",
+            "Yes. Are you glad? FrankerZ",
+            "I don't know, I'm a bot FrankerZ",
+            "Who knows FrankerZ",
+            "You really shouldn't ask such a stupid question Kappa"
+        };
 
         string[] AnswersItem = {
             "Wurst",
@@ -28,23 +34,32 @@ namespace TwitchBotConsole
             "Chair",
             "Toilet Paper",
             "Potato",
-            "A chair"
+            "A chair",
+            "Nokia OSsloth"
         };
 
         string[] AnswersPerson = {
             "Your mom FrankerZ",
-            "Your dad FrankerZ"
+            "Your dad FrankerZ",
+            "Hitler WutFace",
+            "The cutest person in the world FrankerZ",
+            "One sexy beast! ;)",
+            "Just a \"nobody\"",
+            "JOHN MADDEN SwiftRage"
         };
         string[] AnswersPlace = {
             "Here!",
             "There!",
             "At your home",
             "In your bed SoonerLater",
-            "At ESA! ESA HYPE!!! PogChamp"
+            "On top of Eiffel tower OpieOP",
+            "At ESA! ESA HYPE!!! PogChamp",
+            "On Twitter OpieOP",
+            "On Facebook OpieOP"
         };
 
 
-        Random rnd = new Random(DateTime.UtcNow.Millisecond);
+        Random rnd = new Random();
 
         public void answerAsk(IrcClient irc, ReadMessage msg)
         {

@@ -122,25 +122,6 @@ namespace TwitchBotConsole
             outputStream.Flush();
         }
 
-        public void sendChatMessage(string message)
-        {
-            double timeSpan = (DateTime.UtcNow - LastSend).Seconds;
-            int timeSpanInt = Convert.ToInt32(timeSpan*1000);
-            if (timeSpanInt < 2000)
-            {
-                Trace.WriteLine("Sleeping for" + (2000 - timeSpanInt).ToString());
-                Thread.Sleep(2000 - timeSpanInt);
-            }
-            LastSend = DateTime.UtcNow;
-
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" +userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
-        }
-
-        public void sendChatMessage_NoDelays(string message)
-        {
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
-        }
-
         public ReadMessage readMessage(string input_message)
         {
             FormattedMessage.user = "";
@@ -166,6 +147,25 @@ namespace TwitchBotConsole
             return message;
         }
 
+        public void sendChatMessage(string message)
+        {
+            double timeSpan = (DateTime.UtcNow - LastSend).Seconds;
+            int timeSpanInt = Convert.ToInt32(timeSpan * 1000);
+            if (timeSpanInt < 2000)
+            {
+                Trace.WriteLine("Sleeping for" + (2000 - timeSpanInt).ToString());
+                Thread.Sleep(2000 - timeSpanInt);
+            }
+            LastSend = DateTime.UtcNow;
+
+            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
+        }
+
+        public void sendChatMessage_NoDelays(string message)
+        {
+            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
+        }
+
         public void temp(string user)
         {
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.mod " + user);
@@ -174,6 +174,8 @@ namespace TwitchBotConsole
         public void purgeMessage(string user)
         {
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " +user + " 1");
+            LastSend = DateTime.UtcNow;
+            Console.WriteLine("Purging: " + user);
         }
 
         public void timeOutMessage(string user, int time)

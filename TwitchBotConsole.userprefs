@@ -1,6 +1,6 @@
 ﻿<Properties StartupItem="TwitchBotConsole.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Modules\Votes.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="IrcClient.cs">
     <Files>
       <File FileName="Modules\Leaderboards.cs" Line="1" Column="1" />
       <File FileName="Modules\CustomCvars.cs" Line="1" Column="1" />
@@ -9,7 +9,7 @@
       <File FileName="Modules\Intervals.cs" Line="1" Column="1" />
       <File FileName="Modules\Ask.cs" Line="1" Column="1" />
       <File FileName="IrcClient.cs" Line="1" Column="1" />
-      <File FileName="Modules\Votes.cs" Line="47" Column="61" />
+      <File FileName="Modules\Votes.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
