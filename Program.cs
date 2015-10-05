@@ -81,6 +81,7 @@ namespace TwitchBotConsole
             if (rawMessage.StartsWith("PING"))
             {
                 irc.sendIrcRawMessage("PONG tmi.twitch.tv\r\n");
+                irc.sendIrcRawMessage("PONG tmi.twitch.tv\r\n");
                 Console.WriteLine("Recieved PING, responded PONG.");
                 return true;
             }
@@ -100,10 +101,24 @@ namespace TwitchBotConsole
                 Console.WriteLine(rawMessage);
                 return true;
             }
+            else if(rawMessage.EndsWith(" JOIN #" + irc._config.channel))   //User Joined
+            {
+                int endOfName = rawMessage.IndexOf('!');
+                string userName = rawMessage.Substring(1, endOfName - 1);
+                Console.WriteLine("USER JOINED: " + userName);
+                return true;
+            }
+            else if(rawMessage.EndsWith(" PART #" +irc._config.channel))    //User Left
+            {
+                int endOfName = rawMessage.IndexOf('!');
+                string userName = rawMessage.Substring(1, endOfName - 1);
+                Console.WriteLine("USER PART: " + userName);
+                return true;
+            }
             #endregion
             else
             {
-                if (irc.filteringEnabled && !(irc.moderators.Contains(FormattedMessage.user) || irc.trustedUsers.Contains(FormattedMessage.user)) && _blacklist.checkForSpam(FormattedMessage.message))
+                if (irc.filteringEnabled && !(irc.moderators.Contains(FormattedMessage.user) || irc.trustedUsers.Contains(FormattedMessage.user)) && _blacklist.checkForSpam(FormattedMessage))
                 {
                     irc.purgeMessage(FormattedMessage.user);
                     if (irc.filteringRespond) irc.sendChatMessage("Probably spam FrankerZ");
@@ -203,6 +218,10 @@ namespace TwitchBotConsole
                     if (check("!killBot"))
                     {
                         irc.sendChatMessage("Goodbye! BibleThump");
+
+                        if (irc.filteringEnabled)
+                            _blacklist.saveUserInfo();
+
                         return false;
                     }
                 }

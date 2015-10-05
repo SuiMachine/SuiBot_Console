@@ -11,34 +11,74 @@ namespace TwitchBotConsole
     class Blacklist
     {
         string filterFile = "filter.txt";
+        string directory = "cache";
+        string userInfoFile = "userinfo.txt";
 
         IrcClient irc;
         List<string> blacklist_fullphrase = new List<string>();
         List<string> blacklist_startswith = new List<string>();
         List<string> blacklist_endswith = new List<string>();
         List<string> blacklist_words = new List<string>();
+        byte allowedToPostLinksRequirement = 5;
+
+
+        List<string> url_marks = new List<string>() { "http:", "www." , "https:"};
+        Dictionary<string, byte> allowedToPostLinks = new Dictionary<string, byte>();
 
         public Blacklist(IrcClient _irc)
         {
             irc = _irc;
-
             if (File.Exists(filterFile))
             {
                 loadBlacklist();
             }
+
+            if (File.Exists(Path.Combine(directory, userInfoFile)))
+            {
+                loadUserInfo();
+            }
         }
-        
-        public bool checkForSpam(string recievedmessage)
+
+        public bool checkForSpam(ReadMessage msg)
         {
-            string message = recievedmessage.ToLower();
-            if (blacklist_fullphrase.Contains(message))
+            string message = msg.message.ToLower();
+
+            if(msg.user != String.Empty)
+            {
+                if (!allowedToPostLinks.ContainsKey(msg.user))
+                {
+                    allowedToPostLinks.Add(msg.user, 0);
+                }
+
+                if (allowedToPostLinks[msg.user] < allowedToPostLinksRequirement && isLink(message))
+                {
+                    return true;
+                }
+
+                if (blacklist_fullphrase.Contains(message))
+                    return true;
+                else if (blacklist_startswith.Any(s => message.StartsWith(s)))
+                    return true;
+                else if (blacklist_endswith.Any(s => message.EndsWith(s)))
+                    return true;
+                else if (blacklist_words.Any(s => message.Contains(s)))
+                    return true;
+                else
+                {
+                    if (allowedToPostLinks[msg.user] < allowedToPostLinksRequirement)
+                        allowedToPostLinks[msg.user]++;
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        bool isLink(string message)
+        {
+            if(url_marks.Any(s => message.Contains(s)))
+            {
                 return true;
-            else if (blacklist_startswith.Any(s => message.StartsWith(s)))
-                return true;
-            else if (blacklist_endswith.Any(s => message.EndsWith(s)))
-                return true;
-            else if (blacklist_words.Any(s => message.Contains(s)))
-                return true;
+            }
             else
             {
                 return false;
@@ -143,6 +183,34 @@ namespace TwitchBotConsole
                 getStringFromList(blacklist_words);
 
             File.WriteAllText(filterFile, output);
+        }
+
+        private void loadUserInfo()
+        {
+            StreamReader SR = new StreamReader(Path.Combine(directory, userInfoFile));
+            string line = "";
+
+            while ((line = SR.ReadLine()) != null)
+            {
+                if (line.Contains(':'))
+                {
+                    string[] helper = line.Split(':');
+                    byte value = 0;
+                    if (byte.TryParse(helper[1], out value))
+                    {
+                        allowedToPostLinks.Add(helper[0], value);
+                    }
+                }
+            }
+        }
+
+        public void saveUserInfo()
+        {
+            if(!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            File.WriteAllLines(Path.Combine(directory, userInfoFile), allowedToPostLinks.Select(x=> x.Key + ":" + x.Value.ToString()).ToArray());
         }
 
         private string getStringFromList(List<string> ListWithElements)

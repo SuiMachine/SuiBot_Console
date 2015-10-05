@@ -47,6 +47,7 @@ namespace TwitchBotConsole
             "Just a \"nobody\"",
             "JOHN MADDEN SwiftRage"
         };
+
         string[] AnswersPlace = {
             "Here!",
             "There!",
@@ -54,8 +55,8 @@ namespace TwitchBotConsole
             "In your bed SoonerLater",
             "On top of Eiffel tower OpieOP",
             "At ESA! ESA HYPE!!! PogChamp",
-            "On Twitter OpieOP",
-            "On Facebook OpieOP"
+            "On Facebook OpieOP",
+            "In the cage in your basement DOOMGuy"
         };
 
 
