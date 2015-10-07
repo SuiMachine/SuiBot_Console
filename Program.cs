@@ -81,6 +81,7 @@ namespace TwitchBotConsole
             if (rawMessage.StartsWith("PING"))
             {
                 irc.sendIrcRawMessage("PONG tmi.twitch.tv\r\n");
+                System.Threading.Thread.Sleep(100);
                 irc.sendIrcRawMessage("PONG tmi.twitch.tv\r\n");
                 Console.WriteLine("Recieved PING, responded PONG.");
                 return true;

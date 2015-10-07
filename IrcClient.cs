@@ -174,7 +174,9 @@ namespace TwitchBotConsole
         public void purgeMessage(string user)
         {
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
+            System.Threading.Thread.Sleep(100);
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
+            System.Threading.Thread.Sleep(100);
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
             LastSend = DateTime.UtcNow;
             Console.WriteLine("Purging: " + user);

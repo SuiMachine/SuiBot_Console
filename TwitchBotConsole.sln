@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitchBotConsole", "TwitchBotConsole.csproj", "{106EB65B-4E96-4A9B-A73E-4638ED206CCD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdaterWithUI", "UpdaterWithUI\UpdaterWithUI.csproj", "{2E2B5BAC-3A2A-4512-9C66-951E3182136F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingApp", "TestingApp\TestingApp.csproj", "{5C47EA1C-98F3-41B0-89F6-C31486231F64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{106EB65B-4E96-4A9B-A73E-4638ED206CCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{106EB65B-4E96-4A9B-A73E-4638ED206CCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{106EB65B-4E96-4A9B-A73E-4638ED206CCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E2B5BAC-3A2A-4512-9C66-951E3182136F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E2B5BAC-3A2A-4512-9C66-951E3182136F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E2B5BAC-3A2A-4512-9C66-951E3182136F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E2B5BAC-3A2A-4512-9C66-951E3182136F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C47EA1C-98F3-41B0-89F6-C31486231F64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C47EA1C-98F3-41B0-89F6-C31486231F64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C47EA1C-98F3-41B0-89F6-C31486231F64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C47EA1C-98F3-41B0-89F6-C31486231F64}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
