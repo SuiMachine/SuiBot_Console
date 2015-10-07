@@ -16,8 +16,8 @@ namespace TwitchBotConsole
         {
             try
             {
-                string uriDirectoryForFiles = "https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/Testing/UpdateDirectory/";
-                string infoUri = "https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/Testing/UpdateDirectory/update.xml";
+                string uriDirectoryForFiles = "https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/master/UpdateDirectory/";
+                string infoUri = "https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/master/UpdateDirectory/update.xml";
                 List<string> listOfFiles = new List<string>();
 
                 if(CheckIfXMLExists(infoUri))

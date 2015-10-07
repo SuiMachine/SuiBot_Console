@@ -35,7 +35,8 @@ namespace TwitchBotConsole
             "Toilet Paper",
             "Potato",
             "A chair",
-            "Nokia OSsloth"
+            "Nokia OSsloth",
+            "A miserable little pile of secrets!"
         };
 
         string[] AnswersPerson = {
