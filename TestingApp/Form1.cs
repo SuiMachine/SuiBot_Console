@@ -48,7 +48,7 @@ namespace TestingApp
 
         public Uri UpdateXMLLocation
         {
-            get { return new Uri(""); }
+            get { return new Uri("https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/Testing/UpdateBuilds/update.xml"); }
         }
     }
 }

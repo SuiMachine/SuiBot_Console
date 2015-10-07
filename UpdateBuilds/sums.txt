@@ -1,0 +1,9 @@
+
+MD5sums 1.2 freeware for Win9x/ME/NT/2000/XP+
+Copyright (C) 2001-2005 Jem Berkes - http://www.pc-tools.net/
+Type md5sums -h for help
+
+[Path] / filename                              MD5 sum
+-------------------------------------------------------------------------------
+[D:\Projekty\SuiBot_Console\UpdateBuilds\]
+TestingApp.exe                                 ff82a8accadd48e44166846769b9b4ee
