@@ -5,13 +5,6 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitchBotConsole", "TwitchBotConsole.csproj", "{106EB65B-4E96-4A9B-A73E-4638ED206CCD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FAE9621C-10A4-430F-AF17-AA8875187827}"
-	ProjectSection(SolutionItems) = preProject
-		..\LiveSplitServer-WoolfeNoLoads\.nuget\NuGet.Config = ..\LiveSplitServer-WoolfeNoLoads\.nuget\NuGet.Config
-		..\LiveSplitServer-WoolfeNoLoads\.nuget\NuGet.exe = ..\LiveSplitServer-WoolfeNoLoads\.nuget\NuGet.exe
-		..\LiveSplitServer-WoolfeNoLoads\.nuget\NuGet.targets = ..\LiveSplitServer-WoolfeNoLoads\.nuget\NuGet.targets
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

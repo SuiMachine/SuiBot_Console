@@ -333,7 +333,7 @@ namespace TwitchBotConsole
             _config.username = "Your Username";
             _config.password = "Auth Password";
             _config.channel = "Your channel";
-            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel +"\n\n";
+            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel + "\nAutoUpdates:" + checkForUpdates.ToString() + "\n\n";
             for (int i = 0; i < supermod.Count; i++)
             {
                 output = output + "\nSuperMod:" + supermod[i];
@@ -349,7 +349,7 @@ namespace TwitchBotConsole
 
         public void SaveConfig()
         {
-            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel + "\nSpeedrunName:" + SpeedrunName +"\n";
+            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel + "\nAutoUpdates:" + checkForUpdates.ToString() +"\nSpeedrunName:" + SpeedrunName +"\n";
             for (int i = 0; i < supermod.Count; i++)
             {
                 output = output + "\nSuperMod:" + supermod[i];
@@ -513,6 +513,22 @@ namespace TwitchBotConsole
                     }
                     else
                         _config.channel = helper[1].ToLower();
+                }
+                else if (line.StartsWith("AutoUpdates:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        bool loadedValue;
+                        if (bool.TryParse(helper[1], out loadedValue))
+                            checkForUpdates = loadedValue;
+                        else
+                            checkForUpdates = true;
+                    }
+                    else
+                    {
+                        LoadedProperly = false;
+                    }
                 }
                 else if (line.StartsWith("SpeedrunName:"))
                 {

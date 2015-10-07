@@ -68,7 +68,15 @@ namespace TwitchBotConsole
             try
             {
                 Version currentVer = Assembly.GetExecutingAssembly().GetName().Version;
-                Updater.Check(currentVer);
+                string updaterPath;
+                bool result = Updater.CheckAndDownload(currentVer, out updaterPath);
+                if(result)
+                {
+                    ProcessStartInfo info = new ProcessStartInfo();
+                    info.FileName = updaterPath;
+                    Process.Start(info);
+                    System.Environment.Exit(0);
+                }
             }
             catch (Exception e)
             {
