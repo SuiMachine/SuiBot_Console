@@ -49,6 +49,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\LiveSplitServer-WoolfeNoLoads\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="SpeedrunComSharp">
       <HintPath>SpeedrunComSharp.dll</HintPath>
     </Reference>
@@ -75,6 +78,7 @@
     <Compile Include="Modules\Quotes.cs" />
     <Compile Include="Modules\Coins\Slots.cs" />
     <Compile Include="Modules\Votes.cs" />
+    <Compile Include="Updater.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -29,6 +29,7 @@ namespace TwitchBotConsole
     class IrcClient
     {
         bool loading_status = true;
+        public bool checkForUpdates = true;
         static string configfile = "config.cfg";
         static string ignoredfile = "ignored_users.txt";
         static string trustedfile = "trusted_users.txt";

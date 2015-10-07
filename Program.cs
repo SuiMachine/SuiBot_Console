@@ -34,6 +34,9 @@ namespace TwitchBotConsole
 
         private static void initBot()
         {
+            if (irc.checkForUpdates)
+                CheckForUpdate();
+
             irc.joinRoom(irc._config.channel);
             irc.sendIrcRawMessage("CAP REQ :twitch.tv/membership");
 
@@ -58,6 +61,24 @@ namespace TwitchBotConsole
             _statusCheckTimer.Elapsed += new ElapsedEventHandler(_jsonStatus.TimerTick);
             _timer.Interval = 60 * 1000;
             _leaderboards.SendJsonPointer(_jsonStatus);
+        }
+
+        private static void CheckForUpdate()
+        {
+            Version lastVer = new Version(0, 0, 0, 0);
+            try
+            {
+                lastVer = Updater.Check();
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e.ToString());
+            }
+
+            if (lastVer > Assembly.GetExecutingAssembly().GetName().Version)
+            {
+                Process.Start("https://github.com/SuiMachine/SuiBot_Console");
+            }
         }
 
         private static bool check(string toc)
