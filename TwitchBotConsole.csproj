@@ -49,9 +49,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\LiveSplitServer-WoolfeNoLoads\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="SpeedrunComSharp">
       <HintPath>SpeedrunComSharp.dll</HintPath>
     </Reference>
