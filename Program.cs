@@ -65,19 +65,14 @@ namespace TwitchBotConsole
 
         private static void CheckForUpdate()
         {
-            Version lastVer = new Version(0, 0, 0, 0);
             try
             {
-                lastVer = Updater.Check();
+                Version currentVer = Assembly.GetExecutingAssembly().GetName().Version;
+                Updater.Check(currentVer);
             }
             catch (Exception e)
             {
                 Trace.WriteLine(e.ToString());
-            }
-
-            if (lastVer > Assembly.GetExecutingAssembly().GetName().Version)
-            {
-                Process.Start("https://github.com/SuiMachine/SuiBot_Console");
             }
         }
 

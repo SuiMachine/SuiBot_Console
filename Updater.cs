@@ -8,45 +8,40 @@ namespace TwitchBotConsole
 {
     public static class Updater
     {
-        public static Version Check()
+        public static void Check(Version CurrentVersion)
         {
             try
             {
-                string name = "SuiBot";
-                string infoUri = "https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/Testing/Update/update.xml";
-                string url;
-                string fileName;
-                Version version;
+                string uriDirectoryForFiles = "";
+                string infoUri = "update.xml";
+                List<string> listOfFiles = new List<string>();
 
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(infoUri);
+
+                /*HttpWebRequest request = (HttpWebRequest)WebRequest.Create(infoUri);
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                response.Close();
+                response.Close();*/
 
                 XmlDocument doc = new XmlDocument();
                 doc.Load(infoUri);
-                Console.WriteLine("Testing:" + doc.DocumentElement.InnerText);
-
-                return new Version("0.0.0.0");
-
-                /*
-                if (node == null)
+                
+                foreach (XmlNode update in doc.SelectNodes("updates/update"))
                 {
-                    Console.WriteLine("Error finding an update - no XML node found.");
-                    return new Version("0.0.0.0");
+                    Version CheckedVersion = Version.Parse(update.SelectSingleNode("version").InnerText);
+                    if(CurrentVersion < CheckedVersion)
+                    {
+                        foreach (XmlNode file in update.SelectNodes("file"))
+                            if (!listOfFiles.Contains(file.InnerText)) listOfFiles.Add(file.InnerText);
+                    }
                 }
-                else
-                {
-                    version = Version.Parse(node["version"].InnerText);
-                    url = node["urlLocation"].InnerText;
-                    fileName = node["filename"].InnerText;
 
-                    return version;
-                }*/
+                foreach(string element in listOfFiles)
+                {
+                    Console.WriteLine("File" + element);
+                }
             }
             catch
             {
                 Console.WriteLine("Error finding an update.");
-                return new Version("0.0.0.0");
             }
         }
     }
