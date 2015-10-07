@@ -13,7 +13,7 @@ namespace TwitchBotConsole
             try
             {
                 string name = "SuiBot";
-                string infoUri = "https://api.github.com/repos/SuiMachine/LiveSplitServer-WoolfeNoLoads/releases";
+                string infoUri = "https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/Testing/Update/update.xml";
                 string url;
                 string fileName;
                 Version version;
@@ -24,9 +24,11 @@ namespace TwitchBotConsole
 
                 XmlDocument doc = new XmlDocument();
                 doc.Load(infoUri);
+                Console.WriteLine("Testing:" + doc.DocumentElement.InnerText);
 
-                XmlNode node = doc.DocumentElement.SelectSingleNode("//update[@appId'" +name + "']");
+                return new Version("0.0.0.0");
 
+                /*
                 if (node == null)
                 {
                     Console.WriteLine("Error finding an update - no XML node found.");
@@ -39,7 +41,7 @@ namespace TwitchBotConsole
                     fileName = node["filename"].InnerText;
 
                     return version;
-                }
+                }*/
             }
             catch
             {

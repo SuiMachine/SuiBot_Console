@@ -1,8 +1,4 @@
 <?xml version="1.0"?>
-<sharpUpdate>
-	<update appId="SuiBot">
-		<version>2.0.0</version>
-		<url>https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/Testing/UpdateBuilds/TestingApp.exe</url>
-		<fileName>TestingApp.exe</fileName>
-	</update>
-</sharpUpdate>
+<version>2.0.0</version>
+<url>https://raw.githubusercontent.com/SuiMachine/SuiBot_Console/Testing/UpdateBuilds/TestingApp.exe</url>
+<fileName>TestingApp.exe</fileName>
