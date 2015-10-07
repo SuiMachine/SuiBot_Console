@@ -34,6 +34,9 @@ namespace TwitchBotConsole
 
         private static void initBot()
         {
+            if (irc.checkForUpdates)
+                CheckForUpdate();
+
             irc.joinRoom(irc._config.channel);
             irc.sendIrcRawMessage("CAP REQ :twitch.tv/membership");
 
@@ -60,6 +63,27 @@ namespace TwitchBotConsole
             _leaderboards.SendJsonPointer(_jsonStatus);
         }
 
+        private static void CheckForUpdate()
+        {
+            try
+            {
+                Version currentVer = Assembly.GetExecutingAssembly().GetName().Version;
+                string updaterPath;
+                bool result = Updater.CheckAndDownload(currentVer, out updaterPath);
+                if(result)
+                {
+                    ProcessStartInfo info = new ProcessStartInfo();
+                    info.FileName = updaterPath;
+                    Process.Start(info);
+                    System.Environment.Exit(0);
+                }
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e.ToString());
+            }
+        }
+
         private static bool check(string toc)
         {
             if (FormattedMessage.message.StartsWith(toc, StringComparison.InvariantCultureIgnoreCase))
@@ -81,6 +105,7 @@ namespace TwitchBotConsole
             if (rawMessage.StartsWith("PING"))
             {
                 irc.sendIrcRawMessage("PONG tmi.twitch.tv\r\n");
+                System.Threading.Thread.Sleep(100);
                 irc.sendIrcRawMessage("PONG tmi.twitch.tv\r\n");
                 Console.WriteLine("Recieved PING, responded PONG.");
                 return true;

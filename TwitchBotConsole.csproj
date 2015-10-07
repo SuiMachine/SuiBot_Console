@@ -75,6 +75,7 @@
     <Compile Include="Modules\Quotes.cs" />
     <Compile Include="Modules\Coins\Slots.cs" />
     <Compile Include="Modules\Votes.cs" />
+    <Compile Include="Updater.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

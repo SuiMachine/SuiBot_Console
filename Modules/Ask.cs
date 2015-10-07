@@ -45,7 +45,8 @@ namespace TwitchBotConsole
             "The cutest person in the world FrankerZ",
             "One sexy beast! ;)",
             "Just a \"nobody\"",
-            "JOHN MADDEN SwiftRage"
+            "JOHN MADDEN SwiftRage",
+			"JOHN CENA!!!!!! SwiftRage"
         };
 
         string[] AnswersPlace = {
