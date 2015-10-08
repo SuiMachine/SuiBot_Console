@@ -25,16 +25,19 @@ namespace TwitchBotConsole
                     XmlDocument doc = new XmlDocument();
                     doc.Load(infoUri);
 
+                    bool updateIsRequired = false;
                     foreach (XmlNode update in doc.SelectNodes("updates/update"))
                     {
                         //creates a list of files that needs to be updated
                         Version CheckedVersion = Version.Parse(update.SelectSingleNode("version").InnerText);
+                        Trace.WriteLine("Version checked:" + CheckedVersion.ToString());
                         if (CurrentVersion < CheckedVersion)
                         {
+                            updateIsRequired = true;
                             foreach (XmlNode file in update.SelectNodes("file"))
                                 if (!listOfFiles.Contains(file.InnerText)) listOfFiles.Add(file.InnerText);
                         }
-                        else
+                        else if(!updateIsRequired)
                         {
                             Console.WriteLine("No update necessery.");
                             updaterPath = "";
