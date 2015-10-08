@@ -73,9 +73,20 @@ namespace TwitchBotConsole
                 if(result)
                 {
                     ProcessStartInfo info = new ProcessStartInfo();
-                    info.FileName = updaterPath;
-                    Process.Start(info);
-                    System.Environment.Exit(0);
+					string OS = Environment.OSVersion.ToString();
+					if(OS.StartsWith("Microsoft"))     //Is Shit OS
+					{
+						info.FileName = updaterPath;
+						Process.Start(info);
+						System.Environment.Exit(0);
+					}
+					else
+					{
+						info.FileName = "bash";
+						info.Arguments = updaterPath;
+						Process.Start(info);
+						System.Environment.Exit(0);
+					}
                 }
             }
             catch (Exception e)
