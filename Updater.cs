@@ -76,30 +76,61 @@ namespace TwitchBotConsole
 
         private static string CreateCMDUpdater(string[,] locations)
         {
-            //This part makes a CMD file that will be run once the bot's process is killed, replacing all of the files with files downloaded to temp folder
-            string currentPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Debug.WriteLine("CURRENT PATH: " + currentPath);
-            string tempLocation = Path.GetTempPath();
-            Debug.WriteLine("TEMP LOCATION: " + tempLocation);
-            string fileCopying = "";
-            for (int i = 0; i < locations.GetLength(0); i++)
+            string OS = Environment.OSVersion.ToString();
+            if(OS.StartsWith("Microsoft"))                  //Is SelloutSystem
             {
-                fileCopying += "Del " + currentPath + "\\" + locations[i, 0] + "\n" +
+                //This part makes a CMD file that will be run once the bot's process is killed, replacing all of the files with files downloaded to temp folder
+                string currentPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                Debug.WriteLine("CURRENT PATH: " + currentPath);
+                string tempLocation = Path.GetTempPath();
+                Debug.WriteLine("TEMP LOCATION: " + tempLocation);
+                string fileCopying = "";
+                for (int i = 0; i < locations.GetLength(0); i++)
+                {
+                    fileCopying += "Del " + currentPath + "\\" + locations[i, 0] + "\n" +
+                        "Choice /C Y /N /D Y /T 1\n" +
+                        "ECHO " + locations[i, 1] + " -> " + currentPath + "\\" + locations[i, 0] + "\n" +
+                        "Move /Y " + locations[i, 1] + " " + currentPath + "\\" + locations[i, 0] + "\n";
+                }
+
+                string output = "@ECHO OFF\n" +
+                    "ECHO !!SuiBot Updater!!\n" +
+                    "Choice /C Y /N /D Y /T 4\n" +
+                    fileCopying +
                     "Choice /C Y /N /D Y /T 1\n" +
-                    "ECHO " + locations[i, 1] + " -> " + currentPath + "\\"+ locations[i, 0] + "\n" +
-                    "Move /Y " + locations[i, 1] + " " + currentPath + "\\" + locations[i, 0] + "\n";
+                    "Start \"\" /D " + currentPath + " " + "TwitchBotConsole.exe";
+                File.WriteAllText(Path.Combine(Path.GetTempPath(), "SuiBotUpdater.cmd"), output);
+
+                string pathToCMDFile = Path.Combine(Path.GetTempPath(), "SuiBotUpdater.cmd");
+                return pathToCMDFile;
             }
+            else
+            {
+                //This part makes an SH file that will be run once the bot's process is killed, replacing all of the files with files downloaded to temp folder
+                string currentPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                Debug.WriteLine("CURRENT PATH: " + currentPath);
+                string tempLocation = Path.GetTempPath();
+                Debug.WriteLine("TEMP LOCATION: " + tempLocation);
+                string fileCopying = "";
+                for (int i = 0; i < locations.GetLength(0); i++)
+                {
+                    fileCopying += "rm " + currentPath + "/" + locations[i, 0] + "\n" +
+                        "sleep 1\n" +
+                        "echo " + locations[i, 1] + " -> " + currentPath + "/" + locations[i, 0] + "\n" +
+                        "mv -f " + locations[i, 1] + " " + currentPath + "/" + locations[i, 0] + "\n";
+                }
 
-            string output = "@ECHO OFF\n" +
-                "ECHO !!SuiBot Updater!!\n" +
-                "Choice /C Y /N /D Y /T 4\n" +
-                fileCopying +
-                "Choice /C Y /N /D Y /T 1\n" +
-                "Start \"\" /D " + currentPath + " " + "TwitchBotConsole.exe";
-            File.WriteAllText(Path.Combine(Path.GetTempPath(), "SuiBotUpdater.cmd"), output);
+                string output = "echo !!SuiBot Updater!!\n" +
+                    "sleep 3\n" +
+                    fileCopying +
+                    "sleep 1\n" +
+                    "cd " + currentPath + "\n" +
+                    "mono TwitchBotConsole.exe";
+                File.WriteAllText(Path.Combine(Path.GetTempPath(), "SuiBotUpdater.sh"), output);
 
-            string pathToCMDFile = Path.Combine(Path.GetTempPath(), "SuiBotUpdater.cmd");
-            return pathToCMDFile;
+                string pathToCMDFile = Path.Combine(Path.GetTempPath(), "SuiBotUpdater.sh");
+                return pathToCMDFile;
+            }
         }
 
         private static bool downloadFiles(List<string> listOfFiles, string sourceLocation, out string[,] tempLocations)
