@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Net.Sockets;
 using System.Threading;
 using System.Diagnostics;
@@ -53,6 +54,7 @@ namespace TwitchBotConsole
         public bool leaderBoardEnabled = false;
         public bool vocalMode = true;
         public bool voteEnabled = true;
+        public bool breakPyramids = true;
         public bool ConnectedStatus = true;
 
         public List<string> supermod = new List<string>();
@@ -333,6 +335,11 @@ namespace TwitchBotConsole
                 SR.Close();
                 SR.Dispose();
             } 
+        }
+
+        internal void version()
+        {
+            sendChatMessage("Bot's version is: " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
 
         public void saveIgnoredList()

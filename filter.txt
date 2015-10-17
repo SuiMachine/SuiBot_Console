@@ -51,3 +51,4 @@
 :tr.im/
 :articles4daily.com
 :ly2.ru/
+:link.ac/
