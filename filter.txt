@@ -52,3 +52,4 @@
 :articles4daily.com
 :ly2.ru/
 :link.ac/
+:.redirectme.net

@@ -102,6 +102,7 @@ namespace TwitchBotConsole
                     checkConnection.Enabled = true;
                     checkConnection.Interval = 60*1000;
                     checkConnection.Elapsed += CheckConnection_Elapsed;
+                    checkConnection.Start();
                 }
                 else
                 {
@@ -119,11 +120,12 @@ namespace TwitchBotConsole
         {
             if(tcpClient.Connected)
             {
+                Console.WriteLine("CONNECTION CHECK: Is connected!");
                 ConnectedStatus = true;
             }
             else
             {
-                Console.WriteLine("Lost connection?");
+                Console.WriteLine("CONNECTION CHECK: Is NOT connected!!!!!");
                 ConnectedStatus = false;
             }
         }
