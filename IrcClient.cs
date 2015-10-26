@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Net.Sockets;
 using System.Threading;
 using System.Diagnostics;
+using System.Timers;
 
 namespace TwitchBotConsole
 {
@@ -52,6 +54,8 @@ namespace TwitchBotConsole
         public bool leaderBoardEnabled = false;
         public bool vocalMode = true;
         public bool voteEnabled = true;
+        public bool breakPyramids = true;
+        public bool ConnectedStatus = true;
 
         public List<string> supermod = new List<string>();
         public List<string> moderators = new List<string>();
@@ -71,7 +75,7 @@ namespace TwitchBotConsole
         #region Constructor
         public IrcClient()
         {
-            if(!File.Exists(@configfile))
+            if (!File.Exists(@configfile))
             {
                 LoadExampleConfig();
             }
@@ -93,6 +97,12 @@ namespace TwitchBotConsole
                     outputStream.WriteLine("NICK " + userName);
                     outputStream.WriteLine("USER " + userName + " 8 * :" + userName);
                     outputStream.Flush();
+
+                    System.Timers.Timer checkConnection = new System.Timers.Timer();
+                    checkConnection.Enabled = true;
+                    checkConnection.Interval = 60*1000;
+                    checkConnection.Elapsed += CheckConnection_Elapsed;
+                    checkConnection.Start();
                 }
                 else
                 {
@@ -104,6 +114,20 @@ namespace TwitchBotConsole
             loadIgnoredList();
             loadTrustedList();
             
+        }
+
+        private void CheckConnection_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if(tcpClient.Connected)
+            {
+                Console.WriteLine("CONNECTION CHECK: Is connected!");
+                ConnectedStatus = true;
+            }
+            else
+            {
+                Console.WriteLine("CONNECTION CHECK: Is NOT connected!!!!!");
+                ConnectedStatus = false;
+            }
         }
         #endregion
 
@@ -165,11 +189,6 @@ namespace TwitchBotConsole
         public void sendChatMessage_NoDelays(string message)
         {
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
-        }
-
-        public void temp(string user)
-        {
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.mod " + user);
         }
 
         public void purgeMessage(string user)
@@ -252,7 +271,7 @@ namespace TwitchBotConsole
             } 
         }
 
-        private void saveTrustedList()
+        public void saveTrustedList()
         {
             File.WriteAllLines(trustedfile, trustedUsers);
         }
@@ -318,6 +337,11 @@ namespace TwitchBotConsole
                 SR.Close();
                 SR.Dispose();
             } 
+        }
+
+        internal void version()
+        {
+            sendChatMessage("Bot's version is: " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
 
         public void saveIgnoredList()
@@ -788,11 +812,6 @@ namespace TwitchBotConsole
         {
             string output = "Deaths:" + deaths.ToString();
             File.WriteAllText(@deathSave, output);
-        }
-
-        public static object GetPropValue(object src, string propName)
-        {
-            return src.GetType().GetProperty(propName).GetValue(src, null);
         }
     }
 }

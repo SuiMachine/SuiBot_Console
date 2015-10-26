@@ -247,6 +247,7 @@ namespace TwitchBotConsole
                 if (irc.moderators.Contains(FormattedMessage.user))
                 {
                     if (check("!updateJsonInfo")) _jsonStatus.requestUpdate(irc);
+                    if (check("!version")) irc.version();
                 }
                 //supermod only!
                 if (irc.supermod.Contains(FormattedMessage.user))
@@ -273,6 +274,7 @@ namespace TwitchBotConsole
 
         static void Main(string[] args)
         {
+            Console.CancelKeyPress += Console_CancelKeyPress;       //Some additional events
             irc = new IrcClient();
             if (!irc.configFileExisted)
             {
@@ -291,5 +293,23 @@ namespace TwitchBotConsole
 
             while (runBot()) ;
         }
+
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            PerformShutdownTasks();
+        }
+
+        private static void PerformShutdownTasks()
+        {
+            if (irc != null)
+            {
+                if (_blacklist != null && irc.filteringEnabled)
+                {
+                    _blacklist.saveUserInfo();
+                }
+            }
+        }
     }
+
+    
 }

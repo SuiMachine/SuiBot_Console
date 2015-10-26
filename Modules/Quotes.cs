@@ -10,6 +10,7 @@ namespace TwitchBotConsole
     class Quotes
     {
         static string quotesfile = "quotes.txt";
+        Random rnd = new Random();
 
         public List<string> quotelist = new List<string>();
         
@@ -78,7 +79,6 @@ namespace TwitchBotConsole
                 }
                 else
                 {
-                    Random rnd = new Random();
                     int ID = rnd.Next(0, quotelist.Count);
                     string[] quote = quotelist[ID].Split(new char[] { ':' }, 2);
                     _irc.sendChatMessage("\"" + quote[1] + "\" by " + quote[0]);

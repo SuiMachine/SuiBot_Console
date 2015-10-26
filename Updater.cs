@@ -159,6 +159,15 @@ namespace TwitchBotConsole
                 catch { return false; }
             }
 
+            for(int i=0; i<numberOfFiles; i++)
+            {
+                FileInfo file = new FileInfo(tempLocations[i, 1]);
+                if (file.Length == 0)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 

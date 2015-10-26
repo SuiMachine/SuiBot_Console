@@ -33,6 +33,10 @@ namespace TwitchBotConsole
             proxyName.Add("Zork II", "Zork II: The Wizard of Frobozz");
             proxyName.Add("Zork 3", "Zork III: The Dungeon Master");
             proxyName.Add("Zork III", "Zork III: The Dungeon Master");
+            proxyName.Add("Thief", "Thief: The Dark Project");
+            proxyName.Add("Thief: Gold", "Thief Gold");
+            proxyName.Add("Thief 2", "Thief ll: The Metal Age");
+            proxyName.Add("Thief II", "Thief ll: The Metal Age");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
@@ -41,169 +45,12 @@ namespace TwitchBotConsole
             msg = _msg;
         }
 
+        #region WRs
         public void getLeaderboard()
         {
             if (irc.moderators.Contains(msg.user) || irc.trustedUsers.Contains(msg.user))
             {
-                var srlClient = new SpeedrunComClient();
-                int indexGameStart = msg.message.IndexOf(' ');
-                int indexGameCathegoryStart = msg.message.IndexOf(':');
-
-                try
-                {
-                    if(indexGameStart > 0)
-                    {
-                        string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-                        if (indexGameCathegoryStart > 0 && msg.message.ElementAt(indexGameCathegoryStart+1) != ' ')
-                        {
-                            string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
-                            var game = srlClient.Games.SearchGame(name: additionalhelper[0]);
-                            if (additionalhelper[1].ToLower().StartsWith("cat"))
-                            {
-                                string output = "Categories are:";
-                                int id = 1;
-                                foreach (var element in game.Categories)
-                                {
-                                    output = output + " [" + id.ToString() + "]" + element.ToString();
-                                    id++;
-                                }
-                                irc.sendChatMessage(output);
-                            }
-                            else
-                            {
-                                int id = 0;
-                                if (int.TryParse(additionalhelper[1], out id))
-                                {
-                                    id--;
-                                    if (game.Categories.Count > id)
-                                    {
-                                        var _category = game.Categories[id];
-
-                                        if (_category.WorldRecord != null)
-                                        {
-                                            //Finding the World Record of the category
-                                            var worldRecord = _category.WorldRecord;
-
-                                            if(worldRecord.Players.Count>1)
-                                            {
-                                                string players = "" + worldRecord.Players[0].User;
-                                                int i = 1;
-                                                for (; i<worldRecord.Players.Count-1; i++)
-                                                {
-                                                    players = players + ", " + worldRecord.Players[i].User;
-                                                }
-                                                players = players + " and " + worldRecord.Players[i].User;
-                                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
-                                            }
-                                            else
-                                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
-                                        }
-                                        else
-                                            irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
-                                    }
-                                    else
-                                        irc.sendChatMessage("Wrong category ID!");
-                                }
-                                else
-                                    irc.sendChatMessage("Failed to parse category ID.");
-
-                            }
-                        }
-                        else
-                        {
-                            var game = srlClient.Games.SearchGame(name: getProxyName(helper[1]));
-
-                            var _category = game.Categories[0];
-
-                            if (_category.WorldRecord != null)
-                            {
-                                var worldRecord = _category.WorldRecord;
-
-                                            if(worldRecord.Players.Count>1)
-                                            {
-                                                string players = "" + worldRecord.Players[0].User;
-                                                int i = 1;
-                                                for (; i<worldRecord.Players.Count-1; i++)
-                                                {
-                                                    players = players + ", " + worldRecord.Players[i].User;
-                                                }
-                                                players = players + " and " + worldRecord.Players[i].User;
-                                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
-                                            }
-                                            else
-                                                irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);                            }
-                            else
-                                irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
-                        }
-                    }
-                    else
-                    {   //Find a best time from default cathegory, based on currently played game on Twitch
-                        if (json.isForcedPage)
-                        {
-                            var game = srlClient.Games.SearchGame(name: getProxyName(json.forcedGame));
-
-                            var _category = game.Categories[0];
-
-                            if (_category.WorldRecord != null)
-                            {
-                                //Finding the World Record of the category
-                                var worldRecord = _category.WorldRecord;
-
-                                if (worldRecord.Players.Count > 1)
-                                {
-                                    string players = "" + worldRecord.Players[0].User;
-                                    int i = 1;
-                                    for (; i < worldRecord.Players.Count - 1; i++)
-                                    {
-                                        players = players + ", " + worldRecord.Players[i].User;
-                                    }
-                                    players = players + " and " + worldRecord.Players[i].User;
-                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
-                                }
-                                else
-                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
-                            }
-                            else
-                                irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
-                        }
-                        else if (json.game != String.Empty)
-                        {
-                            var game = srlClient.Games.SearchGame(name: getProxyName(json.game));
-
-                            var _category = game.Categories[0];
-
-                            if (_category.WorldRecord != null)
-                            {
-                                //Finding the World Record of the category
-                                var worldRecord = _category.WorldRecord;
-
-                                if (worldRecord.Players.Count > 1)
-                                {
-                                    string players = "" + worldRecord.Players[0].User;
-                                    int i = 1;
-                                    for (; i < worldRecord.Players.Count - 1; i++)
-                                    {
-                                        players = players + ", " + worldRecord.Players[i].User;
-                                    }
-                                    players = players + " and " + worldRecord.Players[i].User;
-                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
-                                }
-                                else
-                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
-                            }
-                            else
-                                irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
-                        }
-                        else
-                            irc.sendChatMessage("Currently there is no active game.");
-                    }
-                }
-                catch(Exception ex)
-                {
-                    irc.sendChatMessage("Nothing found. Maybe you'd like to visit http://speedrun.com and look for it yourself FrankerZ");
-                    Debug.WriteLine(ex.ToString());
-                }
-
+                getAndReturnLeaderboard();
             }
             else
             {
@@ -211,172 +58,334 @@ namespace TwitchBotConsole
             }
         }
 
+        private void getAndReturnLeaderboard()
+        {
+            int indexGameStart = msg.message.IndexOf(' ');
+            int indexGameCathegoryStart = msg.message.IndexOf(':');
+
+            if (indexGameStart > 0)
+            {
+                string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+                if (indexGameCathegoryStart > 0 && msg.message.ElementAt(indexGameCathegoryStart + 1) != ' ')
+                {
+                    string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
+                    if (additionalhelper[1].ToLower().StartsWith("cat"))
+                    {
+                        displayCategories(additionalhelper[0]);
+                    }
+                    else
+                    {
+                        displayBestTimeFromGivenCategory(additionalhelper[0], additionalhelper[1]);
+                    }
+                }
+                else
+                {
+                    displayBestTimeFromDefaultCategory(helper[1]);
+                }
+            }
+            else
+            {   //Find a best time from default cathegory, based on currently played game on Twitch
+                if (json.isForcedPage)
+                {
+                    displayBestTimeFromDefaultCategory(json.forcedGame);
+                }
+                else if (json.game != String.Empty)
+                {
+                    displayBestTimeFromDefaultCategory(json.game);
+                }
+                else
+                    irc.sendChatMessage("Currently there is no active game.");
+            }
+        }
+        #endregion
+
+        #region PBs
         public void getPB()
         {
             if (irc.moderators.Contains(msg.user) || irc.trustedUsers.Contains(msg.user))
             {
                 if(irc.SpeedrunName!="")
                 {
-                    var srlClient = new SpeedrunComClient();
-                    int indexGameStart = msg.message.IndexOf(' ');
-                    int indexGameCathegoryStart = msg.message.IndexOf(':');
-
-                    try
-                    {
-                        if (indexGameStart > 0)
-                        {
-                            string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-
-                            if (indexGameCathegoryStart > 0 && msg.message.ElementAt(indexGameCathegoryStart + 1) != ' ')
-                            {
-                                string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
-                                var game = srlClient.Games.SearchGame(name: additionalhelper[0]);
-
-                                if(game != null)
-                                {
-                                    var gameID = game.ID;
-
-                                    if (additionalhelper[1].ToLower().StartsWith("cat"))
-                                    {   //Display categories
-                                        string output = "Categories are:";
-                                        int id = 1;
-                                        foreach (var element in game.Categories)
-                                        {
-                                            output = output + " [" + id.ToString() + "]" + element.ToString();
-                                            id++;
-                                        }
-                                        irc.sendChatMessage(output);
-                                    }
-                                    else
-                                    {   //Display PB from a category
-                                        int id = 0;
-                                        if (int.TryParse(additionalhelper[1], out id))
-                                        {
-                                            id--;
-                                            if (game.Categories.Count > id && id >=0)
-                                            {
-                                                var _category = game.Categories[id];
-                                                string categoryName = _category.Name;
-                                                var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
-                                                int numberOfPBs = playersPB.Count;
-                                                int i = 0;
-                                                for(i=0;i<numberOfPBs;i++)
-                                                {
-                                                    if(playersPB[i].Category.Name == categoryName)
-                                                        break;
-                                                }
-
-                                                if(i<numberOfPBs)
-                                                {
-                                                    irc.sendChatMessage("Strimmer PB for " +playersPB[i].Game.Name + " ("+ playersPB[i].Category.Name + ") is: " + playersPB[i].Times.Primary);
-                                                }
-                                            }
-                                            else
-                                                irc.sendChatMessage("Wrong category ID!");
-                                        }
-                                        else
-                                            irc.sendChatMessage("Failed to parse category ID.");
-                                    }
-
-                                }
-                            }
-                            else
-                            {
-                                //Find a PB from a user provided game
-                                var game = srlClient.Games.SearchGame(name: helper[1]);
-                                if (game != null)
-                                {
-                                    var gameID = game.ID;
-                                    var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
-                                    if (playersPB.Count > 0)
-                                    {
-                                        irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
-                                    }
-                                    else
-                                    {
-                                        irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
-                                    }
-                                }
-                                else
-                                {
-                                    irc.sendChatMessage("Sorry. No game found. Wonna go to http://speedrun.com and look for it yourself? FrankerZ");
-                                }
-                            }
-                        }
-                        else
-                        {   //Find a PB in currently streamed game
-                            if (json.isForcedPage)
-                            {
-                                var game = srlClient.Games.SearchGame(name: getProxyName(json.forcedGame));
-
-                                if (game != null)
-                                {
-                                    var gameID = game.ID;
-                                    var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
-                                    if (playersPB.Count > 0)
-                                    {
-                                        irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
-
-                                    }
-                                    else
-                                    {
-                                        irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
-                                    }
-                                }
-                            }
-                            else if (json.game != String.Empty)
-                            {
-                                var game = srlClient.Games.SearchGame(name: getProxyName(json.game));
-
-                                if (game != null)
-                                {
-                                    var gameID = game.ID;
-                                    var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
-                                    if (playersPB.Count > 0)
-                                    {
-                                        irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
-
-                                    }
-                                    else
-                                    {
-                                        irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
-                                    }
-                                }
-                                else
-                                {
-                                    irc.sendChatMessage("Sorry. No game found. Wonna go to http://speedrun.com and look for it yourself? FrankerZ");
-                                }
-                            }
-                            else
-                                irc.sendChatMessage("Currently there is no active game.");
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Nothing found. Maybe you'd like to visit http://speedrun.com and look for it yourself FrankerZ");
-                        Debug.WriteLine(ex.ToString());
-                    }
-
+                    getAndReturnPB();
                 }
                 else
                 {
-                    irc.sendChatMessage("You don't have permissions to perform this command");
+                    irc.sendChatMessage("Speedrun.com name wasn't set. Can't find PB!");
                 }
             }
             else
             {
-                irc.sendChatMessage("Speedrun.com name wasn't set. Can't find PB!");
+                irc.sendChatMessage("You don't have permissions to perform this command");
+            }
+        }
+
+        private void getAndReturnPB()
+        {
+            int indexGameStart = msg.message.IndexOf(' ');
+            int indexGameCathegoryStart = msg.message.IndexOf(':');
+
+            if (indexGameStart > 0)
+            {
+                string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+
+                if (indexGameCathegoryStart > 0 && msg.message.ElementAt(indexGameCathegoryStart + 1) != ' ')
+                {
+                    string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
+                    if (additionalhelper[1].ToLower().StartsWith("cat"))
+                    {
+                        displayCategories(additionalhelper[0]);
+                    }
+                    else
+                    {
+                        displayPBFromGivenCategory(additionalhelper[0], additionalhelper[1]);
+                    }
+                }
+                else
+                {
+                    //Find a PB from a user provided game
+                    displayPBFromAGame(helper[1]);
+                }
+            }
+            else
+            {   //Find a PB in currently streamed game
+                if (json.isForcedPage)
+                {
+                    displayPBFromAGame(json.forcedGame);
+                }
+                else if (json.game != String.Empty)
+                {
+                    displayPBFromAGame(json.game);
+                }
+                else
+                    irc.sendChatMessage("Currently there is no active game.");
+            }
+        }
+        #endregion
+
+        #region Functions
+        private void displayCategories(string gameName)
+        {
+            try
+            {
+                var srlClient = new SpeedrunComClient();
+                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                if (game != null)        //If game was found -> Build a string and display all categories
+                {
+                    string output = "Categories are:";
+                    int id = 1;
+                    foreach (var element in game.Categories)
+                    {
+                        output = output + " [" + id.ToString() + "]" + element.ToString();
+                        id++;
+                    }
+                    irc.sendChatMessage(output);
+                }
+                else
+                {
+                    irc.sendChatMessage("No game was found");
+                }
+            }
+            catch(Exception ex)
+            {
+                Trace.WriteLine("EXECPTION ERROR: " + ex.ToString());
+                irc.sendChatMessage("Exception error!");
             }
 
         }
+
+        private void displayBestTimeFromGivenCategory(string gameName, string categoryIndex)
+        {
+            try
+            {
+                var srlClient = new SpeedrunComClient();
+                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+
+                if (game != null)
+                {
+                    int id = 0;
+                    if (int.TryParse(categoryIndex, out id))
+                    {
+                        id--;
+                        if (game.Categories.Count > id)
+                        {
+                            var _category = game.Categories[id];
+
+                            if (_category.WorldRecord != null)
+                            {
+                                //Finding the World Record of the category
+                                var worldRecord = _category.WorldRecord;
+
+                                if (worldRecord.Players.Count > 1)
+                                {
+                                    string players = "" + worldRecord.Players[0].User;
+                                    int i = 1;
+                                    for (; i < worldRecord.Players.Count - 1; i++)
+                                    {
+                                        players = players + ", " + worldRecord.Players[i].User;
+                                    }
+                                    players = players + " and " + worldRecord.Players[i].User;
+                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
+                                }
+                                else
+                                    irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
+                            }
+                            else
+                                irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
+                        }
+                        else
+                            irc.sendChatMessage("Wrong category ID!");
+                    }
+                    else
+                        irc.sendChatMessage("Failed to parse category ID.");
+                }
+                else
+                {
+                    irc.sendChatMessage("Game was not found!");
+                }
+            }
+            catch(Exception ex)
+            {
+                Trace.WriteLine("EXCEPTION ERROR: " + ex.ToString());
+                irc.sendChatMessage("Exception error!");
+            }
+        }
+
+        private void displayBestTimeFromDefaultCategory(string gameName)
+        {
+            try
+            {
+                var srlClient = new SpeedrunComClient();
+                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                if(game != null)
+                {
+                    var _category = game.Categories[0];
+
+                    if (_category.WorldRecord != null)
+                    {
+                        var worldRecord = _category.WorldRecord;
+
+                        if (worldRecord.Players.Count > 1)
+                        {
+                            string players = "" + worldRecord.Players[0].User;
+                            int i = 1;
+                            for (; i < worldRecord.Players.Count - 1; i++)
+                            {
+                                players = players + ", " + worldRecord.Players[i].User;
+                            }
+                            players = players + " and " + worldRecord.Players[i].User;
+                            irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + players + ". " + _category.WebLink.AbsoluteUri);
+                        }
+                        else
+                            irc.sendChatMessage("World record for " + game + " (" + _category + ") is " + worldRecord.Times.Primary + " by " + worldRecord.Player.User + ". " + _category.WebLink.AbsoluteUri);
+                    }
+                    else
+                        irc.sendChatMessage("Currently there is no world record for this category. " + _category.WebLink.AbsoluteUri);
+                }
+                else
+                {
+                    irc.sendChatMessage("No game was found!");
+                }
+            }
+            catch(Exception ex)
+            {
+                Trace.WriteLine("EXCEPTIO ERROR: " + ex.ToString());
+                irc.sendChatMessage("Exception error");
+            }
+        }
+
+        private void displayPBFromAGame(string gameName)
+        {
+            try
+            {
+                var srlClient = new SpeedrunComClient();
+                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                if (game != null)
+                {
+                    var gameID = game.ID;
+                    var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
+                    if (playersPB.Count > 0)
+                    {
+                        irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
+
+                    }
+                    else
+                    {
+                        irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
+                    }
+                }
+                else
+                {
+                    irc.sendChatMessage("No game was found!");
+                }
+            }
+            catch (Exception ex)
+            {
+                irc.sendChatMessage("Exception error");
+                Trace.WriteLine("EXCEPTION ERROR: " + ex.ToString());
+            }
+        }
+
+        private void displayPBFromGivenCategory(string gameName, string categoryIndex)
+        {
+            try
+            {
+                var srlClient = new SpeedrunComClient();
+                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+
+                if(game!= null)
+                {
+                    var gameID = game.ID;
+                    //Display PB from a category
+                    int id = 0;
+                    if (int.TryParse(categoryIndex, out id))
+                    {
+                        id--;
+                        if (game.Categories.Count > id && id >= 0)
+                        {
+                            var _category = game.Categories[id];
+                            string categoryName = _category.Name;
+                            var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
+                            int numberOfPBs = playersPB.Count;
+                            int i = 0;
+                            for (i = 0; i < numberOfPBs; i++)
+                            {
+                                if (playersPB[i].Category.Name == categoryName)
+                                    break;
+                            }
+
+                            if (i < numberOfPBs)
+                            {
+                                irc.sendChatMessage("Strimmer PB for " + playersPB[i].Game.Name + " (" + playersPB[i].Category.Name + ") is: " + playersPB[i].Times.Primary);
+                            }
+                        }
+                        else
+                            irc.sendChatMessage("Wrong category ID!");
+                    }
+                    else
+                        irc.sendChatMessage("Failed to parse category ID.");
+                }
+                else
+                {
+                    irc.sendChatMessage("No game found!");
+                }
+
+            }
+            catch(Exception ex)
+            {
+                irc.sendChatMessage("Exception error!");
+                Trace.WriteLine("EXCEPTION ERROR: " + ex.ToString());
+            }
+        }
+
+        #endregion
+
 
         internal void SendJsonPointer(Json_status _jsonStatus)
         {
             json = _jsonStatus;
         }
 
-        string getProxyName(string name)
+        private string getProxyName(string name)
         {
             string proxy;
             if (proxyName.ContainsKey(name))
