@@ -23,6 +23,7 @@ namespace TwitchBotConsole
         private static CustomCvars _customCvars;
         private static Votes _votes;
         private static Intervals _intervals;
+        private static ViewerPB _viewerPB;
         private static Json_status _jsonStatus;
         private static System.Timers.Timer _statusCheckTimer;
         private static Leaderboards _leaderboards;
@@ -49,7 +50,8 @@ namespace TwitchBotConsole
             _customCvars = new CustomCvars();
             _votes = new Votes();
             _intervals = new Intervals();
-            _jsonStatus = new Json_status();
+            _viewerPB = new ViewerPB(irc);
+            _jsonStatus = new Json_status(irc, _viewerPB);
             _statusCheckTimer = new System.Timers.Timer();
             _timer = new System.Timers.Timer();
             _leaderboards = new Leaderboards();
@@ -212,6 +214,10 @@ namespace TwitchBotConsole
                     if (check("!deathAdd")) irc.DeathCounterAdd(FormattedMessage);
                     if (check("!deathRemove")) irc.DeathCounterRemove(FormattedMessage);
                 }
+                if (irc.viewerPBActive)
+                {
+                    if (check("!viewerPB")) _viewerPB.displayViewerPB(FormattedMessage);
+                }
                 if (irc.filteringEnabled)
                 {
                     if (check("!filterAdd ")) _blacklist.AddFilter(FormattedMessage);
@@ -219,7 +225,7 @@ namespace TwitchBotConsole
                 }
                 if (irc.leaderBoardEnabled)
                 {
-                    if (check("!forceSpeedrunPage")) _jsonStatus.forcedGameFunction(irc, FormattedMessage);
+                    if (check("!forceSpeedrunPage")) _jsonStatus.forcedGameFunction(FormattedMessage);
                     if (check("!speedrunName ")) irc.updateSpeedrunName(FormattedMessage);
 
                     if (check("!pb"))
@@ -246,7 +252,7 @@ namespace TwitchBotConsole
                 //mod only!
                 if (irc.moderators.Contains(FormattedMessage.user))
                 {
-                    if (check("!updateJsonInfo")) _jsonStatus.requestUpdate(irc);
+                    if (check("!updateJsonInfo")) _jsonStatus.requestUpdate();
                     if (check("!version")) irc.version();
                 }
                 //supermod only!

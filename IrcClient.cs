@@ -56,6 +56,7 @@ namespace TwitchBotConsole
         public bool voteEnabled = true;
         public bool breakPyramids = true;
         public bool ConnectedStatus = true;
+        public bool viewerPBActive = true;
 
         public List<string> supermod = new List<string>();
         public List<string> moderators = new List<string>();
@@ -118,7 +119,7 @@ namespace TwitchBotConsole
 
         private void CheckConnection_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if(tcpClient.Connected)
+            if(tcpClient.Client.Connected)
             {
                 Console.WriteLine("CONNECTION CHECK: Is connected!");
                 ConnectedStatus = true;
@@ -362,11 +363,11 @@ namespace TwitchBotConsole
             {
                 output = output + "\nSuperMod:" + supermod[i];
             }
-            output = output + "\n\nPhraseFiltering:" + filteringEnabled.ToString();
-            output = output + "\nQuotesEnabled:" + quoteEnabled.ToString();
-            output = output + "\nSafeAskMode:" + safeAskMode.ToString();
-            output = output + "\nSlotsEnabled:" + slotsEnable.ToString();
-            output = output + "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString();
+            output += "\n\nPhraseFiltering:" + filteringEnabled.ToString();
+            output += "\nQuotesEnabled:" + quoteEnabled.ToString();
+            output += "\nSafeAskMode:" + safeAskMode.ToString();
+            output += "\nSlotsEnabled:" + slotsEnable.ToString();
+            output += "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString();
 
             File.WriteAllText(@configfile, output);
         }
@@ -379,7 +380,7 @@ namespace TwitchBotConsole
                 output = output + "\nSuperMod:" + supermod[i];
             }
             output = output + "\n\nVocalMode:" + vocalMode.ToString()
-                +"\nPhraseFiltering:" + filteringEnabled.ToString()
+                + "\nPhraseFiltering:" + filteringEnabled.ToString()
                 + "\nFilteringResponse:" + filteringRespond.ToString()
                 + "\nQuotesEnabled:" + quoteEnabled.ToString()
                 + "\nSafeAskMode:" + safeAskMode.ToString()
@@ -388,6 +389,7 @@ namespace TwitchBotConsole
                 + "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString()
                 + "\nDeathCounterEnabled:" + deathCounterEnabled.ToString()
                 + "\nDeathCounterSafetyDelay:" + delayBetweenAddedDeaths.ToString()
+                + "\nViewerPBEnabled:" + viewerPBActive.ToString()
                 + "\nLeaderboardEnabled:" + leaderBoardEnabled.ToString()
                 + "\nVotesEnabled:" + voteEnabled.ToString();
 
@@ -722,6 +724,22 @@ namespace TwitchBotConsole
                         else
                         {
                             deathCounterEnabled = false;
+                        }
+                    }
+                }
+                else if (line.StartsWith("ViewerPBEnabled:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] != "")
+                    {
+                        bool boolValue;
+                        if (bool.TryParse(helper[1], out boolValue))
+                        {
+                            viewerPBActive = boolValue;
+                        }
+                        else
+                        {
+                            viewerPBActive = false;
                         }
                     }
                 }
