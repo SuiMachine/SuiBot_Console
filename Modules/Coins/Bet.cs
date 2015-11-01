@@ -9,12 +9,22 @@ namespace TwitchBotConsole
     class Bet
     {
         Coins coins;
+        List<string> results = new List<string>();
         Dictionary<string, Tuple<uint, DateTime>> userCoins;
-        Dictionary<string, Tuple<uint,int>> betData = new Dictionary<string, Tuple<uint,int>>();
+        Dictionary<string, Tuple<uint,int>> betDataValue = new Dictionary<string, Tuple<uint,int>>();        //User, Amount of coins, number
+        Dictionary<string, Tuple<uint, uint, byte, float>> betDataTime = new Dictionary<string, Tuple<uint, uint, byte, float>>();        //User, Amount of coins, hours, min, seconds
+
+        enum eBetType
+        {
+            Value,
+            Time
+        }
+
+        byte betType=(byte)eBetType.Value;
 
         bool betRunning = false;
-        bool isBettingOnTime = false;
         bool betEnded = false;
+        bool resultsCalculated = false;
         string objective = "";
 
         public Bet(Coins _coins)
@@ -32,14 +42,14 @@ namespace TwitchBotConsole
                 {
                     string[] message = msg.message.Split(new char[] { ' ' }, 2);
 
-                    betData.Clear();
+                    betDataValue.Clear();
+                    betDataTime.Clear();
                     betEnded = false;
-                    isBettingOnTime = false;
 
                     if (message[1] != String.Empty)
                     {
                         objective = message[1];
-                        irc.sendChatMessage("New bet (number): " + objective);
+                        irc.sendChatMessage("New bet (Int Value): " + objective);
                     }
                 }
                 else
@@ -59,17 +69,21 @@ namespace TwitchBotConsole
                     {
                         if(message[1].StartsWith("Time", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            isBettingOnTime = true;
+                            betType = (byte)eBetType.Time;
                             betEnded = false;
-                            betData.Clear();
+                            results.Clear();
+                            betDataTime.Clear();
+                            betDataValue.Clear();
                             irc.sendChatMessage("Betting type set to: Time");
                         }
-                        else if(message[1].StartsWith("Number", StringComparison.InvariantCultureIgnoreCase)|| message[1].StartsWith("default", StringComparison.InvariantCultureIgnoreCase))
+                        else if(message[1].StartsWith("Number", StringComparison.InvariantCultureIgnoreCase) || message[1].StartsWith("Value", StringComparison.InvariantCultureIgnoreCase)|| message[1].StartsWith("default", StringComparison.InvariantCultureIgnoreCase))
                         {
+                            betType = (byte)eBetType.Value;
                             betEnded = false;
-                            isBettingOnTime = false;
-                            betData.Clear();
-                            irc.sendChatMessage("Betting type set to: Number");
+                            results.Clear();
+                            betDataTime.Clear();
+                            betDataValue.Clear();
+                            irc.sendChatMessage("Betting type set to: Number (Int)");
                         }
                         else
                         {
@@ -90,7 +104,7 @@ namespace TwitchBotConsole
         {
             if (irc.moderators.Contains(msg.user))
             {
-                if (betRunning)
+                if (!betRunning)
                 {
                     betRunning = true;
                     irc.sendChatMessage("Bets are now opened.");
@@ -120,12 +134,48 @@ namespace TwitchBotConsole
             {
                 if(!betRunning)
                 {
-                    betEnded = true;
+                    if(betType == (byte)eBetType.Value)
+                    {
+                        string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+                        if (helper[1] != String.Empty)
+                        {
+                            int answer = 0;
+                            if (int.TryParse(helper[1], out answer))
+                            {
+                                betEnded = true;
+                                irc.sendChatMessage("Answer is: " + answer.ToString() + ". If this is correct, do \"!betWinners \"" );
+                            }
+                            else
+                                irc.sendChatMessage("Failed to parse the answer. Has to be Int value");
+                        }
+                        else
+                            irc.sendChatMessage("No answer provided!");
+
+                    }
+                    else if(betType == (byte)eBetType.Time)
+                    {
+
+                    }
                 }
                 else
                 {
                     irc.sendChatMessage("A bet is currently running.");
                 }
+            }
+        }
+
+        public void getWinners(IrcClient irc, ReadMessage msg)
+        {
+            if(betEnded)
+            {
+                if(!resultsCalculated)
+                {
+
+                }
+            }
+            else
+            {
+
             }
         }
         #endregion
@@ -147,11 +197,7 @@ namespace TwitchBotConsole
             }
 
 
-            if (isBettingOnTime)
-            {
-
-            }
-            else
+            if(betType == (byte)eBetType.Value)
             {
                 timedifference = (DateTime.UtcNow - values.Item2).TotalSeconds;
 
@@ -172,7 +218,7 @@ namespace TwitchBotConsole
                             if (values.Item1 > valueCoins)
                             {
                                 Tuple<uint, int> userBet = new Tuple<uint, int>(valueCoins, betOn);
-                                betData.Add(msg.user, userBet);
+                                betDataValue.Add(msg.user, userBet);
                                 Tuple<uint, DateTime> newValues = new Tuple<uint, DateTime>(values.Item1 - valueCoins, DateTime.Now);
                                 userCoins[msg.user] = newValues;
                                 irc.sendChatMessage(msg.user + ": You've bet " + valueCoins.ToString() + " coin(s) on " + betOn.ToString());

@@ -10,11 +10,19 @@ namespace TwitchBotConsole
 {
     class Json_status
     {
+        IrcClient irc;
+        ViewerPB viewerPB;
         public bool isOnline = true;
         public bool isForcedPage = false;
         public string game = "";
         public string forcedGame = "";
         string sUrl = "";
+
+        public Json_status(IrcClient _irc, ViewerPB _viewerPB)
+        {
+            irc = _irc;
+            viewerPB = _viewerPB;
+        }
 
         public void SendChannel(string channel)
         {
@@ -50,6 +58,18 @@ namespace TwitchBotConsole
                 {
                     Console.WriteLine("Checked stream status. Is online.");
                 }
+
+                indexStart = temp.IndexOf("viewers");
+                if(indexStart>0)
+                {
+                    indexStart = indexStart + 9;
+                    int indexEnd = temp.IndexOf(",", indexStart);
+                    uint Value;
+                    if(uint.TryParse(temp.Substring(indexStart, indexEnd-indexStart), out Value))
+                    {
+                        viewerPB.CheckViewerPB(Value);
+                    }
+                }
             }
             else
             {
@@ -63,7 +83,7 @@ namespace TwitchBotConsole
             getStatus();
         }
 
-        internal void requestUpdate(IrcClient irc)
+        internal void requestUpdate()
         {
             getStatus();
             if(game!=string.Empty)
@@ -76,7 +96,7 @@ namespace TwitchBotConsole
             }
         }
 
-        internal void forcedGameFunction(IrcClient irc,ReadMessage msg)
+        internal void forcedGameFunction(ReadMessage msg)
         {
             if(irc.moderators.Contains(msg.user))
             {
