@@ -303,10 +303,10 @@ namespace TwitchBotConsole
                 {
                     var gameID = game.ID;
                     var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
-                    if (playersPB.Count > 0)
+                    Record tehUrn;
+                    if((tehUrn = playersPB.First(run => run.Category.ID == game.Categories[0].ID)) != null)
                     {
-                        irc.sendChatMessage("Strimmer PB in " + playersPB[0].Game.Name + " (" + playersPB[0].Category.Name + ") is: " + playersPB[0].Times.Primary + ". " + playersPB[0].WebLink);
-
+                        irc.sendChatMessage("Strimmer PB in " + tehUrn.Game.Name + " (" + tehUrn.Category.Name + ") is: " + tehUrn.Times.Primary + ". " + tehUrn.WebLink);
                     }
                     else
                     {
