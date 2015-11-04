@@ -228,7 +228,7 @@ namespace TwitchBotConsole
                 }
                 return String.Empty;
             }
-            else if (question.StartsWith("What time is it", StringComparison.InvariantCultureIgnoreCase))
+			else if (question.StartsWith("What time is it", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("What's the time", StringComparison.InvariantCultureIgnoreCase))
             {
                 return "It's: " + DateTime.UtcNow.Hour + ":" + DateTime.UtcNow.Minute + " (UTC)";
             }
