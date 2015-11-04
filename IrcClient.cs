@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using System.Net.Sockets;
 using System.Threading;
@@ -39,7 +35,7 @@ namespace TwitchBotConsole
         public string SpeedrunName = "";
         public config _config;
         public bool configFileExisted = false;
-        public double AskDelay = 30.0d;
+        public double AskDelay = 1.0d;
         public double GamesDelay = 30.0d;
         public uint SlotsInitialCoins = 100;
         public bool quoteEnabled = true;
