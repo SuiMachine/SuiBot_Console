@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using System.Net.Sockets;
 using System.Threading;
@@ -68,6 +64,7 @@ namespace TwitchBotConsole
         ReadMessage FormattedMessage;
 
         private TcpClient tcpClient;
+        private NetworkStream networkStream;
         private StreamReader inputStream;
         private StreamWriter outputStream;
         DateTime LastSend;
@@ -90,9 +87,12 @@ namespace TwitchBotConsole
                 {
                     this.userName = _config.username;
 
-                    tcpClient = new TcpClient(_config.server, _config.port);
-                    inputStream = new StreamReader(tcpClient.GetStream());
-                    outputStream = new StreamWriter(tcpClient.GetStream());
+                    tcpClient = new TcpClient(_config.server,_config.port);
+
+                    networkStream = new NetworkStream(tcpClient.Client);
+                    inputStream = new StreamReader(networkStream);
+                    outputStream = new StreamWriter(networkStream);
+
 
                     outputStream.WriteLine("PASS " + _config.password);
                     outputStream.WriteLine("NICK " + userName);
@@ -119,16 +119,16 @@ namespace TwitchBotConsole
 
         private void CheckConnection_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if(tcpClient.Client.Connected)
+            if (tcpClient.Client.Poll(0, SelectMode.SelectRead))
             {
-                Console.WriteLine("CONNECTION CHECK: Is connected!");
-                ConnectedStatus = true;
+                byte[] buff = new byte[1];
+                if (tcpClient.Client.Receive(buff, SocketFlags.Peek) == 0)
+                {
+                    // Client disconnected
+                    Console.WriteLine("CONNECTION CLOSED");
+                }
             }
-            else
-            {
-                Console.WriteLine("CONNECTION CHECK: Is NOT connected!!!!!");
-                ConnectedStatus = false;
-            }
+            Console.WriteLine("RUNNING");
         }
         #endregion
 

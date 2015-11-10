@@ -4,7 +4,6 @@ using System.Linq;
 using System.IO;
 using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace TwitchBotConsole
 {
