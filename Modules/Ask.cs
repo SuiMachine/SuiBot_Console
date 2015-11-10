@@ -230,7 +230,14 @@ namespace TwitchBotConsole
             }
 			else if (question.StartsWith("What time is it", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("What's the time", StringComparison.InvariantCultureIgnoreCase))
             {
-                return "It's: " + DateTime.UtcNow.Hour + ":" + DateTime.UtcNow.Minute + " (UTC)";
+                TimeZoneInfo CentralEurope = TimeZoneInfo.FindSystemTimeZoneById("Central Europe Standard Time");
+                DateTime centralEuropeTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, CentralEurope);
+                TimeZoneInfo easternStandard = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                DateTime easternStandardTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, easternStandard);
+                TimeZoneInfo australia = TimeZoneInfo.FindSystemTimeZoneById("AUS Eastern Standard Time");
+                DateTime australiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, australia);
+
+                return "It's: " + centralEuropeTime.ToShortTimeString() + " (Central Europe), " + easternStandardTime.ToShortTimeString() + "(Eastern Standard Time) or " + australiaTime.ToShortTimeString() + " (Aussy time) FrankerZ";
             }
             else if (question.StartsWith("What", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("Wat", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -248,7 +255,7 @@ namespace TwitchBotConsole
                     }
                     else if(word == "0451")
                     {
-                        return "It is a reference to the book Fahrenheit 451. It's author - Ray Bradbury, asserted that \"book-paper\" will auto-ignite at the temperature higher that 451 degrees of fahrenheit* FrankerZ";
+                        return "It is a reference to the book Fahrenheit 451. Its author - Ray Bradbury, asserted that \"book-paper\" will auto-ignite at the temperature higher than 451 degrees of fahrenheit* FrankerZ";
                     }
                     else if(word == "love")
                     {
