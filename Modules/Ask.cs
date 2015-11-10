@@ -230,14 +230,9 @@ namespace TwitchBotConsole
             }
 			else if (question.StartsWith("What time is it", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("What's the time", StringComparison.InvariantCultureIgnoreCase))
             {
-                TimeZoneInfo CentralEurope = TimeZoneInfo.FindSystemTimeZoneById("Central Europe Standard Time");
-                DateTime centralEuropeTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, CentralEurope);
-                TimeZoneInfo easternStandard = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-                DateTime easternStandardTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, easternStandard);
-                TimeZoneInfo australia = TimeZoneInfo.FindSystemTimeZoneById("AUS Eastern Standard Time");
-                DateTime australiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, australia);
+                DateTime utcTime = DateTime.UtcNow;
 
-                return "It's: " + centralEuropeTime.ToShortTimeString() + " (Central Europe), " + easternStandardTime.ToShortTimeString() + "(Eastern Standard Time) or " + australiaTime.ToShortTimeString() + " (Aussy time) FrankerZ";
+                return "It's: " + utcTime.AddHours(1).ToShortTimeString() + " (Central Europe), " + utcTime.AddHours(-5).ToShortTimeString() + "(Eastern Standard Time) or " + utcTime.AddHours(11).ToShortTimeString() + " (Aussy time) FrankerZ";
             }
             else if (question.StartsWith("What", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("Wat", StringComparison.InvariantCultureIgnoreCase))
             {
