@@ -10,18 +10,21 @@ namespace TwitchBotConsole
 
         public void DisplayCoins(IrcClient irc, ReadMessage msg)
         {
-            Tuple<uint, DateTime> values;
+            if(irc.dynamicDelayCheck())
+            {
+                Tuple<uint, DateTime> values;
 
-            if (userCoins.ContainsKey(msg.user))
-            {
-                values = userCoins[msg.user];
+                if (userCoins.ContainsKey(msg.user))
+                {
+                    values = userCoins[msg.user];
+                }
+                else
+                {
+                    values = new Tuple<uint, DateTime>(irc.SlotsInitialCoins, DateTime.MinValue);
+                    userCoins[msg.user] = values;
+                }
+                irc.sendChatMessage(msg.user + ": You have " + values.Item1.ToString() + " coin(s).");
             }
-            else
-            {
-                values = new Tuple<uint, DateTime>(irc.SlotsInitialCoins, DateTime.MinValue);
-                userCoins[msg.user] = values;
-            }
-            irc.sendChatMessage(msg.user + ": You have " + values.Item1.ToString() + " coin(s).");
         }
 
         public void AddCoins(IrcClient irc, ReadMessage msg)

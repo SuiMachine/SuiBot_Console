@@ -35,12 +35,12 @@ namespace TwitchBotConsole
         public string SpeedrunName = "";
         public config _config;
         public bool configFileExisted = false;
-        public double AskDelay = 30.0d;
         public double GamesDelay = 30.0d;
         public uint SlotsInitialCoins = 100;
         public bool quoteEnabled = true;
         public bool safeAskMode = true;
         public bool filteringEnabled = true;
+        public bool filteringHarsh = true;
         public bool filteringRespond = false;
         public bool slotsEnable = false;
         public bool intervalMessagesEnabled = true;
@@ -53,6 +53,11 @@ namespace TwitchBotConsole
         public bool breakPyramids = true;
         public bool ConnectedStatus = true;
         public bool viewerPBActive = true;
+        public bool adjustGamesDelayBasedOnChatActivity = true;
+        public bool disableFunctionsWithHighlyActiveChat = false;
+
+        public int amountOfCharactersLastMinute = 0;
+        public int prevamountOfCharactersLastMinute = 0;
 
         public List<string> supermod = new List<string>();
         public List<string> moderators = new List<string>();
@@ -63,7 +68,7 @@ namespace TwitchBotConsole
         private string channel;
         ReadMessage FormattedMessage;
 
-        private TcpClient tcpClient;
+        private Socket clientSocket;
         private NetworkStream networkStream;
         private StreamReader inputStream;
         private StreamWriter outputStream;
@@ -87,9 +92,10 @@ namespace TwitchBotConsole
                 {
                     this.userName = _config.username;
 
-                    tcpClient = new TcpClient(_config.server,_config.port);
+                    clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    clientSocket.Connect(_config.server, _config.port);
 
-                    networkStream = new NetworkStream(tcpClient.Client);
+                    networkStream = new NetworkStream(clientSocket);
                     inputStream = new StreamReader(networkStream);
                     outputStream = new StreamWriter(networkStream);
 
@@ -119,16 +125,28 @@ namespace TwitchBotConsole
 
         private void CheckConnection_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (tcpClient.Client.Poll(0, SelectMode.SelectRead))
+            bool result = SocketConnected(clientSocket);
+            if (result)
             {
-                byte[] buff = new byte[1];
-                if (tcpClient.Client.Receive(buff, SocketFlags.Peek) == 0)
-                {
-                    // Client disconnected
-                    Console.WriteLine("CONNECTION CLOSED");
-                }
+                Console.WriteLine("RUNNING! Amount of characters last minute: " + amountOfCharactersLastMinute.ToString());
+                prevamountOfCharactersLastMinute = amountOfCharactersLastMinute;
+                amountOfCharactersLastMinute = 0;
             }
-            Console.WriteLine("RUNNING");
+            else
+            {
+                Console.WriteLine("CONNECTION LOST!");
+            }
+
+        }
+
+        private bool SocketConnected(Socket s)
+        {
+            bool part1 = s.Poll(1000, SelectMode.SelectRead);
+            Console.WriteLine("Part 1: " + part1);
+            bool part2 = (s.Available == 0);
+            Console.WriteLine("Part 2: " + part2);
+
+            return true;
         }
         #endregion
 
@@ -164,6 +182,7 @@ namespace TwitchBotConsole
             {
                 FormattedMessage.message = message.Substring(startsAt);
             }
+            amountOfCharactersLastMinute += FormattedMessage.message.Length;
             return FormattedMessage;
         }
 
@@ -183,12 +202,13 @@ namespace TwitchBotConsole
                 Thread.Sleep(2000 - timeSpanInt);
             }
             LastSend = DateTime.UtcNow;
-
+            amountOfCharactersLastMinute += message.Length;
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
         }
 
         public void sendChatMessage_NoDelays(string message)
         {
+            amountOfCharactersLastMinute += message.Length;
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
         }
 
@@ -379,8 +399,11 @@ namespace TwitchBotConsole
             {
                 output = output + "\nSuperMod:" + supermod[i];
             }
-            output = output + "\n\nVocalMode:" + vocalMode.ToString()
+            output = output + "\n\nAdjustGamesDelayBasedOnChatActivity:" + adjustGamesDelayBasedOnChatActivity.ToString()+
+                "\nDisableFunctionsWithHighlyActiveChat:" + disableFunctionsWithHighlyActiveChat.ToString()
+                + "\n\nVocalMode:" + vocalMode.ToString()
                 + "\nPhraseFiltering:" + filteringEnabled.ToString()
+                + "\nFilteringHarsh:" + filteringHarsh.ToString()
                 + "\nFilteringResponse:" + filteringRespond.ToString()
                 + "\nQuotesEnabled:" + quoteEnabled.ToString()
                 + "\nSafeAskMode:" + safeAskMode.ToString()
@@ -487,6 +510,9 @@ namespace TwitchBotConsole
             string line = "";
             while ((line = SR.ReadLine()) != null)
             {
+                bool tempBool;
+                int tempInt;
+                double tempDouble;
                 if (line.StartsWith("Server:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
@@ -540,22 +566,6 @@ namespace TwitchBotConsole
                     else
                         _config.channel = helper[1].ToLower();
                 }
-                else if (line.StartsWith("AutoUpdates:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedValue;
-                        if (bool.TryParse(helper[1], out loadedValue))
-                            checkForUpdates = loadedValue;
-                        else
-                            checkForUpdates = true;
-                    }
-                    else
-                    {
-                        LoadedProperly = false;
-                    }
-                }
                 else if (line.StartsWith("SpeedrunName:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
@@ -568,7 +578,7 @@ namespace TwitchBotConsole
                         SpeedrunName = "";
                     }
                 }
-                else if(line.StartsWith("SuperMod:"))
+                else if (line.StartsWith("SuperMod:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
                     if (helper[1] != "")
@@ -580,223 +590,25 @@ namespace TwitchBotConsole
                     {
                         Console.WriteLine("SuperMod string was empty");
                     }
-                }
-                else if (line.StartsWith("VocalMode:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedValue;
-                        if (bool.TryParse(helper[1], out loadedValue))
-                        {
-                            vocalMode = loadedValue;
-                        }
-                        else
-                        {
-                            vocalMode = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("PhraseFiltering:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedBool;
-                        if(bool.TryParse(helper[1], out loadedBool))
-                        {
-                            filteringEnabled = loadedBool;
-                        }
-                        else
-                        {
-                            filteringEnabled = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("FilteringResponse:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedBool;
-                        if (bool.TryParse(helper[1], out loadedBool))
-                        {
-                            filteringRespond = loadedBool;
-                        }
-                        else
-                        {
-                            filteringRespond = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("QuotesEnabled:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedBool;
-                        if (bool.TryParse(helper[1], out loadedBool))
-                        {
-                            quoteEnabled = loadedBool;
-                        }
-                        else
-                        {
-                            quoteEnabled = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("SafeAskMode:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedBool;
-                        if (bool.TryParse(helper[1], out loadedBool))
-                        {
-                            safeAskMode = loadedBool;
-                            
-                        }
-                        else
-                        {
-                            safeAskMode = true;
-                        }
-                    }
-                }
-                else if (line.StartsWith("GamesDelay:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        double delay;
-                        if (double.TryParse(helper[1], out delay))
-                        {
-                            GamesDelay = delay;
-                        }
-                        else
-                        {
-                            GamesDelay = 30d;
-                        }
-                    }
-                }
-                else if (line.StartsWith("SlotsEnabled:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedBool;
-                        if (bool.TryParse(helper[1], out loadedBool))
-                        {
-                            slotsEnable = loadedBool;
-                        }
-                        else
-                        {
-                            slotsEnable = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("IntervalMessagesEnabled:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedBool;
-                        if (bool.TryParse(helper[1], out loadedBool))
-                        {
-                            intervalMessagesEnabled = loadedBool;
-
-                        }
-                        else
-                        {
-                            intervalMessagesEnabled = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("DeathCounterEnabled:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool boolValue;
-                        if (bool.TryParse(helper[1], out boolValue))
-                        {
-                            deathCounterEnabled = boolValue;
-                        }
-                        else
-                        {
-                            deathCounterEnabled = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("ViewerPBEnabled:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool boolValue;
-                        if (bool.TryParse(helper[1], out boolValue))
-                        {
-                            viewerPBActive = boolValue;
-                        }
-                        else
-                        {
-                            viewerPBActive = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("DeathCounterSafetyDelay:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        uint loadedValue;
-                        if (uint.TryParse(helper[1], out loadedValue))
-                        {
-                            delayBetweenAddedDeaths = loadedValue;
-                        }
-                        else
-                        {
-                            delayBetweenAddedDeaths = 10;
-                        }
-                    }
-                }
-                else if (line.StartsWith("LeaderboardEnabled:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedValue;
-                        if (bool.TryParse(helper[1], out loadedValue))
-                        {
-                            leaderBoardEnabled =  loadedValue;
-                        }
-                        else
-                        {
-                            leaderBoardEnabled = false;
-                        }
-                    }
-                }
-                else if (line.StartsWith("VotesEnabled:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] != "")
-                    {
-                        bool loadedValue;
-                        if (bool.TryParse(helper[1], out loadedValue))
-                        {
-                            voteEnabled = loadedValue;
-                        }
-                        else
-                        {
-                            voteEnabled = false;
-                        }
-                    }
-                }
+                }   //Because this part was getting stupidly long, I wrote a functions to parse these and made it all fit on one screen
+                else if (_configParseBool(line, "AutoUpdates:", true, out tempBool)) checkForUpdates = tempBool;
+                else if (_configParseBool(line, "VocalMode:", false, out tempBool)) vocalMode = tempBool;
+                else if (_configParseBool(line, "PhraseFiltering:", false, out tempBool)) filteringEnabled = tempBool;
+                else if (_configParseBool(line, "FilteringHarsh:", false, out tempBool)) filteringHarsh = tempBool;
+                else if (_configParseBool(line, "FilteringResponse:", false, out tempBool)) filteringRespond = tempBool;
+                else if (_configParseBool(line, "QuotesEnabled:", false, out tempBool)) quoteEnabled = tempBool;
+                else if (_configParseBool(line, "SafeAskMode:", true, out tempBool)) safeAskMode = tempBool;
+                else if (_configParseBool(line, "SlotsEnabled:", false, out tempBool)) slotsEnable = tempBool;
+                else if (_configParseBool(line, "IntervalMessagesEnabled:", false, out tempBool)) intervalMessagesEnabled = tempBool;
+                else if (_configParseBool(line, "DeathCounterEnabled:", false, out tempBool)) deathCounterEnabled = tempBool;
+                else if (_configParseBool(line, "ViewerPBEnabled:", false, out tempBool)) viewerPBActive = tempBool;
+                else if (_configParseBool(line, "LeaderboardEnabled:", false, out tempBool)) leaderBoardEnabled = tempBool;
+                else if (_configParseBool(line, "VotesEnabled:", false, out tempBool)) voteEnabled = tempBool;
+                else if (_configParseBool(line, "AdjustGamesDelayBasedOnChatActivity:", true, out tempBool)) adjustGamesDelayBasedOnChatActivity = tempBool;
+                else if (_configParseBool(line, "DisableFunctionsWithHighlyActiveChat:", false, out tempBool)) disableFunctionsWithHighlyActiveChat = tempBool;
+                else if (_configParseDouble(line, "GamesDelay:", 30d, out tempDouble)) GamesDelay = tempDouble;
+                else if (_configParseInt(line, "DeathCounterSafetyDelay:", 10, out tempInt)) delayBetweenAddedDeaths = (uint)tempInt;
             }
-            Trace.WriteLine("Filtering: " + filteringEnabled.ToString());
-            Trace.WriteLine("Safe ask mode: " + safeAskMode.ToString());
-            Trace.WriteLine("Quotes: " + quoteEnabled.ToString());
-            Trace.WriteLine("Slots: " + slotsEnable.ToString());
-            Trace.WriteLine("Interval messages: " + intervalMessagesEnabled.ToString());
             SR.Close();
             SR.Dispose();
 
@@ -831,5 +643,98 @@ namespace TwitchBotConsole
             string output = "Deaths:" + deaths.ToString();
             File.WriteAllText(@deathSave, output);
         }
+
+        public bool dynamicDelayCheck()
+        {
+            int data;
+            if (prevamountOfCharactersLastMinute > amountOfCharactersLastMinute)
+                data = prevamountOfCharactersLastMinute;
+            else
+                data = amountOfCharactersLastMinute;
+
+            if (disableFunctionsWithHighlyActiveChat && data > 475)
+            {
+                return false;
+            }
+            else if(data >200)
+            {
+                int datatemp = data - 200;
+                GamesDelay = 0.003 * data * data + 30;
+                return true;
+            }
+            else
+            {
+                GamesDelay = 30.0d;
+                return true;
+            }
+        }
+
+        #region customParseFunctions
+        private bool _configParseBool(string readLine, string lookingFor, bool defaultValue, out bool value)
+        {
+            if (readLine.StartsWith(lookingFor, StringComparison.InvariantCultureIgnoreCase))
+            {
+                string[] helper = readLine.Split(new char[] { ':' }, 2);
+                if (bool.TryParse(helper[1], out value))
+                {
+                    return true;
+                }
+                else
+                {
+                    value = defaultValue;
+                    return true;
+                }
+            }
+            else
+            {
+                value = true;
+                return false;
+            }
+        }
+
+        private bool _configParseInt(string readLine, string lookingFor, int defaultValue, out int value)
+        {
+            if (readLine.StartsWith(lookingFor, StringComparison.InvariantCultureIgnoreCase))
+            {
+                string[] helper = readLine.Split(new char[] { ':' }, 2);
+                if (int.TryParse(helper[1], out value))
+                {
+                    return true;
+                }
+                else
+                {
+                    value = defaultValue;
+                    return true;
+                }
+            }
+            else
+            {
+                value = 0;
+                return false;
+            }
+        }
+
+        private bool _configParseDouble(string readLine, string lookingFor, double defaultValue, out double value)
+        {
+            if (readLine.StartsWith(lookingFor, StringComparison.InvariantCultureIgnoreCase))
+            {
+                string[] helper = readLine.Split(new char[] { ':' }, 2);
+                if (double.TryParse(helper[1], out value))
+                {
+                    return true;
+                }
+                else
+                {
+                    value = defaultValue;
+                    return true;
+                }
+            }
+            else
+            {
+                value = 0;
+                return false;
+            }
+        }
+        #endregion
     }
 }

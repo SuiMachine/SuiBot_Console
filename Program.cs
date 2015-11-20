@@ -106,6 +106,7 @@ namespace TwitchBotConsole
         {
             string rawMessage = irc.readRawMessage();
             Trace.WriteLine(rawMessage);
+            //Console.WriteLine("DEBUG" + rawMessage);
             FormattedMessage = irc.readMessage(rawMessage);
             Console.WriteLine(FormattedMessage.user + ": " + FormattedMessage.message);
 
@@ -166,8 +167,8 @@ namespace TwitchBotConsole
                 cvarflag = true;//check if _ANYTHING_ matched.
                 if (irc.vocalMode)
                 {
-                    if (check("!help")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
-                    if (check("!commands")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
+                    if (irc.moderators.Contains(FormattedMessage.user) && check("!help")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
+                    if (irc.moderators.Contains(FormattedMessage.user) && check("!commands")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
                     if (check("!ask ")) _ask.answerAsk(irc, FormattedMessage);
                     if (check("!addCvar ")) _customCvars.addCustomCvar(irc, FormattedMessage);
                     if (check("!removeCvar ")) _customCvars.removeCustomCvar(irc, FormattedMessage);
@@ -249,6 +250,7 @@ namespace TwitchBotConsole
                 {
                     if (check("!updateJsonInfo")) _jsonStatus.requestUpdate();
                     if (check("!version")) irc.version();
+                    if (check("!schedule")) irc.sendChatMessage("https://horaro.org/shotsfired/schedule");
                 }
                 //supermod only!
                 if (irc.supermod.Contains(FormattedMessage.user))
@@ -311,6 +313,4 @@ namespace TwitchBotConsole
             }
         }
     }
-
-    
 }

@@ -72,16 +72,24 @@ namespace TwitchBotConsole
             return false;
         }
 
-        bool isLink(string message)
+        private bool isLink(string message)
         {
-            if(url_marks.Any(s => message.Contains(s)))
+            string[] helper = message.Split(' ');
+            foreach (string word in helper)
             {
-                return true;
+                if (url_marks.Any(s => word.Contains(s)))
+                    return true;
+                else if (irc.filteringHarsh && word.Contains('.'))
+                {
+                    int index = word.IndexOf('.');
+                    if (index > 0 && index < word.Length - 1)
+                    {
+                        if (char.IsLetter(word.ElementAt(index - 1)) && char.IsLetter(word.ElementAt(index + 1)))
+                            return true;
+                    }
+                }
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         enum addingToEnum : byte

@@ -35,6 +35,8 @@ namespace TwitchBotConsole
             proxyName.Add("Thief: Gold", "Thief Gold");
             proxyName.Add("Thief 2", "Thief ll: The Metal Age");
             proxyName.Add("Thief II", "Thief ll: The Metal Age");
+            proxyName.Add("F.E.A.R.: First Encounter Assault Recon", "F.E.A.R.");
+            proxyName.Add("Judge Dredd: Dredd vs Death", "dreddgasm");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
