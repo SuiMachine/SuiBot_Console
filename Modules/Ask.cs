@@ -235,7 +235,7 @@ namespace TwitchBotConsole
             {
                 DateTime utcTime = DateTime.UtcNow;
 
-                return "It's: " + utcTime.AddHours(1).ToShortTimeString() + " (Central Europe), " + utcTime.AddHours(-5).ToShortTimeString() + " (Eastern Standard Time) or " + utcTime.AddHours(11).ToShortTimeString() + " (Aussy time) FrankerZ";
+                return "It's: " + utcTime.AddHours(1).ToShortTimeString() + " (Central Europe), " + utcTime.AddHours(-5).ToShortTimeString() + " (Eastern Standard Time) or " + utcTime.AddHours(11).ToShortTimeString() + " (Aussie time) FrankerZ";
             }
             else if (question.StartsWith("What", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("Wat", StringComparison.InvariantCultureIgnoreCase))
             {
