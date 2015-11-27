@@ -26,35 +26,38 @@ namespace TwitchBotConsole
 
     class IrcClient
     {
+        bool requiresConfigUpdate = true;
         bool loading_status = true;
         public bool checkForUpdates = true;
+        public bool ConnectedStatus = true;
         static string configfile = "config.cfg";
         static string ignoredfile = "ignored_users.txt";
         static string trustedfile = "trusted_users.txt";
         static string deathSave = "deaths.txt";
         public string SpeedrunName = "";
         public config _config;
+        #region properties
         public bool configFileExisted = false;
-        public double GamesDelay = 30.0d;
-        public uint SlotsInitialCoins = 100;
-        public bool quoteEnabled = true;
-        public bool safeAskMode = true;
-        public bool filteringEnabled = true;
-        public bool filteringHarsh = true;
-        public bool filteringRespond = false;
-        public bool slotsEnable = false;
-        public bool intervalMessagesEnabled = true;
-        public bool deathCounterEnabled = false;
-        public uint deaths = 0;
-        public uint delayBetweenAddedDeaths = 10;
-        public bool leaderBoardEnabled = false;
-        public bool vocalMode = true;
-        public bool voteEnabled = true;
-        public bool breakPyramids = true;
-        public bool ConnectedStatus = true;
-        public bool viewerPBActive = true;
-        public bool adjustGamesDelayBasedOnChatActivity = true;
-        public bool disableFunctionsWithHighlyActiveChat = false;
+        public double GamesDelay { get; set; }
+        public uint SlotsInitialCoins { get; set; }
+        public bool quoteEnabled { get; set; }
+        public bool safeAskMode { get; set; }
+        public bool filteringEnabled { get; set; }
+        public bool filteringHarsh { get; set; }
+        public bool filteringRespond { get; set; }
+        public bool slotsEnable { get; set; }
+        public bool intervalMessagesEnabled { get; set; }
+        public bool deathCounterEnabled { get; set; }
+        public uint deaths { get; set; }
+        public uint delayBetweenAddedDeaths { get; set; }
+        public bool leaderBoardEnabled { get; set; }
+        public bool vocalMode { get; set; }
+        public bool voteEnabled { get; set; }
+        public bool breakPyramids { get; set; }
+        public bool viewerPBActive { get; set; }
+        public bool adjustGamesDelayBasedOnChatActivity { get; set; }
+        public bool disableFunctionsWithHighlyActiveChat { get; set; }
+        #endregion
 
         public int amountOfCharactersLastMinute = 0;
         public int prevamountOfCharactersLastMinute = 0;
@@ -85,7 +88,13 @@ namespace TwitchBotConsole
             else
             {
                 configFileExisted = true;
+                LoadDefaultValues();
                 loadConfig();
+                if (requiresConfigUpdate)
+                {
+                    Console.WriteLine("!!!!!!!!!!!! CONFIG FILE WAS UPDATED !!!!!!!!!!!!");
+                    SaveConfig();
+                }
                 loadDeaths();
 
                 if(loading_status)
@@ -227,6 +236,7 @@ namespace TwitchBotConsole
         {
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " " + time.ToString());
         }
+
         public void banMessage(string user)
         {
             sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.ban " + user);
@@ -394,12 +404,19 @@ namespace TwitchBotConsole
 
         public void SaveConfig()
         {
-            string output = "Server:" + _config.server + "\nPort:" + _config.port.ToString() + "\nUsername:" + _config.username + "\nPassword:" + _config.password + "\nChannel:" + _config.channel + "\nAutoUpdates:" + checkForUpdates.ToString() +"\nSpeedrunName:" + SpeedrunName +"\n";
+            string output = "Version:" + Assembly.GetExecutingAssembly().GetName().Version.ToString()
+                + "\n\nServer:" + _config.server
+                + "\nPort:" + _config.port.ToString()
+                + "\nUsername:" + _config.username
+                + "\nPassword:" + _config.password
+                + "\nChannel:" + _config.channel
+                + "\nAutoUpdates:" + checkForUpdates.ToString()
+                +"\nSpeedrunName:" + SpeedrunName +"\n";
             for (int i = 0; i < supermod.Count; i++)
             {
-                output = output + "\nSuperMod:" + supermod[i];
+                output += "\nSuperMod:" + supermod[i];
             }
-            output = output + "\n\nAdjustGamesDelayBasedOnChatActivity:" + adjustGamesDelayBasedOnChatActivity.ToString()+
+            output += "\n\nAdjustGamesDelayBasedOnChatActivity:" + adjustGamesDelayBasedOnChatActivity.ToString()+
                 "\nDisableFunctionsWithHighlyActiveChat:" + disableFunctionsWithHighlyActiveChat.ToString()
                 + "\n\nVocalMode:" + vocalMode.ToString()
                 + "\nPhraseFiltering:" + filteringEnabled.ToString()
@@ -513,6 +530,24 @@ namespace TwitchBotConsole
                 bool tempBool;
                 int tempInt;
                 double tempDouble;
+                if (line.StartsWith("Version:"))
+                {
+                    Version ver;
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if(Version.TryParse(helper[1], out ver))
+                    {
+                        if (Assembly.GetExecutingAssembly().GetName().Version > ver)
+                        {
+                            requiresConfigUpdate = true;
+                        }
+                        else
+                            requiresConfigUpdate = false;
+                    }
+                    else
+                    {
+                        requiresConfigUpdate = true;
+                    }
+                }
                 if (line.StartsWith("Server:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
@@ -668,6 +703,110 @@ namespace TwitchBotConsole
                 return true;
             }
         }
+
+        private void LoadDefaultValues()
+        {
+            GamesDelay = 30d;
+            SlotsInitialCoins = 100;
+            quoteEnabled = true;
+            safeAskMode = true;
+            filteringEnabled = false;
+            filteringHarsh = false;
+            filteringRespond = true;
+            slotsEnable = false;
+            intervalMessagesEnabled = true;
+            deathCounterEnabled = true;
+            deaths = 0;
+            delayBetweenAddedDeaths = 10;
+            leaderBoardEnabled = true;
+            vocalMode = true;
+            voteEnabled = false;
+            breakPyramids = false;
+            viewerPBActive = true;
+            adjustGamesDelayBasedOnChatActivity = true;
+            disableFunctionsWithHighlyActiveChat = false;
+    }
+
+        #region PropertyGetAndSet
+        public void getParameter(ReadMessage msg)
+        {
+            if(moderators.Contains(msg.user))
+            {
+                try
+                {
+                    if (msg.message.Contains(" "))
+                    {
+                        string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+
+                        Type _type = Type.GetType("TwitchBotConsole.IrcClient");
+                        PropertyInfo _propertyInfo = _type.GetProperty(helper[1]);
+                        string text = _propertyInfo.GetValue(this, null).ToString();
+                        sendChatMessage(msg.user + ": " + helper[1] + " = " + text);
+                    }
+                    else
+                        sendChatMessage(msg.user + ": Incorrect syntax");
+
+                }
+                catch(Exception ex)
+                {
+                    sendChatMessage(msg.user + ": Exception error");
+                    Trace.WriteLine(ex);
+                }
+            }
+        }
+
+        public void setParameter(ReadMessage msg)
+        {
+            if (moderators.Contains(msg.user))
+            {
+                try
+                {
+                    if (msg.message.Contains(" "))
+                    {
+                        string[] helper = msg.message.Split(new char[] { ' ' }, 3);
+
+                        Type _type = Type.GetType("TwitchBotConsole.IrcClient");
+                        PropertyInfo _propertyInfo = _type.GetProperty(helper[1]);
+                        var oldValue = _propertyInfo.GetValue(this, null);
+                        if (_propertyInfo.PropertyType.ToString() == "System.Boolean")
+                        {
+                            bool newBool;
+                            if (bool.TryParse(helper[2], out newBool))
+                            {
+                                _propertyInfo.SetValue(this, newBool, null);
+                                sendChatMessage(msg.user + ": " + helper[1] + " (" + oldValue.ToString() + " -> " + newBool.ToString() + "). If you've just enabled a feature, make sure to reload a bot!");
+                                SaveConfig();
+                            }
+                            else
+                                sendChatMessage(msg.message + ": Failed to parse bool value");
+                        }
+                        else if (_propertyInfo.PropertyType.ToString() == "System.UInt32")
+                        {
+                            uint newValue;
+                            if (uint.TryParse(helper[2], out newValue))
+                            {
+                                _propertyInfo.SetValue(this, newValue, null);
+                                sendChatMessage(msg.user + ": " + helper[1] + " (" + oldValue.ToString() + " -> " + newValue.ToString() + "). If you've just enabled a feature, make sure to reload a bot!");
+                                SaveConfig();
+                            }
+                            else
+                                sendChatMessage(msg.message + ": Failed to parse bool value");
+                        }
+                        else
+                            sendChatMessage("Unhandled property change: " + _propertyInfo.PropertyType.ToString());
+                    }
+                    else
+                        sendChatMessage(msg.user + ": Incorrect syntax");
+
+                }
+                catch (Exception ex)
+                {
+                    sendChatMessage(msg.user + ": Exception error");
+                    Trace.WriteLine(ex);
+                }
+            }
+        }
+        #endregion
 
         #region customParseFunctions
         private bool _configParseBool(string readLine, string lookingFor, bool defaultValue, out bool value)
