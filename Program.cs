@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Threading;
 using System.Diagnostics;
 using System.Timers;
+using System.IO;
 
 namespace TwitchBotConsole
 {
@@ -23,6 +24,7 @@ namespace TwitchBotConsole
         private static System.Timers.Timer _statusCheckTimer;
         private static Leaderboards _leaderboards;
         private static System.Timers.Timer _timer;
+        private static string cachedMessage;
 
         private static ReadMessage FormattedMessage;//for access by check
 
@@ -92,6 +94,29 @@ namespace TwitchBotConsole
             }
         }
 
+        private static void reloadBot()
+        {
+            string currentPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            ProcessStartInfo info = new ProcessStartInfo();
+            string OS = Environment.OSVersion.ToString();
+            if (OS.StartsWith("Microsoft"))     //Is Shit OS
+            {
+                info.FileName = Path.Combine(currentPath, "TwitchBotConsole.exe");
+                info.Arguments = "+msg Reloaded FrankerZ";
+                info.WorkingDirectory = currentPath;
+                Process.Start(info);
+                System.Environment.Exit(0);
+            }
+            else
+            {
+                info.FileName = "mono";
+                info.WorkingDirectory = currentPath;
+                info.Arguments = Path.Combine(currentPath, "TwitchBotConsole.exe +msg Reloaded FrankerZ");
+                Process.Start(info);
+                System.Environment.Exit(0);
+            }
+        }
+
         private static bool check(string toc)
         {
             if (FormattedMessage.message.StartsWith(toc, StringComparison.InvariantCultureIgnoreCase))
@@ -106,6 +131,7 @@ namespace TwitchBotConsole
         {
             string rawMessage = irc.readRawMessage();
             Trace.WriteLine(rawMessage);
+            //Console.WriteLine("DEBUG" + rawMessage);
             FormattedMessage = irc.readMessage(rawMessage);
             Console.WriteLine(FormattedMessage.user + ": " + FormattedMessage.message);
 
@@ -151,6 +177,12 @@ namespace TwitchBotConsole
             #endregion
             else
             {
+                if (cachedMessage != String.Empty)
+                {
+                    irc.sendChatMessage(cachedMessage);
+                    cachedMessage = String.Empty;
+                }
+
                 if (irc.filteringEnabled && !(irc.moderators.Contains(FormattedMessage.user) || irc.trustedUsers.Contains(FormattedMessage.user)) && _blacklist.checkForSpam(FormattedMessage))
                 {
                     irc.purgeMessage(FormattedMessage.user);
@@ -166,8 +198,8 @@ namespace TwitchBotConsole
                 cvarflag = true;//check if _ANYTHING_ matched.
                 if (irc.vocalMode)
                 {
-                    if (check("!help")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
-                    if (check("!commands")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
+                    if (irc.moderators.Contains(FormattedMessage.user) && check("!help")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
+                    if (irc.moderators.Contains(FormattedMessage.user) && check("!commands")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
                     if (check("!ask ")) _ask.answerAsk(irc, FormattedMessage);
                     if (check("!addCvar ")) _customCvars.addCustomCvar(irc, FormattedMessage);
                     if (check("!removeCvar ")) _customCvars.removeCustomCvar(irc, FormattedMessage);
@@ -262,7 +294,12 @@ namespace TwitchBotConsole
 
                         return false;
                     }
+                    if (check("!reloadBot")) reloadBot();
                 }
+                
+                //Property
+                if (check("!getProperty")) irc.getParameter(FormattedMessage);
+                if (check("!setProperty")) irc.setParameter(FormattedMessage);
 
                 if (cvarflag)
                 {
@@ -275,6 +312,8 @@ namespace TwitchBotConsole
 
         static void Main(string[] args)
         {
+            string _cachedMessage = "";
+
             Console.CancelKeyPress += Console_CancelKeyPress;       //Some additional events
             irc = new IrcClient();
             if (!irc.configFileExisted)
@@ -291,7 +330,20 @@ namespace TwitchBotConsole
                 _timer.Start();
                 _timer.Elapsed += new System.Timers.ElapsedEventHandler(_intervals.timerSender);
             }
-
+            for(int i=0; i<args.Length; i++)
+            {
+                if(args[i] == "+msg")
+                {
+                    i++;
+                    while(i < args.Length && !args[i].StartsWith("+"))
+                    {
+                        _cachedMessage += args[i] + " ";
+                        i++;
+                    }
+                    i--;
+                }
+            }
+            cachedMessage = _cachedMessage;
             while (runBot()) ;
         }
 
@@ -311,6 +363,4 @@ namespace TwitchBotConsole
             }
         }
     }
-
-    
 }

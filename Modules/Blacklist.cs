@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TwitchBotConsole
 {
@@ -21,7 +22,7 @@ namespace TwitchBotConsole
         byte allowedToPostLinksRequirement = 5;
 
 
-        List<string> url_marks = new List<string>() { "http:", "www." , "https:"};
+        List<string> url_marks = new List<string>() { "http:", "www." , "https:", "ftp:", "ftps:", "sftp:", "steam:", "imap:", "file:"};
         Dictionary<string, byte> allowedToPostLinks = new Dictionary<string, byte>();
 
         public Blacklist(IrcClient _irc)
@@ -72,16 +73,24 @@ namespace TwitchBotConsole
             return false;
         }
 
-        bool isLink(string message)
+        private bool isLink(string message)
         {
-            if(url_marks.Any(s => message.Contains(s)))
+            string[] helper = message.Split(' ', '\"', '\\', '(', ')', '<', '>');   //probably need more
+            foreach (string word in helper)
             {
-                return true;
+                if (url_marks.Any(s => word.Contains(s)))
+                {
+                    return true;
+                }
+                else if (irc.filteringHarsh && word.Contains('.'))
+                {
+                    MatchCollection matches = Regex.Matches(word, @"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", RegexOptions.IgnoreCase);  //this has been literally taken from the internet... because I'm dumb
+                    if(matches.Count > 0)
+                        return true;
+                }
+
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         enum addingToEnum : byte
