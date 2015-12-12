@@ -1,22 +1,10 @@
 <updates>
 	<update>
-		<version>1.0.0.5</version>
+		<version>1.0.2.0</version>
 		<file>TwitchBotConsole.exe</file>
 	</update>
 	<update>
-		<version>1.0.0.4</version>
-		<file>TwitchBotConsole.exe</file>
-	</update>
-	<update>
-		<version>1.0.0.3</version>
-		<file>TwitchBotConsole.exe</file>
-	</update>
-	<update>
-		<version>1.0.0.2</version>
-		<file>TwitchBotConsole.exe</file>
-	</update>
-	<update>
-		<version>1.0.0.1</version>
+		<version>1.0.1.0</version>
 		<file>TwitchBotConsole.exe</file>
 	</update>
 </updates>

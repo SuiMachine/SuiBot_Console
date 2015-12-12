@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TwitchBotConsole
 {
@@ -21,7 +22,7 @@ namespace TwitchBotConsole
         byte allowedToPostLinksRequirement = 5;
 
 
-        List<string> url_marks = new List<string>() { "http:", "www." , "https:"};
+        List<string> url_marks = new List<string>() { "http:", "www." , "https:", "ftp:", "ftps:", "sftp:", "steam:", "imap:", "file:"};
         Dictionary<string, byte> allowedToPostLinks = new Dictionary<string, byte>();
 
         public Blacklist(IrcClient _irc)
@@ -72,16 +73,24 @@ namespace TwitchBotConsole
             return false;
         }
 
-        bool isLink(string message)
+        private bool isLink(string message)
         {
-            if(url_marks.Any(s => message.Contains(s)))
+            string[] helper = message.Split(' ', '\"', '\\', '(', ')', '<', '>');   //probably need more
+            foreach (string word in helper)
             {
-                return true;
+                if (url_marks.Any(s => word.Contains(s)))
+                {
+                    return true;
+                }
+                else if (irc.filteringHarsh && word.Contains('.'))
+                {
+                    MatchCollection matches = Regex.Matches(word, @"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", RegexOptions.IgnoreCase);  //this has been literally taken from the internet... because I'm dumb
+                    if(matches.Count > 0)
+                        return true;
+                }
+
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         enum addingToEnum : byte
@@ -201,6 +210,8 @@ namespace TwitchBotConsole
                     }
                 }
             }
+            SR.Close();
+            SR.Dispose();
         }
 
         public void saveUserInfo()
@@ -222,6 +233,61 @@ namespace TwitchBotConsole
             }
 
             return text.ToString();
+        }
+
+        internal void addToAllowedToPostLinks(ReadMessage msg)
+        {
+            if(irc.moderators.Contains(msg.user))
+            {
+                string[] helper = msg.message.Split(' ');
+                if (helper.Length > 1)
+                {
+                    for (int i = 1; i < helper.Length; i++)
+                    {
+                        if(!helper[i].Any(char.IsPunctuation))
+                        {
+                            string name = helper[i].ToLower();
+                            if(allowedToPostLinks.ContainsKey(name))                            
+                                allowedToPostLinks[name] = allowedToPostLinksRequirement;       //if dictionary contains the user
+                            else
+                                allowedToPostLinks.Add(name, allowedToPostLinksRequirement);    //if it doesn't contain the user
+
+                            irc.sendChatMessage("Set allowedToPostLinks for " + name + " to " + allowedToPostLinksRequirement);
+                        }
+                    }
+                }
+                else
+                    irc.sendChatMessage("Invalid syntax!");
+            }
+        }
+
+        internal void resetFromAllowedToPostLinks(ReadMessage msg)
+        {
+            if (irc.moderators.Contains(msg.user))
+            {
+                string[] helper = msg.message.Split(' ');
+                if (helper.Length > 1)
+                {
+                    for (int i = 1; i < helper.Length; i++)
+                    {
+                        if (!helper[i].Any(char.IsPunctuation))
+                        {
+                            string name = helper[i].ToLower();
+                            if (allowedToPostLinks.ContainsKey(name))
+                            {
+                                allowedToPostLinks[name] = 0;       //if dictionary contains the user
+                                irc.sendChatMessage("Reseted requirement for " + name + " to 0");
+                            }
+                            else
+                            {
+                                irc.sendChatMessage(name + " not found in database.");
+                            }
+                        }
+                    }
+                }
+                else
+                    irc.sendChatMessage("Invalid syntax!");
+            }
         }
 
         internal void AddFilter(ReadMessage msg)

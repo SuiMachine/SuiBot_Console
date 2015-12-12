@@ -81,44 +81,47 @@ namespace TwitchBotConsole
                 _ask.Add(msg.user, new Tuple<DateTime,bool>(lastSendMsg, _notified));         
             }
 
-            if(!irc.safeAskMode)
+            if(irc.dynamicDelayCheck())
             {
-                timedifference = (DateTime.UtcNow - lastSendMsg).TotalSeconds;
-
-                if (timedifference < irc.AskDelay)
-                {
-                    if (!_notified)
-                    {
-                        var temp = _ask[msg.user];
-                        temp = new Tuple<DateTime, bool>(temp.Item1, true);
-                        irc.sendChatMessage(msg.user + ": You have to wait " + (Math.Round((lastSendMsg - DateTime.UtcNow).TotalSeconds + irc.AskDelay, 2)).ToString() + " second(s).");
-                        _ask[msg.user] = temp;
-                    }
-                }
-                else
-                {
-                    responsedToQuestion(irc, msg.user, helper[1]);
-                }
-            }
-            else
-            {
-                if(irc.moderators.Contains(msg.user))
+                if (!irc.safeAskMode)
                 {
                     timedifference = (DateTime.UtcNow - lastSendMsg).TotalSeconds;
 
-                    if (timedifference < irc.AskDelay)
+                    if (timedifference < irc.GamesDelay)
                     {
                         if (!_notified)
                         {
                             var temp = _ask[msg.user];
                             temp = new Tuple<DateTime, bool>(temp.Item1, true);
-                            irc.sendChatMessage(msg.user + ": You have to wait " + (Math.Round((lastSendMsg - DateTime.UtcNow).TotalSeconds + irc.AskDelay, 2)).ToString() + " second(s).");
+                            irc.sendChatMessage(msg.user + ": You have to wait " + (Math.Round((lastSendMsg - DateTime.UtcNow).TotalSeconds + irc.GamesDelay, 2)).ToString() + " second(s).");
                             _ask[msg.user] = temp;
                         }
                     }
                     else
                     {
                         responsedToQuestion(irc, msg.user, helper[1]);
+                    }
+                }
+                else
+                {
+                    if (irc.moderators.Contains(msg.user))
+                    {
+                        timedifference = (DateTime.UtcNow - lastSendMsg).TotalSeconds;
+
+                        if (timedifference < irc.GamesDelay)
+                        {
+                            if (!_notified)
+                            {
+                                var temp = _ask[msg.user];
+                                temp = new Tuple<DateTime, bool>(temp.Item1, true);
+                                irc.sendChatMessage(msg.user + ": You have to wait " + (Math.Round((lastSendMsg - DateTime.UtcNow).TotalSeconds + irc.GamesDelay, 2)).ToString() + " second(s).");
+                                _ask[msg.user] = temp;
+                            }
+                        }
+                        else
+                        {
+                            responsedToQuestion(irc, msg.user, helper[1]);
+                        }
                     }
                 }
             }
@@ -232,7 +235,7 @@ namespace TwitchBotConsole
             {
                 DateTime utcTime = DateTime.UtcNow;
 
-                return "It's: " + utcTime.AddHours(1).ToShortTimeString() + " (Central Europe), " + utcTime.AddHours(-5).ToShortTimeString() + "(Eastern Standard Time) or " + utcTime.AddHours(11).ToShortTimeString() + " (Aussy time) FrankerZ";
+                return "It's: " + utcTime.AddHours(1).ToShortTimeString() + " (Central Europe), " + utcTime.AddHours(-5).ToShortTimeString() + " (Eastern Standard Time) or " + utcTime.AddHours(11).ToShortTimeString() + " (Aussie time) FrankerZ";
             }
             else if (question.StartsWith("What", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("Wat", StringComparison.InvariantCultureIgnoreCase))
             {
