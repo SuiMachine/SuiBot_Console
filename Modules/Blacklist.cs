@@ -210,6 +210,8 @@ namespace TwitchBotConsole
                     }
                 }
             }
+            SR.Close();
+            SR.Dispose();
         }
 
         public void saveUserInfo()
@@ -231,6 +233,61 @@ namespace TwitchBotConsole
             }
 
             return text.ToString();
+        }
+
+        internal void addToAllowedToPostLinks(ReadMessage msg)
+        {
+            if(irc.moderators.Contains(msg.user))
+            {
+                string[] helper = msg.message.Split(' ');
+                if (helper.Length > 1)
+                {
+                    for (int i = 1; i < helper.Length; i++)
+                    {
+                        if(!helper[i].Any(char.IsPunctuation))
+                        {
+                            string name = helper[i].ToLower();
+                            if(allowedToPostLinks.ContainsKey(name))                            
+                                allowedToPostLinks[name] = allowedToPostLinksRequirement;       //if dictionary contains the user
+                            else
+                                allowedToPostLinks.Add(name, allowedToPostLinksRequirement);    //if it doesn't contain the user
+
+                            irc.sendChatMessage("Set allowedToPostLinks for " + name + " to " + allowedToPostLinksRequirement);
+                        }
+                    }
+                }
+                else
+                    irc.sendChatMessage("Invalid syntax!");
+            }
+        }
+
+        internal void resetFromAllowedToPostLinks(ReadMessage msg)
+        {
+            if (irc.moderators.Contains(msg.user))
+            {
+                string[] helper = msg.message.Split(' ');
+                if (helper.Length > 1)
+                {
+                    for (int i = 1; i < helper.Length; i++)
+                    {
+                        if (!helper[i].Any(char.IsPunctuation))
+                        {
+                            string name = helper[i].ToLower();
+                            if (allowedToPostLinks.ContainsKey(name))
+                            {
+                                allowedToPostLinks[name] = 0;       //if dictionary contains the user
+                                irc.sendChatMessage("Reseted requirement for " + name + " to 0");
+                            }
+                            else
+                            {
+                                irc.sendChatMessage(name + " not found in database.");
+                            }
+                        }
+                    }
+                }
+                else
+                    irc.sendChatMessage("Invalid syntax!");
+            }
         }
 
         internal void AddFilter(ReadMessage msg)

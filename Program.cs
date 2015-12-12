@@ -249,6 +249,8 @@ namespace TwitchBotConsole
                 {
                     if (check("!filterAdd ")) _blacklist.AddFilter(FormattedMessage);
                     if (check("!filterRemove ")) _blacklist.RemoveFilter(FormattedMessage);
+                    if (check("!allowToPostLinks")) _blacklist.addToAllowedToPostLinks(FormattedMessage);
+                    if (check("!resetAllowToPostLinks")) _blacklist.resetFromAllowedToPostLinks(FormattedMessage);  //No idea why
                 }
                 if (irc.leaderBoardEnabled)
                 {
