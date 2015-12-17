@@ -41,11 +41,10 @@ namespace TwitchBotConsole
             proxyName.Add("Heroes of Might and Magic III: The Restoration of Erathia", "Heroes of Might and Magic III");
             proxyName.Add("Heroes of Might and Magic III: Armageddon's Blade", "Heroes of Might and Magic III");
             proxyName.Add("Heroes of Might and Magic III: In the wake of gods", "Heroes of Might and Magic III");
-            proxyName.Add("Heroes of Might and Magic III: The Restoration of Erathia", "Heroes of Might and Magic III");
             proxyName.Add("Heroes of Might and Magic III: The Shadow of Death", "Heroes of Might and Magic III");
             proxyName.Add("Heroes of Might and Magic IV", "Heroes of Might and Magic III");
             proxyName.Add("Heroes of Might and Magic 3", "Heroes of Might and Magic III");
-			proxyName.Add("homm3: The Restoration of Erathia", "Heroes of Might and Magic III");
+			proxyName.Add("homm3", "Heroes of Might and Magic III");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
