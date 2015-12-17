@@ -37,6 +37,15 @@ namespace TwitchBotConsole
             proxyName.Add("Thief II", "Thief ll: The Metal Age");
             proxyName.Add("F.E.A.R.: First Encounter Assault Recon", "F.E.A.R.");
             proxyName.Add("Judge Dredd: Dredd vs Death", "dreddgasm");
+            proxyName.Add("Heroes of Might and Magic II: The Price of Loyalty", "Heroes of Might and Magic II");
+            proxyName.Add("Heroes of Might and Magic III: The Restoration of Erathia", "Heroes of Might and Magic III");
+            proxyName.Add("Heroes of Might and Magic III: Armageddon's Blade", "Heroes of Might and Magic III");
+            proxyName.Add("Heroes of Might and Magic III: In the wake of gods", "Heroes of Might and Magic III");
+            proxyName.Add("Heroes of Might and Magic III: The Restoration of Erathia", "Heroes of Might and Magic III");
+            proxyName.Add("Heroes of Might and Magic III: The Shadow of Death", "Heroes of Might and Magic III");
+            proxyName.Add("Heroes of Might and Magic IV", "Heroes of Might and Magic III");
+            proxyName.Add("Heroes of Might and Magic 3", "Heroes of Might and Magic III");
+			proxyName.Add("homm3: The Restoration of Erathia", "Heroes of Might and Magic III");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
