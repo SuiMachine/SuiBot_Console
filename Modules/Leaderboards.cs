@@ -8,6 +8,8 @@ namespace TwitchBotConsole
 {
     class Leaderboards
     {
+        //This class is a total mess
+        //Enjoy!
         IrcClient irc;
         ReadMessage msg;
         Json_status json;
@@ -216,6 +218,127 @@ namespace TwitchBotConsole
                 irc.sendChatMessage("Exception error!");
             }
         }
+
+        private void getPBTimeForGivenLevel(string gameName, string restOfMsg)
+        {
+            if (restOfMsg.ToLower() == "level" || restOfMsg.ToLower() == "levels")
+            {
+                displayLevelsFromAGame(gameName);
+            }
+            else
+            {
+                string levelId = restOfMsg.Substring(6, restOfMsg.Length - 6);
+                displayPBTimeForGivenLevel(gameName, levelId);
+            }
+        }
+
+        private void displayPBTimeForGivenLevel(string gameName, string levelIndex)
+        {
+            try
+            {
+                var srlClient = new SpeedrunComClient();
+                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+
+                if (game != null)
+                {
+                    var gameID = game.ID;
+                    //Display PB from a category
+                    int id = 0;
+                    if (int.TryParse(levelIndex, out id))
+                    {
+                        id--;
+                        if (game.Levels.Count > id && id >= 0)
+                        {
+                            var _levelID = game.Levels[id].ID;
+                            var _levelCategoryID = game.LevelCategories.First().ID;
+                            var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
+                            if (playersPB != null)
+                            {
+                                int numberOfPBs = playersPB.Count;
+                                int i = 0;
+                                for (i = 0; i < numberOfPBs; i++)
+                                {
+                                    if (playersPB[i].CategoryID == _levelCategoryID && playersPB[i].LevelID == _levelID)
+                                        break;
+                                }
+
+                                if (i < numberOfPBs)
+                                {
+                                    irc.sendChatMessage("Strimmer PB for the level " + playersPB[i].Level.Name + " is: " + playersPB[i].Times.Primary + ". " + playersPB[i].WebLink.AbsoluteUri);
+                                }
+                                else
+                                    irc.sendChatMessage("Doesn't seem like a strimmer ran this level FrankerZ");
+                            }
+                            else
+                                irc.sendChatMessage("Doesn't seem like a strimmer ran this game");
+
+                        }
+                        else
+                            irc.sendChatMessage("Wrong category ID!");
+                    }
+                    else
+                        irc.sendChatMessage("Failed to parse category ID.");
+                }
+                else
+                {
+                    irc.sendChatMessage("No game found!");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                irc.sendChatMessage("Exception error!");
+                Trace.WriteLine("EXCEPTION ERROR: " + ex.ToString());
+            }
+        }
+
+        private void displayPBTimeForDefaultCategory()
+        {
+            int indexGameStart = msg.message.IndexOf(' ');
+            int indexGameCathegoryStart = findIndexOfACharacterStartingCategory(msg.message);
+
+            if (indexGameStart > 0)
+            {
+                string[] helper = msg.message.Split(new char[] { ' ' }, 2);
+
+                if (indexGameCathegoryStart > 0)
+                {
+                    indexGameCathegoryStart = indexGameCathegoryStart - 3;
+                    string gameName = helper[1].Substring(0, indexGameCathegoryStart - 1);
+                    string variable = helper[1].Substring(indexGameCathegoryStart, helper[1].Length - indexGameCathegoryStart);
+                    if (variable.ToLower().StartsWith("cat"))
+                    {
+                        displayCategories(gameName);
+                    }
+                    else if (variable.ToLower().StartsWith("level"))
+                    {
+                        getPBTimeForGivenLevel(gameName, variable);
+                    }
+                    else
+                    {
+                        displayPBFromGivenCategory(gameName, variable);
+                    }
+                }
+                else
+                {
+                    //Find a PB from a user provided game
+                    displayPBFromAGame(helper[1]);
+                }
+            }
+            else
+            {   //Find a PB in currently streamed game
+                if (json.isForcedPage)
+                {
+                    displayPBFromAGame(json.forcedGame);
+                }
+                else if (json.game != String.Empty)
+                {
+                    displayPBFromAGame(json.game);
+                }
+                else
+                    irc.sendChatMessage("Currently there is no active game.");
+            }
+        }
         #endregion
 
         #region PBs
@@ -241,22 +364,28 @@ namespace TwitchBotConsole
         private void getAndReturnPB()
         {
             int indexGameStart = msg.message.IndexOf(' ');
-            int indexGameCathegoryStart = msg.message.IndexOf(':');
+            int indexGameCathegoryStart = findIndexOfACharacterStartingCategory(msg.message);
 
             if (indexGameStart > 0)
             {
                 string[] helper = msg.message.Split(new char[] { ' ' }, 2);
 
-                if (indexGameCathegoryStart > 0 && msg.message.ElementAt(indexGameCathegoryStart + 1) != ' ')
+                if (indexGameCathegoryStart > 0)
                 {
-                    string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
-                    if (additionalhelper[1].ToLower().StartsWith("cat"))
+                    indexGameCathegoryStart = indexGameCathegoryStart - 3;
+                    string gameName = helper[1].Substring(0, indexGameCathegoryStart - 1);
+                    string variable = helper[1].Substring(indexGameCathegoryStart, helper[1].Length - indexGameCathegoryStart);
+                    if (variable.ToLower().StartsWith("cat"))
                     {
-                        displayCategories(additionalhelper[0]);
+                        displayCategories(gameName);
+                    }
+                    else if (variable.ToLower().StartsWith("level"))
+                    {
+                        getPBTimeForGivenLevel(gameName, variable);
                     }
                     else
                     {
-                        displayPBFromGivenCategory(additionalhelper[0], additionalhelper[1]);
+                        displayPBFromGivenCategory(gameName, variable);
                     }
                 }
                 else
@@ -434,15 +563,21 @@ namespace TwitchBotConsole
                 {
                     var gameID = game.ID;
                     var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
-                    Record tehUrn;
-                    if((tehUrn = playersPB.First(run => run.Category.ID == game.Categories[0].ID)) != null)
+                    if (playersPB.Count > 0)
                     {
-                        irc.sendChatMessage("Strimmer PB in " + tehUrn.Game.Name + " (" + tehUrn.Category.Name + ") is: " + tehUrn.Times.Primary + ". " + tehUrn.WebLink);
+                        if (playersPB.Any(run => run.Category.ID == game.Categories[0].ID))
+                        {
+                            Record tehUrn = playersPB.First(run => run.Category.ID == game.Categories[0].ID);
+                            irc.sendChatMessage("Strimmer PB in " + tehUrn.Game.Name + " (" + tehUrn.Category.Name + ") is: " + tehUrn.Times.Primary + ". " + tehUrn.WebLink);
+                        }
+                        else
+                        {
+                            irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
+                        }
                     }
                     else
-                    {
-                        irc.sendChatMessage("Doesn't seem like a streamer ran the main cathegory for this game. FrankerZ");
-                    }
+                        irc.sendChatMessage("Doesn't seem like a streamer ran this game FrankerZ");
+
                 }
                 else
                 {
@@ -471,9 +606,9 @@ namespace TwitchBotConsole
                     if (int.TryParse(categoryIndex, out id))
                     {
                         id--;
-                        if (game.Categories.Count > id && id >= 0)
+                        if (game.FullGameCategories.Count() > id && id >= 0)
                         {
-                            var _category = game.Categories[id];
+                            var _category = game.FullGameCategories.ElementAt(id);
                             string categoryName = _category.Name;
                             var playersPB = srlClient.Users.GetPersonalBests(irc.SpeedrunName, null, null, gameID);
                             int numberOfPBs = playersPB.Count;
@@ -488,6 +623,8 @@ namespace TwitchBotConsole
                             {
                                 irc.sendChatMessage("Strimmer PB for " + playersPB[i].Game.Name + " (" + playersPB[i].Category.Name + ") is: " + playersPB[i].Times.Primary);
                             }
+                            else
+                                irc.sendChatMessage("Doesn't seem like a strimmer ran this category. FrankerZ");
                         }
                         else
                             irc.sendChatMessage("Wrong category ID!");

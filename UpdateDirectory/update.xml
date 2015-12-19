@@ -1,5 +1,9 @@
 <updates>
 	<update>
+		<version>1.0.3.1</version>
+		<file>TwitchBotConsole.exe</file>
+	</update>
+	<update>
 		<version>1.0.3</version>
 		<file>TwitchBotConsole.exe</file>
 	</update>
