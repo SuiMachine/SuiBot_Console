@@ -69,21 +69,27 @@ namespace TwitchBotConsole
         private void getAndReturnLeaderboard()
         {
             int indexGameStart = msg.message.IndexOf(' ');
-            int indexGameCathegoryStart = msg.message.IndexOf(':');
+            int indexGameCathegoryStart = findIndexOfACharacterStartingCategory(msg.message);
 
             if (indexGameStart > 0)
             {
                 string[] helper = msg.message.Split(new char[] { ' ' }, 2);
-                if (indexGameCathegoryStart > 0 && msg.message.ElementAt(indexGameCathegoryStart + 1) != ' ')
+                if (indexGameCathegoryStart > 3)
                 {
-                    string[] additionalhelper = helper[1].Split(new char[] { ':' }, 2);
-                    if (additionalhelper[1].ToLower().StartsWith("cat"))
+                    indexGameCathegoryStart = indexGameCathegoryStart - 3;
+                    string gameName = helper[1].Substring(0, indexGameCathegoryStart - 1);
+                    string variable = helper[1].Substring(indexGameCathegoryStart, helper[1].Length - indexGameCathegoryStart);
+                    if (variable.ToLower().StartsWith("cat"))
                     {
-                        displayCategories(additionalhelper[0]);
+                        displayCategories(gameName);
+                    }
+                    else if (variable.ToLower().StartsWith("level"))
+                    {
+                        getBestLevelTimeForGivenLevel(gameName, variable);
                     }
                     else
                     {
-                        displayBestTimeFromGivenCategory(additionalhelper[0], additionalhelper[1]);
+                        displayBestTimeFromGivenCategory(gameName, variable);
                     }
                 }
                 else
@@ -103,6 +109,111 @@ namespace TwitchBotConsole
                 }
                 else
                     irc.sendChatMessage("Currently there is no active game.");
+            }
+        }
+        #endregion
+
+        #region ILs
+        private void displayBestLevelTimeForDefaultCategory(string gameName, string levelIndex)
+        {
+            try
+            {
+                var srlClient = new SpeedrunComClient();
+                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+
+                if (game != null)
+                {
+                    int id = 0;
+                    if (int.TryParse(levelIndex, out id))
+                    {
+                        id--;
+                        if (game.Levels[id] != null)
+                        {
+                            var leaderboard = srlClient.Leaderboards.GetLeaderboardForLevel(game.ID, game.Levels[id].ID, game.LevelCategories.First().ID, null, null);
+                            if (leaderboard.Records.Count > 0)
+                            {
+                                var record = leaderboard.Records[0];
+
+                                if (record.Players.Count > 1)       //if there is more than 1 player, build a string for them
+                                {
+                                    string players = "" + record.Players[0].User;
+                                    int i = 1;
+                                    for (; i < record.Players.Count - 1; i++)
+                                    {
+                                        players = players + ", " + record.Players[i].User;
+                                    }
+                                    players = players + " and " + record.Players[i].User;
+                                    irc.sendChatMessage("World record for level '" + record.Level.Name + "' is " + record.Times.Primary.ToString() + " by " + players + " " + record.WebLink.AbsoluteUri);
+                                }
+                                else
+                                    irc.sendChatMessage("World record for level '" + record.Level.Name + "' is " + record.Times.Primary.ToString() + " by " + record.Player.Name + " " + record.WebLink.AbsoluteUri);
+                            }
+                            else
+                                irc.sendChatMessage("There doesn't seem to be a WR for '" + leaderboard.Level.Name + "' " + leaderboard.WebLink.AbsoluteUri);
+                        }
+                        else
+                            irc.sendChatMessage("Wrong level ID");
+                    }
+                    else
+                        irc.sendChatMessage("Failed to parse level ID.");
+                }
+                else
+                {
+                    irc.sendChatMessage("Game was not found!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("EXCEPTION ERROR: " + ex.ToString());
+                irc.sendChatMessage("Exception error!");
+            }
+        }
+
+        private void getBestLevelTimeForGivenLevel(string gameName, string restOfMsg)
+        {
+            if (restOfMsg.ToLower() == "level" || restOfMsg.ToLower() == "levels")
+            {
+                displayLevelsFromAGame(gameName);
+            }
+            else
+            {
+                string levelId = restOfMsg.Substring(6, restOfMsg.Length - 6);
+                displayBestLevelTimeForDefaultCategory(gameName, levelId);
+            }
+        }
+
+        private void displayLevelsFromAGame(string gameName)
+        {
+            try
+            {
+                var srlClient = new SpeedrunComClient();
+                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                if (game != null)        //If game was found -> Build a string and display all levels
+                {
+                    if (game.Levels.Count > 0)
+                    {
+                        string output = "Levels are:";
+                        int id = 1;
+                        foreach (var element in game.Levels)
+                        {
+                            output = output + " [" + id.ToString() + "]" + element.Name;
+                            id++;
+                        }
+                        irc.sendChatMessage(output);
+                    }
+                    else
+                        irc.sendChatMessage("The game doesn't seem to have specified levels");
+
+                }
+                else
+                {
+                    irc.sendChatMessage("No game was found");
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine("EXCEPTION ERROR: " + ex.ToString());
+                irc.sendChatMessage("Exception error!");
             }
         }
         #endregion
@@ -171,6 +282,18 @@ namespace TwitchBotConsole
         #endregion
 
         #region Functions
+        private int findIndexOfACharacterStartingCategory(string message)
+        {
+            for (int i = 1; i < message.Length - 1; i++)
+            {
+                if (char.IsLetterOrDigit(message.ElementAt(i - 1)) && message.ElementAt(i) == ':' && char.IsLetterOrDigit(message.ElementAt(i + 1)))
+                {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
         private void displayCategories(string gameName)
         {
             try
