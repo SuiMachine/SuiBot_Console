@@ -691,7 +691,7 @@ namespace TwitchBotConsole
             {
                 return false;
             }
-            else if(data >200)
+            else if(data >200 && adjustGamesDelayBasedOnChatActivity)
             {
                 int datatemp = data - 200;
                 GamesDelay = 0.003 * data * data + 30;
