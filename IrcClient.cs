@@ -792,6 +792,18 @@ namespace TwitchBotConsole
                             else
                                 sendChatMessage(msg.message + ": Failed to parse bool value");
                         }
+                        else if (_propertyInfo.PropertyType.ToString() == "System.Double")
+                        {
+                            double newValue;
+                            if (double.TryParse(helper[2], out newValue))
+                            {
+                                _propertyInfo.SetValue(this, newValue, null);
+                                sendChatMessage(msg.user + ": " + helper[1] + " (" + oldValue.ToString() + " -> " + newValue.ToString() + ").");
+                                SaveConfig();
+                            }
+                            else
+                                sendChatMessage(msg.message + ": Failed to parse double value");
+                        }
                         else
                             sendChatMessage("Unhandled property change: " + _propertyInfo.PropertyType.ToString());
                     }
