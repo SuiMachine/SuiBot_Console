@@ -210,7 +210,7 @@ namespace TwitchBotConsole
                     }
                     else if (word == "thekotti" || word == "kotti")
                     {
-                        return "";
+                        return "Kotti is Mafia! OpieOP";
                     }
                     else if(word == "spat" || word == "seductivespatula")
                     {
@@ -218,11 +218,11 @@ namespace TwitchBotConsole
                     }
                     else if(word == "epicdudeguy")
                     {
-                        return "Can't you read? Epic... dude.... guy. Epic^^ FrankerZ";
+                        return "";
                     }
                     else if (word == "chops" || word == "drtchops")
                     {
-                        return "He is PJSalt ! Nothing but PJSalt !";
+                        return "";
                     }
                     else if (word == "snowy" || word == "snowysnowwolf")
                     {

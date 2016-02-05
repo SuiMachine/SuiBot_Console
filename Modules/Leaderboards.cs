@@ -47,6 +47,7 @@ namespace TwitchBotConsole
             proxyName.Add("Heroes of Might and Magic IV", "Heroes of Might and Magic III");
             proxyName.Add("Heroes of Might and Magic 3", "Heroes of Might and Magic III");
 			proxyName.Add("homm3", "Heroes of Might and Magic III");
+            proxyName.Add("Trespasser: Jurassic Park", "Jurassic Park: Trespasser");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
@@ -64,7 +65,7 @@ namespace TwitchBotConsole
             }
             else
             {
-                irc.sendChatMessage("You don't have permissions to perform this command");
+                //irc.sendChatMessage("You don't have permissions to perform this command");
             }
         }
 
@@ -357,7 +358,7 @@ namespace TwitchBotConsole
             }
             else
             {
-                irc.sendChatMessage("You don't have permissions to perform this command");
+                //irc.sendChatMessage("You don't have permissions to perform this command");
             }
         }
 
