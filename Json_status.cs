@@ -49,6 +49,10 @@ namespace TwitchBotConsole
                     indexStart = indexStart + 7;
                     int indexEnd = temp.IndexOf(",", indexStart)-1;
                     game = temp.Substring(indexStart, indexEnd-indexStart);
+                    if(game == "ul")
+                    {
+                        game = String.Empty;
+                    }
                     Console.WriteLine("Stream is online, game: " + game);
                 }
                 else

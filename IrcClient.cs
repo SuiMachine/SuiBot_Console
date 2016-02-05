@@ -150,10 +150,17 @@ namespace TwitchBotConsole
 
         private bool SocketConnected(Socket s)
         {
-            bool part1 = s.Poll(1000, SelectMode.SelectRead);
-            Console.WriteLine("Part 1: " + part1);
-            bool part2 = (s.Available == 0);
-            Console.WriteLine("Part 2: " + part2);
+            //Random rng = new Random();
+            //string temp = ":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv  PRIVMSG PING";
+            //outputStream.WriteLine(temp);
+            
+            //Console.WriteLine("->DEBUG: " + temp);
+            //bool part1 = s.Poll(1000, SelectMode.SelectRead);
+            //Console.WriteLine("Part 1 (socket poll): " + part1);
+            //bool part2 = (s.Available == 0);
+            //Console.WriteLine("Part 2 (socket available): " + part2);
+            //bool part3 = s.Connected;
+            //Console.WriteLine("Part 3 (socket connected): " + part3);
 
             return true;
         }
@@ -691,7 +698,7 @@ namespace TwitchBotConsole
             {
                 return false;
             }
-            else if(data >200)
+            else if(data >200 && adjustGamesDelayBasedOnChatActivity)
             {
                 int datatemp = data - 200;
                 GamesDelay = 0.003 * data * data + 30;
@@ -791,6 +798,18 @@ namespace TwitchBotConsole
                             }
                             else
                                 sendChatMessage(msg.message + ": Failed to parse bool value");
+                        }
+                        else if (_propertyInfo.PropertyType.ToString() == "System.Double")
+                        {
+                            double newValue;
+                            if (double.TryParse(helper[2], out newValue))
+                            {
+                                _propertyInfo.SetValue(this, newValue, null);
+                                sendChatMessage(msg.user + ": " + helper[1] + " (" + oldValue.ToString() + " -> " + newValue.ToString() + ").");
+                                SaveConfig();
+                            }
+                            else
+                                sendChatMessage(msg.message + ": Failed to parse double value");
                         }
                         else
                             sendChatMessage("Unhandled property change: " + _propertyInfo.PropertyType.ToString());
