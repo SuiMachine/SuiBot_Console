@@ -79,6 +79,48 @@ namespace TwitchBotConsole
             }
         }
 
+        public string getStreamTime()
+        {
+            HttpWebRequest wRequest = (HttpWebRequest)HttpWebRequest.Create(sUrl);
+            wRequest.ContentType = "application/json";
+            wRequest.Accept = "application/vnd.twitchtv.v3+json";
+            wRequest.Method = "GET";
+
+            dynamic wResponse = wRequest.GetResponse().GetResponseStream();
+            StreamReader reader = new StreamReader(wResponse);
+            dynamic res = reader.ReadToEnd();
+            reader.Close();
+            wResponse.Close();
+
+            if (res.Contains("display_name"))
+            {
+                isOnline = true;
+                string temp = Convert.ToString(res);
+                int indexStart = temp.IndexOf("created_at");
+
+                if (indexStart > 0)
+                {
+                    indexStart = indexStart + 13;
+                    int indexEnd = temp.IndexOf(",", indexStart) - 2;
+                    string output = temp.Substring(indexStart, indexEnd - indexStart);
+                    DateTime dt;
+                    if (DateTime.TryParse(output, out dt))
+                    {
+                        TimeSpan difference = DateTime.UtcNow - dt;
+                        return "on " + dt.Date.ToShortDateString() + " at " + dt.TimeOfDay.ToString() + " -- " + difference.Hours.ToString("00") + ":" + difference.Minutes.ToString("00") + ":" + difference.Seconds.ToString("00");
+                    }
+                    else
+                        return "";
+
+                }
+            }
+            else
+            {
+                isOnline = false;
+            }
+            return "";
+        }
+
         internal void TimerTick(object sender, System.Timers.ElapsedEventArgs e)
         {
             getStatus();

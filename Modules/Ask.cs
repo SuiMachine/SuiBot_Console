@@ -33,7 +33,8 @@ namespace TwitchBotConsole
             "Potato",
             "A chair",
             "Nokia OSsloth",
-            "A miserable little pile of secrets!"
+            "A miserable little pile of secrets!",
+			"Heinkipops"
         };
 
         string[] AnswersPerson = {
@@ -44,7 +45,8 @@ namespace TwitchBotConsole
             "One sexy beast! ;)",
             "Just a \"nobody\"",
             "JOHN MADDEN SwiftRage",
-			"JOHN CENA!!!!!! SwiftRage"
+			"JOHN CENA!!!!!! SwiftRage",
+            "Mike Uyama Kappa"
         };
 
         string[] AnswersPlace = {

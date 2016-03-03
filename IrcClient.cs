@@ -71,7 +71,8 @@ namespace TwitchBotConsole
         private string channel;
         ReadMessage FormattedMessage;
 
-        private Socket clientSocket;
+        private TcpClient tcpClient;
+
         private NetworkStream networkStream;
         private StreamReader inputStream;
         private StreamWriter outputStream;
@@ -101,10 +102,10 @@ namespace TwitchBotConsole
                 {
                     this.userName = _config.username;
 
-                    clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    clientSocket.Connect(_config.server, _config.port);
+                    tcpClient = new TcpClient();
+                    tcpClient.Connect(_config.server, _config.port);
 
-                    networkStream = new NetworkStream(clientSocket);
+                    networkStream = new NetworkStream(tcpClient.Client);
                     inputStream = new StreamReader(networkStream);
                     outputStream = new StreamWriter(networkStream);
 
@@ -134,7 +135,7 @@ namespace TwitchBotConsole
 
         private void CheckConnection_Elapsed(object sender, ElapsedEventArgs e)
         {
-            bool result = SocketConnected(clientSocket);
+            bool result = SocketConnected(tcpClient);
             if (result)
             {
                 Console.WriteLine("RUNNING! Amount of characters last minute: " + amountOfCharactersLastMinute.ToString());
@@ -148,20 +149,8 @@ namespace TwitchBotConsole
 
         }
 
-        private bool SocketConnected(Socket s)
+        private bool SocketConnected(TcpClient s)
         {
-            //Random rng = new Random();
-            //string temp = ":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv  PRIVMSG PING";
-            //outputStream.WriteLine(temp);
-            
-            //Console.WriteLine("->DEBUG: " + temp);
-            //bool part1 = s.Poll(1000, SelectMode.SelectRead);
-            //Console.WriteLine("Part 1 (socket poll): " + part1);
-            //bool part2 = (s.Available == 0);
-            //Console.WriteLine("Part 2 (socket available): " + part2);
-            //bool part3 = s.Connected;
-            //Console.WriteLine("Part 3 (socket connected): " + part3);
-
             return true;
         }
         #endregion
@@ -826,6 +815,39 @@ namespace TwitchBotConsole
             }
         }
         #endregion
+
+        public void createHighlight(ReadMessage msg, Json_status _jsonStatus)
+        {
+            string highlightFile = "highlights.txt";
+            List<string> highlightList = new List<string>();
+            string line = "";
+            if (File.Exists(highlightFile))
+            {
+                StreamReader SR = new StreamReader(highlightFile);
+
+                while ((line = SR.ReadLine()) != null)
+                {
+                    if (line != "")
+                    {
+                        highlightList.Add(line);
+                    }
+                }
+                SR.Close();
+                SR.Dispose();
+            }
+            
+            line = _jsonStatus.getStreamTime();
+            if(line != "")
+            {
+                highlightList.Add(line);
+                sendChatMessage("Added highlight times to a file - \"" + line + "\"");
+                File.WriteAllLines(highlightFile, highlightList);
+            }
+            else
+            {
+                sendChatMessage("Failed to add new highlight to a file " + line);
+            }
+        }
 
         #region customParseFunctions
         private bool _configParseBool(string readLine, string lookingFor, bool defaultValue, out bool value)
