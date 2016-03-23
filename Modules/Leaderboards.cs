@@ -48,6 +48,7 @@ namespace TwitchBotConsole
             proxyName.Add("Heroes of Might and Magic 3", "Heroes of Might and Magic III");
 			proxyName.Add("homm3", "Heroes of Might and Magic III");
             proxyName.Add("Trespasser: Jurassic Park", "Jurassic Park: Trespasser");
+            proxyName.Add("Hitman (2016)", "just_hitman");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
@@ -122,6 +123,17 @@ namespace TwitchBotConsole
             try
             {
                 var srlClient = new SpeedrunComClient();
+                if (gameName == "this")
+                {
+                    if (json.isForcedPage)
+                    {
+                        gameName = json.forcedGame;
+                    }
+                    else
+                    {
+                        gameName = json.game;
+                    }
+                }
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
                 if (game != null)
@@ -190,6 +202,18 @@ namespace TwitchBotConsole
             try
             {
                 var srlClient = new SpeedrunComClient();
+                if (gameName == "this")
+                {
+                    if(json.isForcedPage)
+                    {
+                        gameName = json.forcedGame;
+                    }
+                    else
+                    {
+                        gameName = json.game;
+                    }
+                }
+
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
                 if (game != null)        //If game was found -> Build a string and display all levels
                 {
@@ -238,6 +262,18 @@ namespace TwitchBotConsole
             try
             {
                 var srlClient = new SpeedrunComClient();
+                if (gameName == "this")
+                {
+                    if (json.isForcedPage)
+                    {
+                        gameName = json.forcedGame;
+                    }
+                    else
+                    {
+                        gameName = json.game;
+                    }
+                }
+
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
                 if (game != null)
@@ -429,6 +465,19 @@ namespace TwitchBotConsole
             try
             {
                 var srlClient = new SpeedrunComClient();
+                if(gameName == "this")
+                {
+                    if(json.isForcedPage)
+                    {
+                        gameName = json.forcedGame;
+                    }
+                    else
+                    {
+                        gameName = json.game;
+                    }
+                }
+
+
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
                 if (game != null)        //If game was found -> Build a string and display all categories
                 {
@@ -459,6 +508,18 @@ namespace TwitchBotConsole
             try
             {
                 var srlClient = new SpeedrunComClient();
+                if (gameName == "this")
+                {
+                    if (json.isForcedPage)
+                    {
+                        gameName = json.forcedGame;
+                    }
+                    else
+                    {
+                        gameName = json.game;
+                    }
+                }
+
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
                 if (game != null)
@@ -516,6 +577,18 @@ namespace TwitchBotConsole
             try
             {
                 var srlClient = new SpeedrunComClient();
+                if (gameName == "this")
+                {
+                    if (json.isForcedPage)
+                    {
+                        gameName = json.forcedGame;
+                    }
+                    else
+                    {
+                        gameName = json.game;
+                    }
+                }
+
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
                 if(game != null)
                 {
@@ -559,6 +632,18 @@ namespace TwitchBotConsole
             try
             {
                 var srlClient = new SpeedrunComClient();
+                if (gameName == "this")
+                {
+                    if (json.isForcedPage)
+                    {
+                        gameName = json.forcedGame;
+                    }
+                    else
+                    {
+                        gameName = json.game;
+                    }
+                }
+
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
                 if (game != null)
                 {
@@ -597,6 +682,18 @@ namespace TwitchBotConsole
             try
             {
                 var srlClient = new SpeedrunComClient();
+                if (gameName == "this")
+                {
+                    if (json.isForcedPage)
+                    {
+                        gameName = json.forcedGame;
+                    }
+                    else
+                    {
+                        gameName = json.game;
+                    }
+                }
+
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
                 if(game!= null)

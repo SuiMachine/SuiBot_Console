@@ -283,6 +283,7 @@ namespace TwitchBotConsole
                 {
                     if (check("!updateJsonInfo")) _jsonStatus.requestUpdate();
                     if (check("!version")) irc.version();
+                    if (check("!highlight")) irc.createHighlight(FormattedMessage, _jsonStatus);
                 }
                 //supermod only!
                 if (irc.supermod.Contains(FormattedMessage.user))

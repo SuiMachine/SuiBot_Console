@@ -75,7 +75,7 @@ namespace TwitchBotConsole
 
         private bool isLink(string message)
         {
-            string[] helper = message.Split(' ', '\"', '\\', '(', ')', '<', '>');   //probably need more
+            string[] helper = message.Replace("..", "+").Split(' ', '\"', '\\', '(', ')', '<', '>');   //probably need more
             foreach (string word in helper)
             {
                 if (url_marks.Any(s => word.Contains(s)))

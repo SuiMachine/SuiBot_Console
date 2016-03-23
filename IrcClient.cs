@@ -6,11 +6,13 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Diagnostics;
 using System.Timers;
+using System.Net;
 
 namespace TwitchBotConsole
 {
     struct config
     {
+        public bool readTMI;
         public string server;
         public int port;
         public string username;
@@ -71,7 +73,8 @@ namespace TwitchBotConsole
         private string channel;
         ReadMessage FormattedMessage;
 
-        private Socket clientSocket;
+        private TcpClient tcpClient;
+
         private NetworkStream networkStream;
         private StreamReader inputStream;
         private StreamWriter outputStream;
@@ -101,10 +104,23 @@ namespace TwitchBotConsole
                 {
                     this.userName = _config.username;
 
-                    clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    clientSocket.Connect(_config.server, _config.port);
+                    if(_config.readTMI)
+                    {
+                        string sUrl = "http://tmi.twitch.tv/servers?channel=" + _config.channel;
+                        string tempIP;
+                        int tempPort;
+                        getServerFromTMI(sUrl, out tempIP, out tempPort);
+                        if(tempIP!=String.Empty && tempPort!=0)
+                        {
+                            _config.server = tempIP;
+                            _config.port = tempPort;
+                        }
+                    }
 
-                    networkStream = new NetworkStream(clientSocket);
+                    tcpClient = new TcpClient();
+                    tcpClient.Connect(_config.server, _config.port);
+
+                    networkStream = new NetworkStream(tcpClient.Client);
                     inputStream = new StreamReader(networkStream);
                     outputStream = new StreamWriter(networkStream);
 
@@ -134,7 +150,7 @@ namespace TwitchBotConsole
 
         private void CheckConnection_Elapsed(object sender, ElapsedEventArgs e)
         {
-            bool result = SocketConnected(clientSocket);
+            bool result = SocketConnected(tcpClient);
             if (result)
             {
                 Console.WriteLine("RUNNING! Amount of characters last minute: " + amountOfCharactersLastMinute.ToString());
@@ -148,20 +164,8 @@ namespace TwitchBotConsole
 
         }
 
-        private bool SocketConnected(Socket s)
+        private bool SocketConnected(TcpClient s)
         {
-            //Random rng = new Random();
-            //string temp = ":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv  PRIVMSG PING";
-            //outputStream.WriteLine(temp);
-            
-            //Console.WriteLine("->DEBUG: " + temp);
-            //bool part1 = s.Poll(1000, SelectMode.SelectRead);
-            //Console.WriteLine("Part 1 (socket poll): " + part1);
-            //bool part2 = (s.Available == 0);
-            //Console.WriteLine("Part 2 (socket available): " + part2);
-            //bool part3 = s.Connected;
-            //Console.WriteLine("Part 3 (socket connected): " + part3);
-
             return true;
         }
         #endregion
@@ -412,7 +416,8 @@ namespace TwitchBotConsole
         public void SaveConfig()
         {
             string output = "Version:" + Assembly.GetExecutingAssembly().GetName().Version.ToString()
-                + "\n\nServer:" + _config.server
+                + "\n\nReadServerFromTMI:" + _config.readTMI.ToString()
+                + "\nServer:" + _config.server
                 + "\nPort:" + _config.port.ToString()
                 + "\nUsername:" + _config.username
                 + "\nPassword:" + _config.password
@@ -532,6 +537,8 @@ namespace TwitchBotConsole
             bool LoadedProperly = true;
             StreamReader SR = new StreamReader(@configfile);
             string line = "";
+            _config.readTMI = true;
+
             while ((line = SR.ReadLine()) != null)
             {
                 bool tempBool;
@@ -555,7 +562,21 @@ namespace TwitchBotConsole
                         requiresConfigUpdate = true;
                     }
                 }
-                if (line.StartsWith("Server:"))
+                if (line.StartsWith("ReadServerFromTMI:"))
+                {
+                    string[] helper = line.Split(new char[] { ':' }, 2);
+                    if (helper[1] == "")
+                        _config.readTMI = true;
+                    else
+                    {
+                        bool outV;
+                        if (bool.TryParse(helper[1], out outV))
+                            _config.readTMI = outV;
+                        else
+                            _config.readTMI = true;
+                    }
+                }
+                else if (line.StartsWith("Server:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
                     if (helper[1] == "")
@@ -826,6 +847,91 @@ namespace TwitchBotConsole
             }
         }
         #endregion
+
+        public void createHighlight(ReadMessage msg, Json_status _jsonStatus)
+        {
+            string highlightFile = "highlights.txt";
+            List<string> highlightList = new List<string>();
+            string line = "";
+            if (File.Exists(highlightFile))
+            {
+                StreamReader SR = new StreamReader(highlightFile);
+
+                while ((line = SR.ReadLine()) != null)
+                {
+                    if (line != "")
+                    {
+                        highlightList.Add(line);
+                    }
+                }
+                SR.Close();
+                SR.Dispose();
+            }
+            
+            line = _jsonStatus.getStreamTime();
+            if(line != "")
+            {
+                highlightList.Add(line);
+                sendChatMessage("Added highlight times to a file - \"" + line + "\"");
+                File.WriteAllLines(highlightFile, highlightList);
+            }
+            else
+            {
+                sendChatMessage("Failed to add new highlight to a file " + line);
+            }
+        }
+
+        private void getServerFromTMI(string sUrl, out string server, out int port)
+        {
+            HttpWebRequest wRequest = (HttpWebRequest)HttpWebRequest.Create(sUrl);
+            wRequest.ContentType = "application/json";
+            wRequest.Accept = "application/vnd.twitchtv.v3+json";
+            wRequest.Method = "GET";
+
+            dynamic wResponse = wRequest.GetResponse().GetResponseStream();
+            StreamReader reader = new StreamReader(wResponse);
+            dynamic res = reader.ReadToEnd();
+            reader.Close();
+            wResponse.Close();
+
+            if (res.Contains("servers"))
+            {
+                string temp = Convert.ToString(res);
+                int indexStart = temp.IndexOf("servers");
+                if (indexStart > 0)
+                {
+                    indexStart = indexStart + 11;
+                    int indexEnd = temp.IndexOf(",", indexStart) - 1;
+                    string stuff = temp.Substring(indexStart, indexEnd - indexStart);
+                    string[] helper = stuff.Split(':');
+                    int value;
+                    if(int.TryParse(helper[1], out value))
+                    {
+                        server = helper[0];
+                        port = value;
+                    }
+                    else
+                    {
+                        server = String.Empty;
+                        port = 0;
+                    }
+
+                    Console.WriteLine("Obtained a server and port from TMI: " + server + ":" + port);
+                }
+                else
+                {
+                    server = String.Empty;
+                    port = 0;
+                    Console.WriteLine("Failed to obtain server and port from TMI.");
+                }
+            }
+            else
+            {
+                server = String.Empty;
+                port = 0;
+                Console.WriteLine("Failed to obtain server and port from TMI.");
+            }
+        }
 
         #region customParseFunctions
         private bool _configParseBool(string readLine, string lookingFor, bool defaultValue, out bool value)
