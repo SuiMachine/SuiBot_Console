@@ -57,6 +57,7 @@ namespace TwitchBotConsole
         public bool voteEnabled { get; set; }
         public bool breakPyramids { get; set; }
         public bool viewerPBActive { get; set; }
+        public bool fortuneTellerEnabled { get; set; }
         public bool adjustGamesDelayBasedOnChatActivity { get; set; }
         public bool disableFunctionsWithHighlyActiveChat { get; set; }
         #endregion
@@ -428,7 +429,7 @@ namespace TwitchBotConsole
             {
                 output += "\nSuperMod:" + supermod[i];
             }
-            output += "\n\nAdjustGamesDelayBasedOnChatActivity:" + adjustGamesDelayBasedOnChatActivity.ToString()+
+            output += "\n\nAdjustGamesDelayBasedOnChatActivity:" + adjustGamesDelayBasedOnChatActivity.ToString() +
                 "\nDisableFunctionsWithHighlyActiveChat:" + disableFunctionsWithHighlyActiveChat.ToString()
                 + "\n\nVocalMode:" + vocalMode.ToString()
                 + "\nPhraseFiltering:" + filteringEnabled.ToString()
@@ -443,7 +444,8 @@ namespace TwitchBotConsole
                 + "\nDeathCounterSafetyDelay:" + delayBetweenAddedDeaths.ToString()
                 + "\nViewerPBEnabled:" + viewerPBActive.ToString()
                 + "\nLeaderboardEnabled:" + leaderBoardEnabled.ToString()
-                + "\nVotesEnabled:" + voteEnabled.ToString();
+                + "\nVotesEnabled:" + voteEnabled.ToString()
+                + "\nFortuneTeller:" + fortuneTellerEnabled.ToString();
 
             File.WriteAllText(@configfile, output);
         }
@@ -665,6 +667,7 @@ namespace TwitchBotConsole
                 else if (_configParseBool(line, "IntervalMessagesEnabled:", false, out tempBool)) intervalMessagesEnabled = tempBool;
                 else if (_configParseBool(line, "DeathCounterEnabled:", false, out tempBool)) deathCounterEnabled = tempBool;
                 else if (_configParseBool(line, "ViewerPBEnabled:", false, out tempBool)) viewerPBActive = tempBool;
+                else if (_configParseBool(line, "FortuneTeller:", false, out tempBool)) fortuneTellerEnabled = tempBool;
                 else if (_configParseBool(line, "LeaderboardEnabled:", false, out tempBool)) leaderBoardEnabled = tempBool;
                 else if (_configParseBool(line, "VotesEnabled:", false, out tempBool)) voteEnabled = tempBool;
                 else if (_configParseBool(line, "AdjustGamesDelayBasedOnChatActivity:", true, out tempBool)) adjustGamesDelayBasedOnChatActivity = tempBool;

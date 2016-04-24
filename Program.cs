@@ -21,6 +21,7 @@ namespace TwitchBotConsole
         private static Intervals _intervals;
         private static ViewerPB _viewerPB;
         private static Json_status _jsonStatus;
+        private static FortuneTeller _fortuneTeller;
         private static System.Timers.Timer _statusCheckTimer;
         private static Leaderboards _leaderboards;
         private static System.Timers.Timer _timer;
@@ -52,6 +53,8 @@ namespace TwitchBotConsole
             _statusCheckTimer = new System.Timers.Timer();
             _timer = new System.Timers.Timer();
             _leaderboards = new Leaderboards();
+            _fortuneTeller = new FortuneTeller();
+
 
             _quotes.loadQuotesFromFile();
             _jsonStatus.SendChannel(irc._config.channel);
@@ -189,6 +192,13 @@ namespace TwitchBotConsole
                     if (irc.filteringRespond) irc.sendChatMessage("Probably spam FrankerZ");
                     return true;
                 }
+
+                if (irc.filteringEnabled && !(irc.moderators.Contains(FormattedMessage.user) || irc.trustedUsers.Contains(FormattedMessage.user)) && _blacklist.checkForBanWorthyContent(FormattedMessage))
+                {
+                    irc.banMessage(FormattedMessage.user);
+                    if (irc.filteringRespond) irc.sendChatMessage("And he/she is gone! FrankerZ");
+                    return true;
+                }
                 //the goal here is going to be trying to group things
                 if (!FormattedMessage.message.StartsWith("!") || irc.ignorelist.Contains(FormattedMessage.user))
                 {
@@ -271,12 +281,20 @@ namespace TwitchBotConsole
                         lbThread.Start();
                     }
                 }
+                if (irc.fortuneTellerEnabled)
+                {
+                    if (check("!fortune") || check("!tellfortune"))
+                        _fortuneTeller.FortuneTelling(irc, FormattedMessage);
+                }
+
+
                 //ones we do regardless
                 if (check("!ignoreAdd ")) irc.ignoreListAdd(FormattedMessage);
                 if (check("!ignoreRemove ")) irc.ignoreListRemove(FormattedMessage);
                 if (check("!trustedAdd ")) irc.trustedUserAdd(FormattedMessage);
                 if (check("!permit ")) irc.trustedUserAdd(FormattedMessage);
                 if (check("!trustedRemove ")) irc.trustedUsersRemove(FormattedMessage);
+
 
                 //mod only!
                 if (irc.moderators.Contains(FormattedMessage.user))

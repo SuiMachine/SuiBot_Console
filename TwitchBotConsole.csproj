@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modules\FortuneTeller.cs" />
     <Compile Include="Modules\Coins\Coins.cs" />
     <Compile Include="Modules\Coins\Bet.cs" />
     <Compile Include="Json_status.cs" />

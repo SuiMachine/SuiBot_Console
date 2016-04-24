@@ -49,6 +49,7 @@ namespace TwitchBotConsole
 			proxyName.Add("homm3", "Heroes of Might and Magic III");
             proxyName.Add("Trespasser: Jurassic Park", "Jurassic Park: Trespasser");
             proxyName.Add("Hitman (2016)", "just_hitman");
+            proxyName.Add("Star Wars: Knights of the Old Republic II - The Sith Lords", "Star Wars: Knights of the Old Republic 2 - The Sith Lords");
         }
 
         public void recieveData(IrcClient _irc, ReadMessage _msg)
