@@ -48,6 +48,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Meebey.SmartIrc4net, Version=0.4.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\Meebey.SmartIrc4net.dll</HintPath>
+    </Reference>
     <Reference Include="SpeedrunComSharp">
       <HintPath>SpeedrunComSharp.dll</HintPath>
     </Reference>
@@ -77,9 +81,6 @@
     <Compile Include="Modules\Coins\Slots.cs" />
     <Compile Include="Modules\Votes.cs" />
     <Compile Include="Updater.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

@@ -14,7 +14,7 @@ namespace TwitchBotConsole
         string directory = "cache";
         string userInfoFile = "userinfo.txt";
 
-        IrcClient irc;
+        oldIRCClient irc;
         List<string> blacklist_fullphrase = new List<string>();
         List<string> blacklist_startswith = new List<string>();
         List<string> blacklist_endswith = new List<string>();
@@ -30,7 +30,7 @@ namespace TwitchBotConsole
         List<string> url_marks = new List<string>() { "http:", "www." , "https:", "ftp:", "ftps:", "sftp:", "steam:", "imap:", "file:"};
         Dictionary<string, byte> allowedToPostLinks = new Dictionary<string, byte>();
 
-        public Blacklist(IrcClient _irc)
+        public Blacklist(oldIRCClient _irc)
         {
             irc = _irc;
             if (File.Exists(filterFile))

@@ -63,7 +63,7 @@ namespace TwitchBotConsole
 
         Random rnd = new Random();
 
-        public void answerAsk(IrcClient irc, ReadMessage msg)
+        public void answerAsk(oldIRCClient irc, ReadMessage msg)
         {
             string[] helper = msg.message.Split(new char[] { ' ' }, 2);
             DateTime lastSendMsg = DateTime.UtcNow;
@@ -129,7 +129,7 @@ namespace TwitchBotConsole
             }
         }
 
-        private void responsedToQuestion(IrcClient irc, string user, string question)
+        private void responsedToQuestion(oldIRCClient irc, string user, string question)
         {
             int id;
             string response;

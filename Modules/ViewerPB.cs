@@ -8,9 +8,9 @@ namespace TwitchBotConsole
         string directory = "cache";
         string userInfoFile = "userpb.txt";
         public uint viewerPB = 0;
-        IrcClient irc;
+        oldIRCClient irc;
 
-        public ViewerPB(IrcClient _irc)
+        public ViewerPB(oldIRCClient _irc)
         {
             irc = _irc;
             if(File.Exists(Path.Combine(directory, userInfoFile)))

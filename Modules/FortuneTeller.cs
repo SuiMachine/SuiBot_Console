@@ -44,7 +44,7 @@ namespace TwitchBotConsole
 
         Random rnd = new Random();
 
-        public void FortuneTelling(IrcClient irc, ReadMessage msg)
+        public void FortuneTelling(oldIRCClient irc, ReadMessage msg)
         {
             DateTime lastSendMsg = DateTime.UtcNow;
             bool _notified = false;
@@ -109,7 +109,7 @@ namespace TwitchBotConsole
             }
         }
 
-        private void responsedToQuestion(IrcClient irc, string user)
+        private void responsedToQuestion(oldIRCClient irc, string user)
         {
             int id;
             id = rnd.Next(0, Fortunes.Length);

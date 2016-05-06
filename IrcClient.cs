@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Net.Sockets;
-using System.Threading;
 using System.Diagnostics;
-using System.Timers;
 using System.Net;
+using Meebey.SmartIrc4net;
 
 namespace TwitchBotConsole
 {
+    //Some of the functions here may be a bit weird. Often the reason is, they were changed to use SmartIRC4Net from my original TCP socket client
     struct config
     {
         public bool readTMI;
@@ -26,8 +25,9 @@ namespace TwitchBotConsole
         public string message;
     }
 
-    class IrcClient
+    class oldIRCClient
     {
+
         bool requiresConfigUpdate = true;
         bool loading_status = true;
         public bool checkForUpdates = true;
@@ -71,19 +71,21 @@ namespace TwitchBotConsole
         public List<string> trustedUsers = new List<string>();
 
         private string userName;
-        private string channel;
-        ReadMessage FormattedMessage;
 
-        private TcpClient tcpClient;
+        //Because I really don't want to rewrite half of this
+        public IrcClient meebyIrc = new IrcClient();
 
-        private NetworkStream networkStream;
-        private StreamReader inputStream;
-        private StreamWriter outputStream;
+
+        //private TcpClient tcpClient;
+
+        //private NetworkStream networkStream;
+        //private StreamReader inputStream;
+        //private StreamWriter outputStream;
         DateTime LastSend;
         DateTime DeathLastAdded;
 
         #region Constructor
-        public IrcClient()
+        public oldIRCClient()
         {
             if (!File.Exists(@configfile))
             {
@@ -118,24 +120,22 @@ namespace TwitchBotConsole
                         }
                     }
 
-                    tcpClient = new TcpClient();
-                    tcpClient.Connect(_config.server, _config.port);
+                    meebyIrc.Encoding = System.Text.Encoding.UTF8;
+                    meebyIrc.SendDelay = 200;
+                    meebyIrc.AutoRetry = true;
+                    meebyIrc.AutoReconnect = true;
 
-                    networkStream = new NetworkStream(tcpClient.Client);
-                    inputStream = new StreamReader(networkStream);
-                    outputStream = new StreamWriter(networkStream);
-
-
-                    outputStream.WriteLine("PASS " + _config.password);
-                    outputStream.WriteLine("NICK " + userName);
-                    outputStream.WriteLine("USER " + userName + " 8 * :" + userName);
-                    outputStream.Flush();
-
-                    System.Timers.Timer checkConnection = new System.Timers.Timer();
-                    checkConnection.Enabled = true;
-                    checkConnection.Interval = 60*1000;
-                    checkConnection.Elapsed += CheckConnection_Elapsed;
-                    checkConnection.Start();
+                    try
+                    {
+                        meebyIrc.Connect(_config.server, _config.port);
+                        while (!meebyIrc.IsConnected)
+                            System.Threading.Thread.Sleep(50);
+                        meebyIrc.Login(_config.username, _config.username, 4, _config.username, _config.password);
+                    }
+                    catch (ConnectionException e)
+                    {
+                        Console.WriteLine("Could not connect! Reason:" + e.Message);
+                    }
                 }
                 else
                 {
@@ -146,112 +146,45 @@ namespace TwitchBotConsole
 
             loadIgnoredList();
             loadTrustedList();
-            
-        }
-
-        private void CheckConnection_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            bool result = SocketConnected(tcpClient);
-            if (result)
-            {
-                Console.WriteLine("RUNNING! Amount of characters last minute: " + amountOfCharactersLastMinute.ToString());
-                prevamountOfCharactersLastMinute = amountOfCharactersLastMinute;
-                amountOfCharactersLastMinute = 0;
-            }
-            else
-            {
-                Console.WriteLine("CONNECTION LOST!");
-            }
-
-        }
-
-        private bool SocketConnected(TcpClient s)
-        {
-            return true;
         }
         #endregion
 
         #region BasicFunctions
-        public void joinRoom(string channel)
-        {
-            this.channel = channel;
-            outputStream.WriteLine("JOIN #" + channel);
-            outputStream.Flush();
-            if (SpeedrunName == String.Empty)
-                SpeedrunName = channel;
-        }
-
-        public void sendIrcRawMessage(string message)
-        {
-            outputStream.WriteLine(message);
-            outputStream.Flush();
-        }
-
-        public ReadMessage readMessage(string input_message)
-        {
-            FormattedMessage.user = "";
-            FormattedMessage.message = "";
-            string message = input_message.Remove(0, 1);
-            int nicknameStarts = message.IndexOf('!', 1);
-            int nicknameEnd = message.IndexOf('@', 1);
-            int startsAt = message.IndexOf(':', 1) +1;
-            if(nicknameStarts > 0 && nicknameEnd > 0)
-            {
-                FormattedMessage.user = message.Substring(nicknameStarts+1, nicknameEnd-1 - nicknameStarts).Trim();
-            }
-            if (startsAt> 0)
-            {
-                FormattedMessage.message = message.Substring(startsAt);
-            }
-            amountOfCharactersLastMinute += FormattedMessage.message.Length;
-            return FormattedMessage;
-        }
-
-        public string readRawMessage()
-        {
-            string message = inputStream.ReadLine();
-            return message;
-        }
 
         public void sendChatMessage(string message)
         {
-            double timeSpan = (DateTime.UtcNow - LastSend).Seconds;
-            int timeSpanInt = Convert.ToInt32(timeSpan * 1000);
-            if (timeSpanInt < 2000)
-            {
-                Trace.WriteLine("Sleeping for" + (2000 - timeSpanInt).ToString());
-                Thread.Sleep(2000 - timeSpanInt);
-            }
-            LastSend = DateTime.UtcNow;
             amountOfCharactersLastMinute += message.Length;
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
+            meebyIrc.SendMessage(SendType.Message, "#" + _config.channel, message);
         }
 
         public void sendChatMessage_NoDelays(string message)
         {
+            int originalDelay = meebyIrc.SendDelay;
+            meebyIrc.SendDelay = 0;
             amountOfCharactersLastMinute += message.Length;
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
+            meebyIrc.SendMessage(SendType.Message, "#" + _config.channel, message);
+            meebyIrc.SendDelay = originalDelay;
         }
 
         public void purgeMessage(string user)
         {
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
             System.Threading.Thread.Sleep(100);
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
             System.Threading.Thread.Sleep(100);
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
             LastSend = DateTime.UtcNow;
             Console.WriteLine("Purging: " + user);
         }
 
         public void timeOutMessage(string user, int time)
         {
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " " + time.ToString());
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " " + time.ToString());
         }
 
         public void banMessage(string user)
         {
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.ban " + user);
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.ban " + user);
         }
         #endregion
 
@@ -468,7 +401,7 @@ namespace TwitchBotConsole
                             saveDeaths();
                         }
                         else
-                            sendChatMessage(FormattedMessage.user + ": Invalid syntax?");
+                            sendChatMessage(formattedMessage.user + ": Invalid syntax?");
                     }
                     else
                     {
@@ -523,7 +456,7 @@ namespace TwitchBotConsole
                         }
                     }
                     else
-                        sendChatMessage(FormattedMessage.user + ": Invalid syntax?");
+                        sendChatMessage(formattedMessage.user + ": Invalid syntax?");
                 }
                 else
                 {
@@ -769,7 +702,7 @@ namespace TwitchBotConsole
                     {
                         string[] helper = msg.message.Split(new char[] { ' ' }, 2);
 
-                        Type _type = Type.GetType("TwitchBotConsole.IrcClient");
+                        Type _type = Type.GetType("TwitchBotConsole.oldIRCClient");
                         PropertyInfo _propertyInfo = _type.GetProperty(helper[1]);
                         string text = _propertyInfo.GetValue(this, null).ToString();
                         sendChatMessage(msg.user + ": " + helper[1] + " = " + text);
@@ -796,7 +729,7 @@ namespace TwitchBotConsole
                     {
                         string[] helper = msg.message.Split(new char[] { ' ' }, 3);
 
-                        Type _type = Type.GetType("TwitchBotConsole.IrcClient");
+                        Type _type = Type.GetType("TwitchBotConsole.oldIRCClient");
                         PropertyInfo _propertyInfo = _type.GetProperty(helper[1]);
                         var oldValue = _propertyInfo.GetValue(this, null);
                         if (_propertyInfo.PropertyType.ToString() == "System.Boolean")

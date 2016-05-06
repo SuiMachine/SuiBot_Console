@@ -16,7 +16,7 @@ namespace TwitchBotConsole
             loadCvarsFromFiles();
         }
 
-        public void cvarPerform(IrcClient irc, ReadMessage msg)
+        public void cvarPerform(oldIRCClient irc, ReadMessage msg)
         {
             if(msg.message.Length>2)
             {
@@ -37,7 +37,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void addCustomCvar(IrcClient irc, ReadMessage msg)
+        public void addCustomCvar(oldIRCClient irc, ReadMessage msg)
         {
             if(irc.moderators.Contains(msg.user))
             {
@@ -81,12 +81,12 @@ namespace TwitchBotConsole
             }
         }
 
-        public void showCustomCvars(IrcClient irc, ReadMessage msg)
+        public void showCustomCvars(oldIRCClient irc, ReadMessage msg)
         {            
              irc.sendChatMessage("Commands are: " + string.Join(", ", cvarslist.Keys.ToArray()));
         }
 
-        public void removeCustomCvar(IrcClient irc, ReadMessage msg)
+        public void removeCustomCvar(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {
