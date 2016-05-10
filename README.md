@@ -15,4 +15,5 @@ Credits
   * [HardlySober](https://www.youtube.com/watch?v=Ss-OzV9aUZg) - who provided a base on which this bot was built.
   * Bot uses [SpeedrunComSharp](https://github.com/LiveSplit/SpeedrunComSharp) libary, written by CryZe.
   * Thanks to 5paceToast for cleaning up my main method.
+  * Since version 1.1 (Horace Update) the bot uses [SmartIrc4Net](https://github.com/meebey/SmartIrc4net) for its IRC connection.
   
