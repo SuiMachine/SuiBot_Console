@@ -283,6 +283,7 @@ namespace TwitchBotConsole
 
                         if (irc.filteringEnabled)
                             _blacklist.saveUserInfo();
+                        irc.meebyIrc.Disconnect();
 
                         return false;
                     }
@@ -337,7 +338,6 @@ namespace TwitchBotConsole
             }
             cachedMessage = _cachedMessage;
             irc.meebyIrc.Listen();
-            while (true) ;
         }
 
         private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
@@ -369,12 +369,12 @@ namespace TwitchBotConsole
 
         private static void MeebyIrc_OnDisconnected(object sender, EventArgs e)
         {
-            Console.WriteLine("OnDisconnected Event: " + e);
+            Console.WriteLine("Disconnected.");
         }
 
         private static void MeebyIrc_OnDisconnecting(object sender, EventArgs e)
         {
-            Console.WriteLine("OnDisconnecting Event: " + e);
+            Console.WriteLine("Disconnecting...");
         }
 
         private static void MeebyIrc_OnAutoConnectError(object sender, Meebey.SmartIrc4net.AutoConnectErrorEventArgs e)

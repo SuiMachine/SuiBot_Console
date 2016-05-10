@@ -11,7 +11,6 @@ namespace TwitchBotConsole
     //Some of the functions here may be a bit weird. Often the reason is, they were changed to use SmartIRC4Net from my original TCP socket client
     struct config
     {
-        public bool readTMI;
         public string server;
         public int port;
         public string username;
@@ -75,12 +74,6 @@ namespace TwitchBotConsole
         //Because I really don't want to rewrite half of this
         public IrcClient meebyIrc = new IrcClient();
 
-
-        //private TcpClient tcpClient;
-
-        //private NetworkStream networkStream;
-        //private StreamReader inputStream;
-        //private StreamWriter outputStream;
         DateTime LastSend;
         DateTime DeathLastAdded;
 
@@ -106,19 +99,6 @@ namespace TwitchBotConsole
                 if(loading_status)
                 {
                     this.userName = _config.username;
-
-                    if(_config.readTMI)
-                    {
-                        string sUrl = "http://tmi.twitch.tv/servers?channel=" + _config.channel;
-                        string tempIP;
-                        int tempPort;
-                        getServerFromTMI(sUrl, out tempIP, out tempPort);
-                        if(tempIP!=String.Empty && tempPort!=0)
-                        {
-                            _config.server = tempIP;
-                            _config.port = tempPort;
-                        }
-                    }
 
                     meebyIrc.Encoding = System.Text.Encoding.UTF8;
                     meebyIrc.SendDelay = 200;
@@ -350,7 +330,6 @@ namespace TwitchBotConsole
         public void SaveConfig()
         {
             string output = "Version:" + Assembly.GetExecutingAssembly().GetName().Version.ToString()
-                + "\n\nReadServerFromTMI:" + _config.readTMI.ToString()
                 + "\nServer:" + _config.server
                 + "\nPort:" + _config.port.ToString()
                 + "\nUsername:" + _config.username
@@ -472,7 +451,6 @@ namespace TwitchBotConsole
             bool LoadedProperly = true;
             StreamReader SR = new StreamReader(@configfile);
             string line = "";
-            _config.readTMI = true;
 
             while ((line = SR.ReadLine()) != null)
             {
@@ -497,21 +475,8 @@ namespace TwitchBotConsole
                         requiresConfigUpdate = true;
                     }
                 }
-                if (line.StartsWith("ReadServerFromTMI:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] == "")
-                        _config.readTMI = true;
-                    else
-                    {
-                        bool outV;
-                        if (bool.TryParse(helper[1], out outV))
-                            _config.readTMI = outV;
-                        else
-                            _config.readTMI = true;
-                    }
-                }
-                else if (line.StartsWith("Server:"))
+
+                if (line.StartsWith("Server:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
                     if (helper[1] == "")
@@ -814,58 +779,6 @@ namespace TwitchBotConsole
             else
             {
                 sendChatMessage("Failed to add new highlight to a file " + line);
-            }
-        }
-
-        private void getServerFromTMI(string sUrl, out string server, out int port)
-        {
-            HttpWebRequest wRequest = (HttpWebRequest)HttpWebRequest.Create(sUrl);
-            wRequest.ContentType = "application/json";
-            wRequest.Accept = "application/vnd.twitchtv.v3+json";
-            wRequest.Method = "GET";
-
-            dynamic wResponse = wRequest.GetResponse().GetResponseStream();
-            StreamReader reader = new StreamReader(wResponse);
-            dynamic res = reader.ReadToEnd();
-            reader.Close();
-            wResponse.Close();
-
-            if (res.Contains("servers"))
-            {
-                string temp = Convert.ToString(res);
-                int indexStart = temp.IndexOf("servers");
-                if (indexStart > 0)
-                {
-                    indexStart = indexStart + 11;
-                    int indexEnd = temp.IndexOf(",", indexStart) - 1;
-                    string stuff = temp.Substring(indexStart, indexEnd - indexStart);
-                    string[] helper = stuff.Split(':');
-                    int value;
-                    if(int.TryParse(helper[1], out value))
-                    {
-                        server = helper[0];
-                        port = value;
-                    }
-                    else
-                    {
-                        server = String.Empty;
-                        port = 0;
-                    }
-
-                    Console.WriteLine("Obtained a server and port from TMI: " + server + ":" + port);
-                }
-                else
-                {
-                    server = String.Empty;
-                    port = 0;
-                    Console.WriteLine("Failed to obtain server and port from TMI.");
-                }
-            }
-            else
-            {
-                server = String.Empty;
-                port = 0;
-                Console.WriteLine("Failed to obtain server and port from TMI.");
             }
         }
 
