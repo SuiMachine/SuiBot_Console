@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Net.Sockets;
-using System.Threading;
 using System.Diagnostics;
-using System.Timers;
 using System.Net;
+using Meebey.SmartIrc4net;
 
 namespace TwitchBotConsole
 {
+    //Some of the functions here may be a bit weird. Often the reason is, they were changed to use SmartIRC4Net from my original TCP socket client
     struct config
     {
-        public bool readTMI;
         public string server;
         public int port;
         public string username;
@@ -26,8 +24,9 @@ namespace TwitchBotConsole
         public string message;
     }
 
-    class IrcClient
+    class oldIRCClient
     {
+
         bool requiresConfigUpdate = true;
         bool loading_status = true;
         public bool checkForUpdates = true;
@@ -57,6 +56,7 @@ namespace TwitchBotConsole
         public bool voteEnabled { get; set; }
         public bool breakPyramids { get; set; }
         public bool viewerPBActive { get; set; }
+        public bool fortuneTellerEnabled { get; set; }
         public bool adjustGamesDelayBasedOnChatActivity { get; set; }
         public bool disableFunctionsWithHighlyActiveChat { get; set; }
         #endregion
@@ -70,19 +70,15 @@ namespace TwitchBotConsole
         public List<string> trustedUsers = new List<string>();
 
         private string userName;
-        private string channel;
-        ReadMessage FormattedMessage;
 
-        private TcpClient tcpClient;
+        //Because I really don't want to rewrite half of this
+        public IrcClient meebyIrc = new IrcClient();
 
-        private NetworkStream networkStream;
-        private StreamReader inputStream;
-        private StreamWriter outputStream;
         DateTime LastSend;
         DateTime DeathLastAdded;
 
         #region Constructor
-        public IrcClient()
+        public oldIRCClient()
         {
             if (!File.Exists(@configfile))
             {
@@ -104,37 +100,22 @@ namespace TwitchBotConsole
                 {
                     this.userName = _config.username;
 
-                    if(_config.readTMI)
+                    meebyIrc.Encoding = System.Text.Encoding.UTF8;
+                    meebyIrc.SendDelay = 200;
+                    meebyIrc.AutoRetry = true;
+                    meebyIrc.AutoReconnect = true;
+
+                    try
                     {
-                        string sUrl = "http://tmi.twitch.tv/servers?channel=" + _config.channel;
-                        string tempIP;
-                        int tempPort;
-                        getServerFromTMI(sUrl, out tempIP, out tempPort);
-                        if(tempIP!=String.Empty && tempPort!=0)
-                        {
-                            _config.server = tempIP;
-                            _config.port = tempPort;
-                        }
+                        meebyIrc.Connect(_config.server, _config.port);
+                        while (!meebyIrc.IsConnected)
+                            System.Threading.Thread.Sleep(50);
+                        meebyIrc.Login(_config.username, _config.username, 4, _config.username, _config.password);
                     }
-
-                    tcpClient = new TcpClient();
-                    tcpClient.Connect(_config.server, _config.port);
-
-                    networkStream = new NetworkStream(tcpClient.Client);
-                    inputStream = new StreamReader(networkStream);
-                    outputStream = new StreamWriter(networkStream);
-
-
-                    outputStream.WriteLine("PASS " + _config.password);
-                    outputStream.WriteLine("NICK " + userName);
-                    outputStream.WriteLine("USER " + userName + " 8 * :" + userName);
-                    outputStream.Flush();
-
-                    System.Timers.Timer checkConnection = new System.Timers.Timer();
-                    checkConnection.Enabled = true;
-                    checkConnection.Interval = 60*1000;
-                    checkConnection.Elapsed += CheckConnection_Elapsed;
-                    checkConnection.Start();
+                    catch (ConnectionException e)
+                    {
+                        Console.WriteLine("Could not connect! Reason:" + e.Message);
+                    }
                 }
                 else
                 {
@@ -145,112 +126,45 @@ namespace TwitchBotConsole
 
             loadIgnoredList();
             loadTrustedList();
-            
-        }
-
-        private void CheckConnection_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            bool result = SocketConnected(tcpClient);
-            if (result)
-            {
-                Console.WriteLine("RUNNING! Amount of characters last minute: " + amountOfCharactersLastMinute.ToString());
-                prevamountOfCharactersLastMinute = amountOfCharactersLastMinute;
-                amountOfCharactersLastMinute = 0;
-            }
-            else
-            {
-                Console.WriteLine("CONNECTION LOST!");
-            }
-
-        }
-
-        private bool SocketConnected(TcpClient s)
-        {
-            return true;
         }
         #endregion
 
         #region BasicFunctions
-        public void joinRoom(string channel)
-        {
-            this.channel = channel;
-            outputStream.WriteLine("JOIN #" + channel);
-            outputStream.Flush();
-            if (SpeedrunName == String.Empty)
-                SpeedrunName = channel;
-        }
-
-        public void sendIrcRawMessage(string message)
-        {
-            outputStream.WriteLine(message);
-            outputStream.Flush();
-        }
-
-        public ReadMessage readMessage(string input_message)
-        {
-            FormattedMessage.user = "";
-            FormattedMessage.message = "";
-            string message = input_message.Remove(0, 1);
-            int nicknameStarts = message.IndexOf('!', 1);
-            int nicknameEnd = message.IndexOf('@', 1);
-            int startsAt = message.IndexOf(':', 1) +1;
-            if(nicknameStarts > 0 && nicknameEnd > 0)
-            {
-                FormattedMessage.user = message.Substring(nicknameStarts+1, nicknameEnd-1 - nicknameStarts).Trim();
-            }
-            if (startsAt> 0)
-            {
-                FormattedMessage.message = message.Substring(startsAt);
-            }
-            amountOfCharactersLastMinute += FormattedMessage.message.Length;
-            return FormattedMessage;
-        }
-
-        public string readRawMessage()
-        {
-            string message = inputStream.ReadLine();
-            return message;
-        }
 
         public void sendChatMessage(string message)
         {
-            double timeSpan = (DateTime.UtcNow - LastSend).Seconds;
-            int timeSpanInt = Convert.ToInt32(timeSpan * 1000);
-            if (timeSpanInt < 2000)
-            {
-                Trace.WriteLine("Sleeping for" + (2000 - timeSpanInt).ToString());
-                Thread.Sleep(2000 - timeSpanInt);
-            }
-            LastSend = DateTime.UtcNow;
             amountOfCharactersLastMinute += message.Length;
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
+            meebyIrc.SendMessage(SendType.Message, "#" + _config.channel, message);
         }
 
         public void sendChatMessage_NoDelays(string message)
         {
+            int originalDelay = meebyIrc.SendDelay;
+            meebyIrc.SendDelay = 0;
             amountOfCharactersLastMinute += message.Length;
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :" + message);
+            meebyIrc.SendMessage(SendType.Message, "#" + _config.channel, message);
+            meebyIrc.SendDelay = originalDelay;
         }
 
         public void purgeMessage(string user)
         {
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
             System.Threading.Thread.Sleep(100);
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
             System.Threading.Thread.Sleep(100);
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " 1");
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
             LastSend = DateTime.UtcNow;
             Console.WriteLine("Purging: " + user);
         }
 
         public void timeOutMessage(string user, int time)
         {
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.timeout " + user + " " + time.ToString());
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " " + time.ToString());
         }
 
         public void banMessage(string user)
         {
-            sendIrcRawMessage(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + channel + " :.ban " + user);
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.ban " + user);
         }
         #endregion
 
@@ -416,7 +330,6 @@ namespace TwitchBotConsole
         public void SaveConfig()
         {
             string output = "Version:" + Assembly.GetExecutingAssembly().GetName().Version.ToString()
-                + "\n\nReadServerFromTMI:" + _config.readTMI.ToString()
                 + "\nServer:" + _config.server
                 + "\nPort:" + _config.port.ToString()
                 + "\nUsername:" + _config.username
@@ -428,7 +341,7 @@ namespace TwitchBotConsole
             {
                 output += "\nSuperMod:" + supermod[i];
             }
-            output += "\n\nAdjustGamesDelayBasedOnChatActivity:" + adjustGamesDelayBasedOnChatActivity.ToString()+
+            output += "\n\nAdjustGamesDelayBasedOnChatActivity:" + adjustGamesDelayBasedOnChatActivity.ToString() +
                 "\nDisableFunctionsWithHighlyActiveChat:" + disableFunctionsWithHighlyActiveChat.ToString()
                 + "\n\nVocalMode:" + vocalMode.ToString()
                 + "\nPhraseFiltering:" + filteringEnabled.ToString()
@@ -443,7 +356,8 @@ namespace TwitchBotConsole
                 + "\nDeathCounterSafetyDelay:" + delayBetweenAddedDeaths.ToString()
                 + "\nViewerPBEnabled:" + viewerPBActive.ToString()
                 + "\nLeaderboardEnabled:" + leaderBoardEnabled.ToString()
-                + "\nVotesEnabled:" + voteEnabled.ToString();
+                + "\nVotesEnabled:" + voteEnabled.ToString()
+                + "\nFortuneTeller:" + fortuneTellerEnabled.ToString();
 
             File.WriteAllText(@configfile, output);
         }
@@ -466,7 +380,7 @@ namespace TwitchBotConsole
                             saveDeaths();
                         }
                         else
-                            sendChatMessage(FormattedMessage.user + ": Invalid syntax?");
+                            sendChatMessage(formattedMessage.user + ": Invalid syntax?");
                     }
                     else
                     {
@@ -521,7 +435,7 @@ namespace TwitchBotConsole
                         }
                     }
                     else
-                        sendChatMessage(FormattedMessage.user + ": Invalid syntax?");
+                        sendChatMessage(formattedMessage.user + ": Invalid syntax?");
                 }
                 else
                 {
@@ -537,7 +451,6 @@ namespace TwitchBotConsole
             bool LoadedProperly = true;
             StreamReader SR = new StreamReader(@configfile);
             string line = "";
-            _config.readTMI = true;
 
             while ((line = SR.ReadLine()) != null)
             {
@@ -562,21 +475,8 @@ namespace TwitchBotConsole
                         requiresConfigUpdate = true;
                     }
                 }
-                if (line.StartsWith("ReadServerFromTMI:"))
-                {
-                    string[] helper = line.Split(new char[] { ':' }, 2);
-                    if (helper[1] == "")
-                        _config.readTMI = true;
-                    else
-                    {
-                        bool outV;
-                        if (bool.TryParse(helper[1], out outV))
-                            _config.readTMI = outV;
-                        else
-                            _config.readTMI = true;
-                    }
-                }
-                else if (line.StartsWith("Server:"))
+
+                if (line.StartsWith("Server:"))
                 {
                     string[] helper = line.Split(new char[] { ':' }, 2);
                     if (helper[1] == "")
@@ -665,6 +565,7 @@ namespace TwitchBotConsole
                 else if (_configParseBool(line, "IntervalMessagesEnabled:", false, out tempBool)) intervalMessagesEnabled = tempBool;
                 else if (_configParseBool(line, "DeathCounterEnabled:", false, out tempBool)) deathCounterEnabled = tempBool;
                 else if (_configParseBool(line, "ViewerPBEnabled:", false, out tempBool)) viewerPBActive = tempBool;
+                else if (_configParseBool(line, "FortuneTeller:", false, out tempBool)) fortuneTellerEnabled = tempBool;
                 else if (_configParseBool(line, "LeaderboardEnabled:", false, out tempBool)) leaderBoardEnabled = tempBool;
                 else if (_configParseBool(line, "VotesEnabled:", false, out tempBool)) voteEnabled = tempBool;
                 else if (_configParseBool(line, "AdjustGamesDelayBasedOnChatActivity:", true, out tempBool)) adjustGamesDelayBasedOnChatActivity = tempBool;
@@ -766,7 +667,7 @@ namespace TwitchBotConsole
                     {
                         string[] helper = msg.message.Split(new char[] { ' ' }, 2);
 
-                        Type _type = Type.GetType("TwitchBotConsole.IrcClient");
+                        Type _type = Type.GetType("TwitchBotConsole.oldIRCClient");
                         PropertyInfo _propertyInfo = _type.GetProperty(helper[1]);
                         string text = _propertyInfo.GetValue(this, null).ToString();
                         sendChatMessage(msg.user + ": " + helper[1] + " = " + text);
@@ -793,7 +694,7 @@ namespace TwitchBotConsole
                     {
                         string[] helper = msg.message.Split(new char[] { ' ' }, 3);
 
-                        Type _type = Type.GetType("TwitchBotConsole.IrcClient");
+                        Type _type = Type.GetType("TwitchBotConsole.oldIRCClient");
                         PropertyInfo _propertyInfo = _type.GetProperty(helper[1]);
                         var oldValue = _propertyInfo.GetValue(this, null);
                         if (_propertyInfo.PropertyType.ToString() == "System.Boolean")
@@ -878,58 +779,6 @@ namespace TwitchBotConsole
             else
             {
                 sendChatMessage("Failed to add new highlight to a file " + line);
-            }
-        }
-
-        private void getServerFromTMI(string sUrl, out string server, out int port)
-        {
-            HttpWebRequest wRequest = (HttpWebRequest)HttpWebRequest.Create(sUrl);
-            wRequest.ContentType = "application/json";
-            wRequest.Accept = "application/vnd.twitchtv.v3+json";
-            wRequest.Method = "GET";
-
-            dynamic wResponse = wRequest.GetResponse().GetResponseStream();
-            StreamReader reader = new StreamReader(wResponse);
-            dynamic res = reader.ReadToEnd();
-            reader.Close();
-            wResponse.Close();
-
-            if (res.Contains("servers"))
-            {
-                string temp = Convert.ToString(res);
-                int indexStart = temp.IndexOf("servers");
-                if (indexStart > 0)
-                {
-                    indexStart = indexStart + 11;
-                    int indexEnd = temp.IndexOf(",", indexStart) - 1;
-                    string stuff = temp.Substring(indexStart, indexEnd - indexStart);
-                    string[] helper = stuff.Split(':');
-                    int value;
-                    if(int.TryParse(helper[1], out value))
-                    {
-                        server = helper[0];
-                        port = value;
-                    }
-                    else
-                    {
-                        server = String.Empty;
-                        port = 0;
-                    }
-
-                    Console.WriteLine("Obtained a server and port from TMI: " + server + ":" + port);
-                }
-                else
-                {
-                    server = String.Empty;
-                    port = 0;
-                    Console.WriteLine("Failed to obtain server and port from TMI.");
-                }
-            }
-            else
-            {
-                server = String.Empty;
-                port = 0;
-                Console.WriteLine("Failed to obtain server and port from TMI.");
             }
         }
 

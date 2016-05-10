@@ -31,7 +31,7 @@ namespace TwitchBotConsole
         }
 
         #region ModeratorFunctions
-        public void callBet(IrcClient irc, ReadMessage msg)
+        public void callBet(oldIRCClient irc, ReadMessage msg)
         {
             if(irc.moderators.Contains(msg.user))
             {
@@ -54,7 +54,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void setBetType(IrcClient irc, ReadMessage msg)
+        public void setBetType(oldIRCClient irc, ReadMessage msg)
         {
             if(irc.moderators.Contains(msg.user))
             {
@@ -97,7 +97,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void openBet(IrcClient irc, ReadMessage msg)
+        public void openBet(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {
@@ -111,7 +111,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void closeBet(IrcClient irc, ReadMessage msg)
+        public void closeBet(oldIRCClient irc, ReadMessage msg)
         {
             if(irc.moderators.Contains(msg.user))
             {
@@ -125,7 +125,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void betAnswer(IrcClient irc, ReadMessage msg)
+        public void betAnswer(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {
@@ -161,7 +161,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void getWinners(IrcClient irc, ReadMessage msg)
+        public void getWinners(oldIRCClient irc, ReadMessage msg)
         {
             if(betEnded)
             {
@@ -177,7 +177,7 @@ namespace TwitchBotConsole
         }
         #endregion
 
-        public void playerBets(IrcClient irc, ReadMessage msg)
+        public void playerBets(oldIRCClient irc, ReadMessage msg)
         {
             Tuple<uint, DateTime> values;
 

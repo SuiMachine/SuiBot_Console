@@ -7,7 +7,7 @@ namespace TwitchBotConsole
 {
     class Json_status
     {
-        IrcClient irc;
+        oldIRCClient irc;
         ViewerPB viewerPB;
         public bool isOnline = true;
         public bool isForcedPage = false;
@@ -15,7 +15,7 @@ namespace TwitchBotConsole
         public string forcedGame = "";
         string sUrl = "";
 
-        public Json_status(IrcClient _irc, ViewerPB _viewerPB)
+        public Json_status(oldIRCClient _irc, ViewerPB _viewerPB)
         {
             irc = _irc;
             viewerPB = _viewerPB;

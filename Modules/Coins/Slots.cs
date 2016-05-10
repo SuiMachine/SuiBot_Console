@@ -17,7 +17,7 @@ namespace TwitchBotConsole
             userCoins = coins.userCoins;
         }
 
-        public void PlaySlots(IrcClient irc, ReadMessage msg)
+        public void PlaySlots(oldIRCClient irc, ReadMessage msg)
         {
             if(irc.dynamicDelayCheck())
             {

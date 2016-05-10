@@ -7,7 +7,7 @@ namespace TwitchBotConsole
 {
     class Intervals
     {
-        IrcClient irc;
+        oldIRCClient irc;
         Json_status json;
         bool prevChannelOnline = false;
         string previousGame = "";
@@ -68,7 +68,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void AddIntervalMessage(IrcClient _irc, ReadMessage msg)
+        public void AddIntervalMessage(oldIRCClient _irc, ReadMessage msg)
         {
             if(_irc.moderators.Contains(msg.user))
             {
@@ -101,7 +101,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void ShowIntervalMessageID(IrcClient _irc, ReadMessage msg)
+        public void ShowIntervalMessageID(oldIRCClient _irc, ReadMessage msg)
         {
             string[] helper = msg.message.Split(new char[] { ' ' }, 2);
             int id = -1;
@@ -125,7 +125,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void RemoveIntervalMessage(IrcClient _irc, ReadMessage msg)
+        public void RemoveIntervalMessage(oldIRCClient _irc, ReadMessage msg)
         {
             if (_irc.moderators.Contains(msg.user))
             {
@@ -156,7 +156,7 @@ namespace TwitchBotConsole
                 _irc.sendChatMessage(msg.user + ": Insufficient rights!");
         }
 
-        public void sendIrc(IrcClient _irc, Json_status _json)
+        public void sendIrc(oldIRCClient _irc, Json_status _json)
         {
             irc = _irc;
             json = _json;

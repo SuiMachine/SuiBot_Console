@@ -8,7 +8,7 @@ namespace TwitchBotConsole
         public Dictionary<string, Tuple<uint, DateTime>> userCoins = new Dictionary<string, Tuple<uint, DateTime>>();
 
 
-        public void DisplayCoins(IrcClient irc, ReadMessage msg)
+        public void DisplayCoins(oldIRCClient irc, ReadMessage msg)
         {
             if(irc.dynamicDelayCheck())
             {
@@ -27,7 +27,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void AddCoins(IrcClient irc, ReadMessage msg)
+        public void AddCoins(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {

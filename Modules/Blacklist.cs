@@ -14,18 +14,23 @@ namespace TwitchBotConsole
         string directory = "cache";
         string userInfoFile = "userinfo.txt";
 
-        IrcClient irc;
+        oldIRCClient irc;
         List<string> blacklist_fullphrase = new List<string>();
         List<string> blacklist_startswith = new List<string>();
         List<string> blacklist_endswith = new List<string>();
         List<string> blacklist_words = new List<string>();
-        byte allowedToPostLinksRequirement = 5;
+
+        List<string> blacklist_ban_fullphrase = new List<string>();
+        List<string> blacklist_ban_startswith = new List<string>();
+        List<string> blacklist_ban_endswith = new List<string>();
+        List<string> blacklist_ban_words = new List<string>();
+        byte allowedToPostLinksRequirement = 3;
 
 
         List<string> url_marks = new List<string>() { "http:", "www." , "https:", "ftp:", "ftps:", "sftp:", "steam:", "imap:", "file:"};
         Dictionary<string, byte> allowedToPostLinks = new Dictionary<string, byte>();
 
-        public Blacklist(IrcClient _irc)
+        public Blacklist(oldIRCClient _irc)
         {
             irc = _irc;
             if (File.Exists(filterFile))
@@ -73,6 +78,26 @@ namespace TwitchBotConsole
             return false;
         }
 
+        public bool checkForBanWorthyContent(ReadMessage msg)
+        {
+            string message = msg.message.ToLower();
+
+            if (msg.user != String.Empty)
+            {
+                if (blacklist_ban_fullphrase.Contains(message))
+                    return true;
+                else if (blacklist_ban_startswith.Any(s => message.StartsWith(s)))
+                    return true;
+                else if (blacklist_ban_endswith.Any(s => message.EndsWith(s)))
+                    return true;
+                else if (blacklist_ban_words.Any(s => message.Contains(s)))
+                    return true;
+                else
+                    return false;
+            }
+            return false;
+        }
+
         private bool isLink(string message)
         {
             string[] helper = message.Replace("..", "+").Split(' ', '\"', '\\', '(', ')', '<', '>');   //probably need more
@@ -107,6 +132,7 @@ namespace TwitchBotConsole
             string line;
 
             byte addingToVal = 0;
+            bool isBanWorthy = false;
 
             while((line = SR.ReadLine()) != null)
             {
@@ -114,6 +140,16 @@ namespace TwitchBotConsole
                 {
                     Debug.WriteLine("Skipping");
                     continue;
+                }
+                else if (line == "#####PURGE#######")
+                {
+                    isBanWorthy = false;
+                    Debug.WriteLine("Set to: Purge list");
+                }
+                else if (line == "#######BAN#######")
+                {
+                    isBanWorthy = true;
+                    Debug.WriteLine("Set to: Ban list");
                 }
                 else if(line == "####PHRASE########")
                 {
@@ -143,7 +179,10 @@ namespace TwitchBotConsole
                     {
                         if(!blacklist_fullphrase.Contains(filter.ToLower()))
                         {
-                            blacklist_fullphrase.Add(filter);
+                            if (!isBanWorthy)
+                                blacklist_fullphrase.Add(filter);
+                            else
+                                blacklist_fullphrase.Add(filter);
                             Debug.WriteLine("Adding: " + filter + " " + addingToVal.ToString());
                         }
                     }
@@ -151,7 +190,10 @@ namespace TwitchBotConsole
                     {
                         if (!blacklist_startswith.Contains(filter.ToLower()))
                         {
-                            blacklist_startswith.Add(filter);
+                            if (!isBanWorthy)
+                                blacklist_startswith.Add(filter);
+                            else
+                                blacklist_ban_startswith.Add(filter);
                             Debug.WriteLine("Adding: " + filter + " " + addingToVal.ToString());
                         }
                     }
@@ -159,7 +201,10 @@ namespace TwitchBotConsole
                     {
                         if (!blacklist_endswith.Contains(filter.ToLower()))
                         {
-                            blacklist_endswith.Add(filter);
+                            if (!isBanWorthy)
+                                blacklist_endswith.Add(filter);
+                            else
+                                blacklist_ban_endswith.Add(filter);
                             Debug.WriteLine("Adding: " + filter + " " + addingToVal.ToString());
                         }
                     }
@@ -167,7 +212,10 @@ namespace TwitchBotConsole
                     {
                         if (!blacklist_words.Contains(filter.ToLower()))
                         {
-                            blacklist_words.Add(filter);
+                            if (!isBanWorthy)
+                                blacklist_words.Add(filter);
+                            else
+                                blacklist_ban_words.Add(filter);
                             Debug.WriteLine("Adding: " + filter + " " +addingToVal.ToString());
                         }
                     }
@@ -181,6 +229,7 @@ namespace TwitchBotConsole
         private void saveBlacklist()
         {
             string output =
+                "#####PURGE#######" + "\n" +
                 "####PHRASE########" + "\n" +
                 getStringFromList(blacklist_fullphrase) +
                 "\n" + "####STARTSWITH####" + "\n" +
@@ -188,7 +237,17 @@ namespace TwitchBotConsole
                 "\n" + "####ENDSWITH######" + "\n" +
                 getStringFromList(blacklist_endswith) +
                 "\n" + "####WORDS#########" + "\n" +
-                getStringFromList(blacklist_words);
+                getStringFromList(blacklist_words) +
+                "\n" + "#######BAN#######" + "\n" +
+                "\n" + "####PHRASE########" + "\n" +
+                getStringFromList(blacklist_ban_fullphrase) +
+                "\n" + "####STARTSWITH####" + "\n" +
+                getStringFromList(blacklist_ban_startswith) +
+                "\n" + "####ENDSWITH######" + "\n" +
+                getStringFromList(blacklist_ban_endswith) +
+                "\n" + "####WORDS#########" + "\n" +
+                getStringFromList(blacklist_ban_words); 
+
 
             File.WriteAllText(filterFile, output);
         }

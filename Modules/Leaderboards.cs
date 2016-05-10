@@ -10,7 +10,7 @@ namespace TwitchBotConsole
     {
         //This class is a total mess
         //Enjoy!
-        IrcClient irc;
+        oldIRCClient irc;
         ReadMessage msg;
         Json_status json;
 
@@ -49,9 +49,10 @@ namespace TwitchBotConsole
 			proxyName.Add("homm3", "Heroes of Might and Magic III");
             proxyName.Add("Trespasser: Jurassic Park", "Jurassic Park: Trespasser");
             proxyName.Add("Hitman (2016)", "just_hitman");
+            proxyName.Add("Star Wars: Knights of the Old Republic II - The Sith Lords", "Star Wars: Knights of the Old Republic 2 - The Sith Lords");
         }
 
-        public void recieveData(IrcClient _irc, ReadMessage _msg)
+        public void recieveData(oldIRCClient _irc, ReadMessage _msg)
         {
             irc = _irc;
             msg = _msg;

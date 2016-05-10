@@ -1,3 +1,4 @@
+#####PURGE#######
 ####PHRASE########
 :hey has anyone been reading the whole 'asian masculinity' thing on reddit?
 :for asian guys, have you seen the asian gamer chicks subreddit?
@@ -56,3 +57,7 @@
 :hec.su/
 :8b.kz/
 :mbcurl.me/
+
+#######BAN#######
+####WORDS#########
+:your mom is easy

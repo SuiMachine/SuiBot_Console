@@ -29,7 +29,7 @@ namespace TwitchBotConsole
             SR.Close();
         }
 
-        public void addQuote(IrcClient _irc, ReadMessage MSG)
+        public void addQuote(oldIRCClient _irc, ReadMessage MSG)
         {
             if(_irc.moderators.Contains(MSG.user))
             {
@@ -53,7 +53,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void getQuote(IrcClient _irc, string msg)
+        public void getQuote(oldIRCClient _irc, string msg)
         {
             string[] helper = msg.Split(new char[]{' '}, 2);
             if(helper.Length >1)
@@ -83,7 +83,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void getQuotebyID(IrcClient _irc, ReadMessage msg)
+        public void getQuotebyID(oldIRCClient _irc, ReadMessage msg)
         {
             int id = GetIDFromString(msg.message);
 
@@ -116,7 +116,7 @@ namespace TwitchBotConsole
             return -1;
         }
 
-        public void removeQuote(IrcClient irc, ReadMessage msg)
+        public void removeQuote(oldIRCClient irc, ReadMessage msg)
         {
             if(irc.moderators.Contains(msg.user))
             {
@@ -155,7 +155,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void getNumberOfQuotes(IrcClient irc)
+        public void getNumberOfQuotes(oldIRCClient irc)
         {
             irc.sendChatMessage("Number of elements: " + quotelist.Count.ToString());
         }

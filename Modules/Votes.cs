@@ -11,7 +11,7 @@ namespace TwitchBotConsole
         List<string> voteOptions = new List<string>();
         bool voteActive = false;
 
-        public void callVote(IrcClient irc, ReadMessage msg)
+        public void callVote(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {
@@ -30,7 +30,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void setOptions(IrcClient irc, ReadMessage msg)
+        public void setOptions(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {
@@ -52,7 +52,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void Vote(IrcClient irc, ReadMessage msg)
+        public void Vote(oldIRCClient irc, ReadMessage msg)
         {
             if (voteActive)
             {
@@ -89,7 +89,7 @@ namespace TwitchBotConsole
                 irc.sendChatMessage("There is no currently active vote!");
         }
 
-        public void voteClose(IrcClient irc, ReadMessage msg)
+        public void voteClose(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {
@@ -107,7 +107,7 @@ namespace TwitchBotConsole
 
 
 
-        public void voteOpen(IrcClient irc, ReadMessage msg)
+        public void voteOpen(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {
@@ -127,7 +127,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void displayVote(IrcClient irc, ReadMessage msg)
+        public void displayVote(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user) || irc.trustedUsers.Contains(msg.user))
             {
@@ -142,7 +142,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public void displayResults(IrcClient irc, ReadMessage msg)
+        public void displayResults(oldIRCClient irc, ReadMessage msg)
         {
             if (irc.moderators.Contains(msg.user))
             {
