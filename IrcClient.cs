@@ -110,7 +110,9 @@ namespace TwitchBotConsole
                         meebyIrc.Connect(_config.server, _config.port);
                         while (!meebyIrc.IsConnected)
                             System.Threading.Thread.Sleep(50);
-                        meebyIrc.Login(_config.username, _config.username, 4, _config.username, _config.password);
+                        verifyLogin();
+                        meebyIrc.RfcJoin("#" + _config.channel);
+
                     }
                     catch (ConnectionException e)
                     {
@@ -129,6 +131,10 @@ namespace TwitchBotConsole
         }
         #endregion
 
+        public void verifyLogin()
+        {
+            meebyIrc.Login(_config.username, _config.username, 4, _config.username, _config.password);
+        }
         #region BasicFunctions
 
         public void sendChatMessage(string message)

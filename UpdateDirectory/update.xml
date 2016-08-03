@@ -1,5 +1,11 @@
 <updates>
 	<update>
+		<version>1.1.1</version>
+		<file>TwitchBotConsole.exe</file>
+		<file>log4net.dll</file>
+		<file>Meebey.SmartIrc4net.dll</file>
+	</update>
+	<update>
 		<version>1.1.0</version>
 		<file>TwitchBotConsole.exe</file>
 		<file>log4net.dll</file>

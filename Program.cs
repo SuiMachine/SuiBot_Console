@@ -77,7 +77,6 @@ namespace TwitchBotConsole
             _statusCheckTimer.Elapsed += new ElapsedEventHandler(_jsonStatus.TimerTick);
             _timer.Interval = 60 * 1000;
             _leaderboards.SendJsonPointer(_jsonStatus);
-            irc.meebyIrc.RfcJoin("#" + irc._config.channel);
         }
 
         private static void CheckForUpdate()
@@ -135,9 +134,19 @@ namespace TwitchBotConsole
             }
         }
 
-        private static bool check(string toc)
+        private static bool check_lazy(string toc)
         {
             if (FormattedMessage.message.StartsWith(toc, StringComparison.InvariantCultureIgnoreCase))
+            {
+                cvarflag = false;
+                return true;
+            }
+            return false;
+        }
+
+        private static bool check_exact(string toc)
+        {
+            if (FormattedMessage.message.ToLower() == toc.ToLower())
             {
                 cvarflag = false;
                 return true;
@@ -179,73 +188,73 @@ namespace TwitchBotConsole
                 cvarflag = true;//check if _ANYTHING_ matched.
                 if (irc.vocalMode)
                 {
-                    if (irc.moderators.Contains(formattedMessage.user) && check("!help")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
-                    if (irc.moderators.Contains(formattedMessage.user) && check("!commands")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
-                    if (check("!ask ")) _ask.answerAsk(irc, formattedMessage);
-                    if (check("!addCvar ")) _customCvars.addCustomCvar(irc, formattedMessage);
-                    if (check("!removeCvar ")) _customCvars.removeCustomCvar(irc, formattedMessage);
-                    if (check("!customCvars")) _customCvars.showCustomCvars(irc, formattedMessage);
+                    if (irc.moderators.Contains(formattedMessage.user) && check_lazy("!help")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
+                    if (irc.moderators.Contains(formattedMessage.user) && check_lazy("!commands")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
+                    if (check_lazy("!ask ")) _ask.answerAsk(irc, formattedMessage);
+                    if (check_lazy("!addCvar ")) _customCvars.addCustomCvar(irc, formattedMessage);
+                    if (check_lazy("!removeCvar ")) _customCvars.removeCustomCvar(irc, formattedMessage);
+                    if (check_lazy("!customCvars")) _customCvars.showCustomCvars(irc, formattedMessage);
                 }
                 if (irc.quoteEnabled)
                 {
-                    if (check("!addquote ")) _quotes.addQuote(irc, formattedMessage);
-                    if (check("!quoteID ")) _quotes.getQuotebyID(irc, formattedMessage);
-                    if (check("!quote")) _quotes.getQuote(irc, formattedMessage.message);
-                    if (check("!removeQuote")) _quotes.removeQuote(irc, formattedMessage);
-                    if (check("!getNumberOfQuotes")) _quotes.getNumberOfQuotes(irc);
+                    if (check_lazy("!addquote ")) _quotes.addQuote(irc, formattedMessage);
+                    if (check_lazy("!quoteID ")) _quotes.getQuotebyID(irc, formattedMessage);
+                    if (check_lazy("!quote")) _quotes.getQuote(irc, formattedMessage.message);
+                    if (check_lazy("!removeQuote")) _quotes.removeQuote(irc, formattedMessage);
+                    if (check_lazy("!getNumberOfQuotes")) _quotes.getNumberOfQuotes(irc);
                 }
                 if (irc.intervalMessagesEnabled)
                 {
-                    if (check("!intervalMessageAdd")) _intervals.AddIntervalMessage(irc, formattedMessage);
-                    if (check("!intervalMessageShow")) _intervals.ShowIntervalMessageID(irc, formattedMessage);
-                    if (check("!intervalMessageRemove")) _intervals.RemoveIntervalMessage(irc, formattedMessage);
+                    if (check_lazy("!intervalMessageAdd")) _intervals.AddIntervalMessage(irc, formattedMessage);
+                    if (check_lazy("!intervalMessageShow")) _intervals.ShowIntervalMessageID(irc, formattedMessage);
+                    if (check_lazy("!intervalMessageRemove")) _intervals.RemoveIntervalMessage(irc, formattedMessage);
                 }
                 if (irc.slotsEnable)
                 {
-                    if (check("!slots ")) _slots.PlaySlots(irc, formattedMessage);
-                    if (check("!coins")) _coins.DisplayCoins(irc, formattedMessage);
-                    if (check("!addCoins ")) _coins.AddCoins(irc, formattedMessage);
+                    if (check_lazy("!slots ")) _slots.PlaySlots(irc, formattedMessage);
+                    if (check_lazy("!coins")) _coins.DisplayCoins(irc, formattedMessage);
+                    if (check_lazy("!addCoins ")) _coins.AddCoins(irc, formattedMessage);
                 }
                 if (irc.voteEnabled)
                 {
-                    if (check("!callVote ")) _votes.callVote(irc, formattedMessage);
-                    if (check("!voteOptions ")) _votes.setOptions(irc, formattedMessage);
-                    if (check("!voteOpen")) _votes.voteOpen(irc, formattedMessage);
-                    if (check("!voteClose")) _votes.voteClose(irc, formattedMessage);
-                    if (check("!voteDisplay")) _votes.displayVote(irc, formattedMessage);
-                    if (check("!voteResults")) _votes.displayResults(irc, formattedMessage);
-                    if (check("!vote ")) _votes.Vote(irc, formattedMessage);
+                    if (check_lazy("!callVote ")) _votes.callVote(irc, formattedMessage);
+                    if (check_lazy("!voteOptions ")) _votes.setOptions(irc, formattedMessage);
+                    if (check_lazy("!voteOpen")) _votes.voteOpen(irc, formattedMessage);
+                    if (check_lazy("!voteClose")) _votes.voteClose(irc, formattedMessage);
+                    if (check_lazy("!voteDisplay")) _votes.displayVote(irc, formattedMessage);
+                    if (check_lazy("!voteResults")) _votes.displayResults(irc, formattedMessage);
+                    if (check_lazy("!vote ")) _votes.Vote(irc, formattedMessage);
                 }
                 if (irc.deathCounterEnabled)
                 {
-                    if (check("!deathCounter")) irc.DeathCounterDisplay(formattedMessage);
-                    if (check("!deathAdd")) irc.DeathCounterAdd(formattedMessage);
-                    if (check("!deathRemove")) irc.DeathCounterRemove(formattedMessage);
+                    if (check_lazy("!deathCounter")) irc.DeathCounterDisplay(formattedMessage);
+                    if (check_lazy("!deathAdd")) irc.DeathCounterAdd(formattedMessage);
+                    if (check_lazy("!deathRemove")) irc.DeathCounterRemove(formattedMessage);
                 }
                 if (irc.viewerPBActive)
                 {
-                    if (check("!viewerPB")) _viewerPB.displayViewerPB(formattedMessage);
+                    if (check_lazy("!viewerPB")) _viewerPB.displayViewerPB(formattedMessage);
                 }
                 if (irc.filteringEnabled)
                 {
-                    if (check("!filterAdd ")) _blacklist.AddFilter(formattedMessage);
-                    if (check("!filterRemove ")) _blacklist.RemoveFilter(formattedMessage);
-                    if (check("!allowToPostLinks")) _blacklist.addToAllowedToPostLinks(formattedMessage);
-                    if (check("!resetAllowToPostLinks")) _blacklist.resetFromAllowedToPostLinks(formattedMessage);  //No idea why
+                    if (check_lazy("!filterAdd ")) _blacklist.AddFilter(formattedMessage);
+                    if (check_lazy("!filterRemove ")) _blacklist.RemoveFilter(formattedMessage);
+                    if (check_lazy("!allowToPostLinks")) _blacklist.addToAllowedToPostLinks(formattedMessage);
+                    if (check_lazy("!resetAllowToPostLinks")) _blacklist.resetFromAllowedToPostLinks(formattedMessage);  //No idea why
                 }
                 if (irc.leaderBoardEnabled)
                 {
-                    if (check("!forceSpeedrunPage")) _jsonStatus.forcedGameFunction(formattedMessage);
-                    if (check("!speedrunName ")) irc.updateSpeedrunName(formattedMessage);
+                    if (check_lazy("!forceSpeedrunPage")) _jsonStatus.forcedGameFunction(formattedMessage);
+                    if (check_lazy("!speedrunName ")) irc.updateSpeedrunName(formattedMessage);
 
-                    if (check("!pb"))
+                    if (check_lazy("!pb"))
                     {
                         Thread lbThread = new Thread(new ThreadStart(_leaderboards.getPB));
                         _leaderboards.recieveData(irc, formattedMessage);
                         lbThread.Start();
                     }
 
-                    if (check("!wr"))
+                    if (check_exact("!wr") || check_lazy("!wr "))
                     {
                         Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
                         _leaderboards.recieveData(irc, formattedMessage);
@@ -254,30 +263,30 @@ namespace TwitchBotConsole
                 }
                 if (irc.fortuneTellerEnabled)
                 {
-                    if (check("!fortune") || check("!tellfortune"))
+                    if (check_exact("!fortune") || check_exact("!tellfortune"))
                         _fortuneTeller.FortuneTelling(irc, formattedMessage);
                 }
 
 
                 //ones we do regardless
-                if (check("!ignoreAdd ")) irc.ignoreListAdd(formattedMessage);
-                if (check("!ignoreRemove ")) irc.ignoreListRemove(formattedMessage);
-                if (check("!trustedAdd ")) irc.trustedUserAdd(formattedMessage);
-                if (check("!permit ")) irc.trustedUserAdd(formattedMessage);
-                if (check("!trustedRemove ")) irc.trustedUsersRemove(formattedMessage);
+                if (check_lazy("!ignoreAdd ")) irc.ignoreListAdd(formattedMessage);
+                if (check_lazy("!ignoreRemove ")) irc.ignoreListRemove(formattedMessage);
+                if (check_lazy("!trustedAdd ")) irc.trustedUserAdd(formattedMessage);
+                if (check_lazy("!permit ")) irc.trustedUserAdd(formattedMessage);
+                if (check_lazy("!trustedRemove ")) irc.trustedUsersRemove(formattedMessage);
 
 
                 //mod only!
                 if (irc.moderators.Contains(formattedMessage.user))
                 {
-                    if (check("!updateJsonInfo")) _jsonStatus.requestUpdate();
-                    if (check("!version")) irc.version();
-                    if (check("!highlight")) irc.createHighlight(formattedMessage, _jsonStatus);
+                    if (check_lazy("!updateJsonInfo")) _jsonStatus.requestUpdate();
+                    if (check_lazy("!version")) irc.version();
+                    if (check_lazy("!highlight")) irc.createHighlight(formattedMessage, _jsonStatus);
                 }
                 //supermod only!
                 if (irc.supermod.Contains(formattedMessage.user))
                 {
-                    if (check("!killBot"))
+                    if (check_lazy("!killBot"))
                     {
                         irc.sendChatMessage("Goodbye! BibleThump");
 
@@ -287,12 +296,12 @@ namespace TwitchBotConsole
 
                         return false;
                     }
-                    if (check("!reloadBot")) reloadBot();
+                    if (check_lazy("!reloadBot")) reloadBot();
                 }
                 
                 //Property
-                if (check("!getProperty")) irc.getParameter(formattedMessage);
-                if (check("!setProperty")) irc.setParameter(formattedMessage);
+                if (check_lazy("!getProperty")) irc.getParameter(formattedMessage);
+                if (check_lazy("!setProperty")) irc.setParameter(formattedMessage);
 
                 if (cvarflag)
                 {
@@ -389,7 +398,9 @@ namespace TwitchBotConsole
 
         private static void MeebyIrc_OnConnected(object sender, EventArgs e)
         {
-            Console.WriteLine("Connected: " + e);
+            Console.WriteLine("Connected: (DEBUG)" + e);
+            irc.verifyLogin();
+            irc.meebyIrc.RfcJoin("#" + irc._config.channel);
         }
 
         private static void MeebyIrc_OnChannelAction(object sender, Meebey.SmartIrc4net.ActionEventArgs e)

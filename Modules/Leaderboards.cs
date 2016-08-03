@@ -24,6 +24,7 @@ namespace TwitchBotConsole
         private void loadProxyNames()
         {
             proxyName.Add("Star Wars: Jedi Knight - Jedi Academy", "jka");
+            proxyName.Add("Star Wars: Jedi Knight II - Jedi Outcast", "jk2");
             proxyName.Add("Darksiders II", "Darksiders 2");
             proxyName.Add("GTA3", "gtaiii");
             proxyName.Add("GTA 3", "gtaiii");
