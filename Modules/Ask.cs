@@ -60,6 +60,16 @@ namespace TwitchBotConsole
             "In the cage in your basement DOOMGuy"
         };
 
+        string[] AnswersWhy = {
+            "Because, why not?! FrankerZ",
+            "Because Hitler DansGame",
+            "Because you asked for it Kappa",
+            "Just Cause... get it? Kappa",
+            "Just for safety FrankerZ",
+            "Because you're weird",
+            "Because Aliens! SoonerLater"
+        };
+
 
         Random rnd = new Random();
 
@@ -157,6 +167,15 @@ namespace TwitchBotConsole
                 id = rnd.Next(0, AnswersPlace.Length);
                 irc.sendChatMessage(user + ": " + AnswersPlace[id]);
             }
+            else if (question.StartsWith("Why", StringComparison.InvariantCultureIgnoreCase))
+            {
+                id = rnd.Next(0, AnswersWhy.Length);
+                irc.sendChatMessage(user + ": " + AnswersWhy[id]);
+            }
+            else if (question.Contains("or"))
+            {
+                irc.sendChatMessage(user + ": " + respond_to_this_or_that(question));
+            }
             else
             {
                 id = rnd.Next(0, AnswersGeneric.Length);
@@ -164,6 +183,37 @@ namespace TwitchBotConsole
             }
 
             _ask[user] = new Tuple<DateTime, bool>(DateTime.UtcNow, false);
+        }
+
+        string respond_to_this_or_that(string question)
+        {
+            string[] words = question.Split(new char[] { ' ', '!', '?' });
+            int or_index = 0;
+            for(int i=0; i<words.Length; i++)
+            {
+                if(words[i].ToLower() == "or")
+                {
+                    or_index = i;
+                    break;
+                }
+            }
+
+            if (or_index > 0 && or_index < (words.Length - 1))
+            {
+                if (words[or_index - 1] != String.Empty && words[or_index + 1] != String.Empty) 
+                {
+                    if (rnd.Next(2) == 0)
+                    {
+                        return words[or_index - 1];
+                    }
+                    else
+                    {
+                        return words[or_index + 1];
+                    }
+                }
+            }
+
+            return AnswersGeneric[rnd.Next(0, AnswersGeneric.Length)];
         }
 
         private string uniqueQuestion(string user, string question)
@@ -178,7 +228,7 @@ namespace TwitchBotConsole
             }
             else if (question.StartsWith("Who", StringComparison.InvariantCultureIgnoreCase))     //Here are unique people (who)
             {
-                string[] helper = question.ToLower().Split(new char[] { ' ', '?' });                //Split the words and check if one of them fits
+                string[] helper = question.ToLower().Split(new char[] { ' ', '?', '!' });                //Split the words and check if one of them fits
 
                 foreach (string word in helper)
                 {                                                           //Remember words are lowercase only!
@@ -224,11 +274,15 @@ namespace TwitchBotConsole
                     }
                     else if (word == "chops" || word == "drtchops")
                     {
-                        return "";
+                        return "PJSalt";
                     }
                     else if (word == "snowy" || word == "snowysnowwolf")
                     {
                         return "I don't know who Slowy is Kappa";
+                    }
+                    else if (word == "jakeplisskensda" || word == "jakeplissken")
+                    {
+                        return "One hell of a taffer FrankerZ";
                     }
                 }
                 return String.Empty;
@@ -237,6 +291,7 @@ namespace TwitchBotConsole
             {
                 DateTime utcTime = DateTime.UtcNow;
 
+                //This is wrong and it should be fixed, but I can't be bothered :(
                 return "It's: " + utcTime.AddHours(1).ToShortTimeString() + " (Central Europe), " + utcTime.AddHours(-5).ToShortTimeString() + " (Eastern Standard Time) or " + utcTime.AddHours(11).ToShortTimeString() + " (Aussie time) FrankerZ";
             }
             else if (question.StartsWith("What", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("Wat", StringComparison.InvariantCultureIgnoreCase))

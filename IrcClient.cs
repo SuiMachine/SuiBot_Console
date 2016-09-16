@@ -96,6 +96,8 @@ namespace TwitchBotConsole
                 }
                 loadDeaths();
 
+                checkLogin();
+
                 if(loading_status)
                 {
                     this.userName = _config.username;
@@ -128,6 +130,15 @@ namespace TwitchBotConsole
 
             loadIgnoredList();
             loadTrustedList();
+        }
+
+        private void checkLogin()
+        {
+            if(true)
+            {
+                //string sUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=m5fhbaoh4ca8bhl23u5escfn5583fq4&redirect_uri=http://localhost/scope=chat_login+channel_editor+channel_subscriptions+user_follows_edit";
+                //Process.Start(sUrl);
+            }
         }
         #endregion
 
