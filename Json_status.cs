@@ -83,6 +83,7 @@ namespace TwitchBotConsole
         public string getStreamTime()
         {
             HttpWebRequest wRequest = (HttpWebRequest)HttpWebRequest.Create(sUrl);
+            wRequest.Headers["Client-ID"] = "m5fhbaoh4ca8bhl23u5escfn5583fq4";
             wRequest.ContentType = "application/json";
             wRequest.Accept = "application/vnd.twitchtv.v3+json";
             wRequest.Method = "GET";
