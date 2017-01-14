@@ -8,6 +8,8 @@ Just download the code, open TwitchBotConsole.csproj with a either Visual Studio
 First start may seem like a crash, but it should create a config file, where you can type in your username, password, channel the bots should join etc.
 Once you've edited the config file, you should be good to go.
 
+Note: Running ask module with CleverBot via Mono, may require Mono Beta, due to issues with SSL certificates.
+
 
 Credits
 -------

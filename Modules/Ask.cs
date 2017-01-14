@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using CleverBotNS;
 
 namespace TwitchBotConsole
 {
     class Ask
     {
-        Dictionary<string,Tuple<DateTime,bool>> _ask = new Dictionary<string,Tuple<DateTime,bool>>();
+        Random rnd;
+        Dictionary<string, Tuple<DateTime, bool>> _ask;
+        CleverBot cleverBotInstance = null;
 
         string[] AnswersTime = {
             "Never!",
@@ -70,8 +73,11 @@ namespace TwitchBotConsole
             "Because Aliens! SoonerLater"
         };
 
-
-        Random rnd = new Random();
+        public Ask()
+        {
+            rnd = new Random();
+            _ask = new Dictionary<string, Tuple<DateTime, bool>>();
+        }
 
         public void answerAsk(oldIRCClient irc, ReadMessage msg)
         {
@@ -141,9 +147,20 @@ namespace TwitchBotConsole
 
         private void responsedToQuestion(oldIRCClient irc, string user, string question)
         {
+            if(irc.askUseCleverBot)
+            {
+                if (cleverBotInstance == null)
+                {
+                    cleverBotInstance = new CleverBot(irc.CleverBotAPIUser, irc.CleverBotAPIKey, "SuiBot");
+                }                                    
+            }
             int id;
             string response;
             if ((response = uniqueQuestion(user, question)) != String.Empty)
+            {
+                irc.sendChatMessage(user + ": " + response);
+            }
+            else if(irc.askUseCleverBot && (response = cleverBotInstance.askAndGetResponse(question)) != "Error")
             {
                 irc.sendChatMessage(user + ": " + response);
             }
@@ -226,6 +243,10 @@ namespace TwitchBotConsole
             {
                 return "DansGame";
             }
+            else if(question.StartsWith("Who made this lock", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("Who has made this lock", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "Anton Sokolov FUNgineer";
+            }
             else if (question.StartsWith("Who", StringComparison.InvariantCultureIgnoreCase))     //Here are unique people (who)
             {
                 string[] helper = question.ToLower().Split(new char[] { ' ', '?', '!' });                //Split the words and check if one of them fits
@@ -287,13 +308,14 @@ namespace TwitchBotConsole
                 }
                 return String.Empty;
             }
+            /*
 			else if (question.StartsWith("What time is it", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("What's the time", StringComparison.InvariantCultureIgnoreCase))
             {
                 DateTime utcTime = DateTime.UtcNow;
 
                 //This is wrong and it should be fixed, but I can't be bothered :(
                 return "It's: " + utcTime.AddHours(1).ToShortTimeString() + " (Central Europe), " + utcTime.AddHours(-5).ToShortTimeString() + " (Eastern Standard Time) or " + utcTime.AddHours(11).ToShortTimeString() + " (Aussie time) FrankerZ";
-            }
+            }*/
             else if (question.StartsWith("What", StringComparison.InvariantCultureIgnoreCase) || question.StartsWith("Wat", StringComparison.InvariantCultureIgnoreCase))
             {
                 string[] helper = question.ToLower().Split(new char[] { ' ', '?' });

@@ -36,6 +36,9 @@ namespace TwitchBotConsole
         static string trustedfile = "trusted_users.txt";
         static string deathSave = "deaths.txt";
         public string SpeedrunName = "";
+        public string CleverBotAPIUser = "";
+        public string CleverBotAPIKey = "";
+
         public config _config;
         #region properties
         public bool configFileExisted = false;
@@ -43,6 +46,7 @@ namespace TwitchBotConsole
         public uint SlotsInitialCoins { get; set; }
         public bool quoteEnabled { get; set; }
         public bool safeAskMode { get; set; }
+        public bool askUseCleverBot { get; set; }
         public bool filteringEnabled { get; set; }
         public bool filteringHarsh { get; set; }
         public bool filteringRespond { get; set; }
@@ -136,7 +140,7 @@ namespace TwitchBotConsole
         {
             if(true)
             {
-                //string sUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=m5fhbaoh4ca8bhl23u5escfn5583fq4&redirect_uri=http://localhost/scope=chat_login+channel_editor+channel_subscriptions+user_follows_edit";
+                //string sUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=m5fhbaoh4ca8bhl23u5escfn5583fq4&redirect_uri=https://suimachine.github.io/twitchauthy/scope=chat_login+channel_editor+channel_subscriptions+user_follows_edit";
                 //Process.Start(sUrl);
             }
         }
@@ -340,6 +344,9 @@ namespace TwitchBotConsole
             output += "\nSafeAskMode:" + safeAskMode.ToString();
             output += "\nSlotsEnabled:" + slotsEnable.ToString();
             output += "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString();
+            output += "\n\nUseCleverBot:" + askUseCleverBot.ToString();
+            output += "\nCleverBotAPIUser:" + CleverBotAPIUser.ToString();
+            output += "\nCleverBotAPIKey:" + CleverBotAPIKey.ToString();
 
             File.WriteAllText(@configfile, output);
         }
@@ -374,7 +381,10 @@ namespace TwitchBotConsole
                 + "\nViewerPBEnabled:" + viewerPBActive.ToString()
                 + "\nLeaderboardEnabled:" + leaderBoardEnabled.ToString()
                 + "\nVotesEnabled:" + voteEnabled.ToString()
-                + "\nFortuneTeller:" + fortuneTellerEnabled.ToString();
+                + "\nFortuneTeller:" + fortuneTellerEnabled.ToString()
+                + "\n\nUseCleverBot:" + askUseCleverBot.ToString()
+                + "\nCleverBotAPIUser:" + CleverBotAPIUser.ToString()
+                + "\nCleverBotAPIKey:" + CleverBotAPIKey.ToString();
 
             File.WriteAllText(@configfile, output);
         }
@@ -474,6 +484,7 @@ namespace TwitchBotConsole
                 bool tempBool;
                 int tempInt;
                 double tempDouble;
+                string tempString;
                 if (line.StartsWith("Version:"))
                 {
                     Version ver;
@@ -578,6 +589,9 @@ namespace TwitchBotConsole
                 else if (_configParseBool(line, "FilteringResponse:", false, out tempBool)) filteringRespond = tempBool;
                 else if (_configParseBool(line, "QuotesEnabled:", false, out tempBool)) quoteEnabled = tempBool;
                 else if (_configParseBool(line, "SafeAskMode:", true, out tempBool)) safeAskMode = tempBool;
+                else if (_configParseBool(line, "UseCleverBot:", true, out tempBool)) askUseCleverBot = tempBool;
+                else if (_configGetString(line, "CleverBotAPIUser:", out tempString)) CleverBotAPIUser = tempString;
+                else if (_configGetString(line, "CleverBotAPIKey:", out tempString)) CleverBotAPIKey = tempString;
                 else if (_configParseBool(line, "SlotsEnabled:", false, out tempBool)) slotsEnable = tempBool;
                 else if (_configParseBool(line, "IntervalMessagesEnabled:", false, out tempBool)) intervalMessagesEnabled = tempBool;
                 else if (_configParseBool(line, "DeathCounterEnabled:", false, out tempBool)) deathCounterEnabled = tempBool;
@@ -592,6 +606,12 @@ namespace TwitchBotConsole
             }
             SR.Close();
             SR.Dispose();
+
+            if(askUseCleverBot && CleverBotAPIKey == String.Empty || CleverBotAPIUser == String.Empty)
+            {
+                Console.WriteLine("WARNING! CleverBot API Key or API User was empty and the CleverBot extension was disabled!");
+                askUseCleverBot = false;
+            }
 
             loading_status = LoadedProperly;
         }
@@ -656,6 +676,7 @@ namespace TwitchBotConsole
             SlotsInitialCoins = 100;
             quoteEnabled = true;
             safeAskMode = true;
+            askUseCleverBot = false;
             filteringEnabled = false;
             filteringHarsh = false;
             filteringRespond = true;
@@ -862,6 +883,29 @@ namespace TwitchBotConsole
             else
             {
                 value = 0;
+                return false;
+            }
+        }
+
+        private bool _configGetString(string readLine, string lookingFor, out string value)
+        {
+            if (readLine.StartsWith(lookingFor, StringComparison.InvariantCultureIgnoreCase))
+            {
+                string[] helper = readLine.Split(new char[] { ':' }, 2);
+                if (helper[1] != String.Empty)
+                {
+                    value = helper[1];
+                    return true;
+                }
+                else
+                {
+                    value = String.Empty;
+                    return true;
+                }
+            }
+            else
+            {
+                value = String.Empty;
                 return false;
             }
         }

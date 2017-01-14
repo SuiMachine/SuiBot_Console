@@ -138,7 +138,9 @@ namespace TwitchBotConsole
                         gameName = json.game;
                     }
                 }
-                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                var game = srlClient.Games.SearchGameExact(name: getProxyName(gameName));
+                if(game==null)
+                    game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
                 if (game != null)
                 {
@@ -218,7 +220,10 @@ namespace TwitchBotConsole
                     }
                 }
 
-                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                var game = srlClient.Games.SearchGameExact(name: getProxyName(gameName));
+                if(game==null)
+                    game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+
                 if (game != null)        //If game was found -> Build a string and display all levels
                 {
                     if (game.Levels.Count > 0)
@@ -279,6 +284,8 @@ namespace TwitchBotConsole
                 }
 
                 var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                if(game ==null)
+                    game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
                 if (game != null)
                 {
@@ -481,8 +488,10 @@ namespace TwitchBotConsole
                     }
                 }
 
+                var game = srlClient.Games.SearchGameExact(name: getProxyName(gameName));
+                if(game == null)
+                    game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
-                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
                 if (game != null)        //If game was found -> Build a string and display all categories
                 {
                     string output = "Categories are:";
@@ -524,7 +533,9 @@ namespace TwitchBotConsole
                     }
                 }
 
-                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                var game = srlClient.Games.SearchGameExact(name: getProxyName(gameName));
+                if(game == null)
+                    game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
                 if (game != null)
                 {
@@ -593,7 +604,10 @@ namespace TwitchBotConsole
                     }
                 }
 
-                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                var game = srlClient.Games.SearchGameExact(gameName);
+                if(game== null)
+                    game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+
                 if(game != null)
                 {
                     var _category = game.Categories[0];
@@ -648,7 +662,10 @@ namespace TwitchBotConsole
                     }
                 }
 
-                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                var game = srlClient.Games.SearchGameExact(getProxyName(gameName));
+                if( game == null)
+                    game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+
                 if (game != null)
                 {
                     var gameID = game.ID;
@@ -698,7 +715,9 @@ namespace TwitchBotConsole
                     }
                 }
 
-                var game = srlClient.Games.SearchGame(name: getProxyName(gameName));
+                var game = srlClient.Games.SearchGameExact(name: getProxyName(gameName));
+                if(game== null)
+                    game = srlClient.Games.SearchGame(name: getProxyName(gameName));
 
                 if(game!= null)
                 {
