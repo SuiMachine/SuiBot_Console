@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace CleverBotNS
+namespace Cleverbot
 {
     class JsonHelpers
     {
@@ -25,16 +25,16 @@ namespace CleverBotNS
 
         public static Dictionary<string, string> jsonToDictionary(string text)
         {
-            text = text.Remove(0,1);
-            text = text.Remove(text.Length - 1,1);
+            text = text.Remove(0, 1);
+            text = text.Remove(text.Length - 1, 1);
             Dictionary<string, string> output = new Dictionary<string, string>();
             if (text.Contains(":") || text.Contains(","))
             {
                 var arr = Regex.Matches(text, "(\"[\\w]+?)\":(\"| \")([\\w].+?)\"");
                 foreach (Match param in arr)
                 {
-                        string[] splitted = param.Value.Split(':');
-                        output.Add(splitted[0].Replace("\"", ""), splitted[1].Replace("\"", ""));
+                    string[] splitted = param.Value.Split(':');
+                    output.Add(splitted[0].Replace("\"", ""), splitted[1].Replace("\"", ""));
                 }
                 return output;
             }

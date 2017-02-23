@@ -36,7 +36,6 @@ namespace TwitchBotConsole
         static string trustedfile = "trusted_users.txt";
         static string deathSave = "deaths.txt";
         public string SpeedrunName = "";
-        public string CleverBotAPIUser = "";
         public string CleverBotAPIKey = "";
 
         public config _config;
@@ -233,9 +232,9 @@ namespace TwitchBotConsole
         private void loadTrustedList()
         {
             trustedUsers.Clear();
-            if (File.Exists(@trustedfile))
+            if (File.Exists(trustedfile))
             {
-                StreamReader SR = new StreamReader(@trustedfile);
+                StreamReader SR = new StreamReader(trustedfile);
                 string line = "";
 
                 while ((line = SR.ReadLine()) != null)
@@ -301,9 +300,9 @@ namespace TwitchBotConsole
         public void loadIgnoredList()
         {
             ignorelist.Clear();
-            if(File.Exists(@ignoredfile))
+            if(File.Exists(ignoredfile))
             {
-                StreamReader SR = new StreamReader(@ignoredfile);
+                StreamReader SR = new StreamReader(ignoredfile);
                 string line = "";
 
                 while ((line = SR.ReadLine()) != null)
@@ -323,7 +322,7 @@ namespace TwitchBotConsole
 
         public void saveIgnoredList()
         {
-            File.WriteAllLines(@ignoredfile, ignorelist);
+            File.WriteAllLines(ignoredfile, ignorelist);
         }
         #endregion
 
@@ -345,7 +344,6 @@ namespace TwitchBotConsole
             output += "\nSlotsEnabled:" + slotsEnable.ToString();
             output += "\nIntervalMessagesEnabled:" + intervalMessagesEnabled.ToString();
             output += "\n\nUseCleverBot:" + askUseCleverBot.ToString();
-            output += "\nCleverBotAPIUser:" + CleverBotAPIUser.ToString();
             output += "\nCleverBotAPIKey:" + CleverBotAPIKey.ToString();
 
             File.WriteAllText(@configfile, output);
@@ -383,7 +381,6 @@ namespace TwitchBotConsole
                 + "\nVotesEnabled:" + voteEnabled.ToString()
                 + "\nFortuneTeller:" + fortuneTellerEnabled.ToString()
                 + "\n\nUseCleverBot:" + askUseCleverBot.ToString()
-                + "\nCleverBotAPIUser:" + CleverBotAPIUser.ToString()
                 + "\nCleverBotAPIKey:" + CleverBotAPIKey.ToString();
 
             File.WriteAllText(@configfile, output);
@@ -590,7 +587,6 @@ namespace TwitchBotConsole
                 else if (_configParseBool(line, "QuotesEnabled:", false, out tempBool)) quoteEnabled = tempBool;
                 else if (_configParseBool(line, "SafeAskMode:", true, out tempBool)) safeAskMode = tempBool;
                 else if (_configParseBool(line, "UseCleverBot:", true, out tempBool)) askUseCleverBot = tempBool;
-                else if (_configGetString(line, "CleverBotAPIUser:", out tempString)) CleverBotAPIUser = tempString;
                 else if (_configGetString(line, "CleverBotAPIKey:", out tempString)) CleverBotAPIKey = tempString;
                 else if (_configParseBool(line, "SlotsEnabled:", false, out tempBool)) slotsEnable = tempBool;
                 else if (_configParseBool(line, "IntervalMessagesEnabled:", false, out tempBool)) intervalMessagesEnabled = tempBool;
@@ -607,9 +603,9 @@ namespace TwitchBotConsole
             SR.Close();
             SR.Dispose();
 
-            if(askUseCleverBot && CleverBotAPIKey == String.Empty || CleverBotAPIUser == String.Empty)
+            if(askUseCleverBot && CleverBotAPIKey == String.Empty)
             {
-                Console.WriteLine("WARNING! CleverBot API Key or API User was empty and the CleverBot extension was disabled!");
+                Console.WriteLine("WARNING! CleverBot API Key was empty and the CleverBot extension was disabled!");
                 askUseCleverBot = false;
             }
 
@@ -618,9 +614,9 @@ namespace TwitchBotConsole
 
         private void loadDeaths()
         {
-            if(File.Exists(@deathSave))
+            if(File.Exists(deathSave))
             {
-                StreamReader SR = new StreamReader(@deathSave);
+                StreamReader SR = new StreamReader(deathSave);
                 string line;
                 while ((line = SR.ReadLine()) != null)
                 {
@@ -642,7 +638,7 @@ namespace TwitchBotConsole
         private void saveDeaths()
         {
             string output = "Deaths:" + deaths.ToString();
-            File.WriteAllText(@deathSave, output);
+            File.WriteAllText(deathSave, output);
         }
 
         public bool dynamicDelayCheck()

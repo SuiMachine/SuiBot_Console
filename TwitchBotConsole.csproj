@@ -70,7 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CleverBot\CleverBot.cs" />
+    <Compile Include="CleverBot\CleverbotSui.cs" />
     <Compile Include="CleverBot\JsonHelpers.cs" />
     <Compile Include="Modules\FortuneTeller.cs" />
     <Compile Include="Modules\Coins\Coins.cs" />

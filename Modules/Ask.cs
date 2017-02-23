@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using CleverBotNS;
+using Cleverbot;
 
 namespace TwitchBotConsole
 {
@@ -8,7 +8,7 @@ namespace TwitchBotConsole
     {
         Random rnd;
         Dictionary<string, Tuple<DateTime, bool>> _ask;
-        CleverBot cleverBotInstance = null;
+        CleverbotSui cleverBotInstance = null; 
 
         string[] AnswersTime = {
             "Never!",
@@ -147,20 +147,21 @@ namespace TwitchBotConsole
 
         private void responsedToQuestion(oldIRCClient irc, string user, string question)
         {
-            if(irc.askUseCleverBot)
+            if (irc.askUseCleverBot)
             {
                 if (cleverBotInstance == null)
                 {
-                    cleverBotInstance = new CleverBot(irc.CleverBotAPIUser, irc.CleverBotAPIKey, "SuiBot");
-                }                                    
+                    cleverBotInstance = new CleverbotSui(irc.CleverBotAPIKey);
+                }
             }
             int id;
+
             string response;
             if ((response = uniqueQuestion(user, question)) != String.Empty)
             {
                 irc.sendChatMessage(user + ": " + response);
             }
-            else if(irc.askUseCleverBot && (response = cleverBotInstance.askAndGetResponse(question)) != "Error")
+            else if (irc.askUseCleverBot && ((response = cleverBotInstance.getResponse(question)) != string.Empty))
             {
                 irc.sendChatMessage(user + ": " + response);
             }

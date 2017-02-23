@@ -4,7 +4,7 @@ SuiBot is simplistic IRC bot written in C#.
 
 Compilation
 -------
-Just download the code, open TwitchBotConsole.csproj with a either Visual Studios 2013 (or newer) or Xamarin Studio / Mono Develop.
+Just download the code, open TwitchBotConsole.csproj with a either Visual Studios 2013 (or newer) or Mono Develop.
 First start may seem like a crash, but it should create a config file, where you can type in your username, password, channel the bots should join etc.
 Once you've edited the config file, you should be good to go.
 
