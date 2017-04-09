@@ -166,16 +166,17 @@ namespace TwitchBotConsole
                     cachedMessage = String.Empty;
                 }
 
-                if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && _blacklist.checkForSpam(formattedMessage))
+            TimeOutReason reason = TimeOutReason.NoPurge;
+                if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && (reason = _blacklist.checkForSpam(formattedMessage)) != TimeOutReason.NoPurge)
                 {
-                    irc.purgeMessage(formattedMessage.user);
+                    irc.purgeMessage(formattedMessage.user, reason);
                     if (irc.filteringRespond) irc.sendChatMessage("Probably spam FrankerZ");
                     return true;
                 }
 
-                if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && _blacklist.checkForBanWorthyContent(formattedMessage))
+                if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && (reason = _blacklist.checkForBanWorthyContent(formattedMessage)) != TimeOutReason.NoPurge)
                 {
-                    irc.banMessage(formattedMessage.user);
+                    irc.banMessage(formattedMessage.user, reason);
                     if (irc.filteringRespond) irc.sendChatMessage("And he/she is gone! FrankerZ");
                     return true;
                 }

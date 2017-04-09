@@ -44,7 +44,7 @@ namespace TwitchBotConsole
             }
         }
 
-        public bool checkForSpam(ReadMessage msg)
+        public TimeOutReason checkForSpam(ReadMessage msg)
         {
             string message = msg.message.ToLower();
 
@@ -57,45 +57,45 @@ namespace TwitchBotConsole
 
                 if (allowedToPostLinks[msg.user] < allowedToPostLinksRequirement && isLink(message))
                 {
-                    return true;
+                    return TimeOutReason.LinkBelowRequirement;
                 }
 
                 if (blacklist_fullphrase.Contains(message))
-                    return true;
+                    return TimeOutReason.PurgePhrase;
                 else if (blacklist_startswith.Any(s => message.StartsWith(s)))
-                    return true;
+                    return TimeOutReason.PurgePhrase;
                 else if (blacklist_endswith.Any(s => message.EndsWith(s)))
-                    return true;
+                    return TimeOutReason.PurgePhrase;
                 else if (blacklist_words.Any(s => message.Contains(s)))
-                    return true;
+                    return TimeOutReason.PurgeWord;
                 else
                 {
                     if (allowedToPostLinks[msg.user] < allowedToPostLinksRequirement)
                         allowedToPostLinks[msg.user]++;
-                    return false;
+                    return TimeOutReason.NoPurge;
                 }
             }
-            return false;
+            return TimeOutReason.NoPurge;
         }
 
-        public bool checkForBanWorthyContent(ReadMessage msg)
+        public TimeOutReason checkForBanWorthyContent(ReadMessage msg)
         {
             string message = msg.message.ToLower();
 
             if (msg.user != String.Empty)
             {
                 if (blacklist_ban_fullphrase.Contains(message))
-                    return true;
+                    return TimeOutReason.BannedPhrase;
                 else if (blacklist_ban_startswith.Any(s => message.StartsWith(s)))
-                    return true;
+                    return TimeOutReason.BannedPhrase;
                 else if (blacklist_ban_endswith.Any(s => message.EndsWith(s)))
-                    return true;
+                    return TimeOutReason.BannedPhrase;
                 else if (blacklist_ban_words.Any(s => message.Contains(s)))
-                    return true;
+                    return TimeOutReason.BannedWord;
                 else
-                    return false;
+                    return TimeOutReason.NoPurge;
             }
-            return false;
+            return TimeOutReason.NoPurge;
         }
 
         private bool isLink(string message)

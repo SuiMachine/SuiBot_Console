@@ -24,6 +24,16 @@ namespace TwitchBotConsole
         public string message;
     }
 
+    enum TimeOutReason
+    {
+        NoPurge,
+        LinkBelowRequirement,
+        PurgeWord,
+        PurgePhrase,
+        BannedWord,
+        BannedPhrase
+    }
+
     class oldIRCClient
     {
 
@@ -166,25 +176,34 @@ namespace TwitchBotConsole
             meebyIrc.SendDelay = originalDelay;
         }
 
-        public void purgeMessage(string user)
+        public void purgeMessage(string user, TimeOutReason reason)
         {
-            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
-            System.Threading.Thread.Sleep(100);
-            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
-            System.Threading.Thread.Sleep(100);
-            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1");
+            string message = "";
+            if (reason == TimeOutReason.LinkBelowRequirement)
+                message = "You don't have required amount of messages to post a link.";
+            else if (reason == TimeOutReason.PurgePhrase)
+                message = "You've used a blacklisted phrase.";
+            else if (reason == TimeOutReason.PurgeWord)
+                message = "You've used a blacklisted word.";
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1 " + message);
             LastSend = DateTime.UtcNow;
             Console.WriteLine("Purging: " + user);
         }
 
-        public void timeOutMessage(string user, int time)
+        public void timeOutMessage(string user, int time, TimeOutReason reason)
         {
             meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " " + time.ToString());
         }
 
-        public void banMessage(string user)
+        public void banMessage(string user, TimeOutReason reason)
         {
-            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.ban " + user);
+            string message = "";
+            if (reason == TimeOutReason.BannedWord)
+                message = "You've used a banned word. Bye!";
+            else if (reason == TimeOutReason.BannedPhrase)
+                message = "You've used a banned phrase. Bye!";
+
+            meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.ban " + user + " " + message);
         }
         #endregion
 
