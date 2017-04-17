@@ -163,7 +163,7 @@ namespace TwitchBotConsole
             }
             else if (irc.askUseCleverBot && ((response = cleverBotInstance.getResponse(question)) != string.Empty))
             {
-                irc.sendChatMessage(user + ": " + response);
+                irc.sendChatMessage(user + ": " + response + " (via Cleverbot)");
             }
             else if (question.StartsWith("When", StringComparison.InvariantCultureIgnoreCase))
             {
