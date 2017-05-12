@@ -26,6 +26,8 @@ namespace TwitchBotConsole
         List<string> blacklist_ban_words = new List<string>();
         byte allowedToPostLinksRequirement = 3;
 
+        string[] annoyingCharacters = new string[] { "ฏ๎", "Ỏ̷͖" };
+
 
         List<string> url_marks = new List<string>() { "http:", "www." , "https:", "ftp:", "ftps:", "sftp:", "steam:", "imap:", "file:"};
         Dictionary<string, byte> allowedToPostLinks = new Dictionary<string, byte>();
@@ -42,6 +44,22 @@ namespace TwitchBotConsole
             {
                 loadUserInfo();
             }
+        }
+
+        public TimeOutReason checkForAnnoyingTrash(ReadMessage msg)
+        {
+            string message = msg.message;
+
+            if (msg.user != String.Empty)
+            {
+                foreach(string element in annoyingCharacters)
+                {
+                    if (message.Contains(element))
+                        return TimeOutReason.TrashCharacters;
+                }
+
+            }
+            return TimeOutReason.NoPurge;
         }
 
         public TimeOutReason checkForSpam(ReadMessage msg)

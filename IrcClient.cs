@@ -27,6 +27,7 @@ namespace TwitchBotConsole
     enum TimeOutReason
     {
         NoPurge,
+        TrashCharacters,
         LinkBelowRequirement,
         PurgeWord,
         PurgePhrase,
@@ -185,6 +186,8 @@ namespace TwitchBotConsole
                 message = "You've used a blacklisted phrase.";
             else if (reason == TimeOutReason.PurgeWord)
                 message = "You've used a blacklisted word.";
+            else if (reason == TimeOutReason.TrashCharacters)
+                message = "You've used characters that cause mess in the chat.";
             meebyIrc.WriteLine(":" + userName + "!" + userName + "@" + userName + ".tmi.twitch.tv PRIVMSG #" + _config.channel + " :.timeout " + user + " 1 " + message);
             LastSend = DateTime.UtcNow;
             Console.WriteLine("Purging: " + user);

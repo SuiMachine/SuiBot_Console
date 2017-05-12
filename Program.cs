@@ -160,157 +160,164 @@ namespace TwitchBotConsole
             Console.WriteLine(formattedMessage.user + ": " + formattedMessage.message);
 
 
-                if (cachedMessage != String.Empty)
-                {
-                    irc.sendChatMessage(cachedMessage);
-                    cachedMessage = String.Empty;
-                }
-
+            if (cachedMessage != String.Empty)
+            {
+                irc.sendChatMessage(cachedMessage);
+                cachedMessage = String.Empty;
+            }
             TimeOutReason reason = TimeOutReason.NoPurge;
-                if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && (reason = _blacklist.checkForSpam(formattedMessage)) != TimeOutReason.NoPurge)
-                {
-                    irc.purgeMessage(formattedMessage.user, reason);
-                    if (irc.filteringRespond) irc.sendChatMessage("Probably spam FrankerZ");
-                    return true;
-                }
 
-                if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && (reason = _blacklist.checkForBanWorthyContent(formattedMessage)) != TimeOutReason.NoPurge)
-                {
-                    irc.banMessage(formattedMessage.user, reason);
-                    if (irc.filteringRespond) irc.sendChatMessage("And he/she is gone! FrankerZ");
-                    return true;
-                }
-                //the goal here is going to be trying to group things
-                if (!formattedMessage.message.StartsWith("!") || irc.ignorelist.Contains(formattedMessage.user))
-                {
-                    //literally nothing else happens in your code if this is false
-                    return true;
-                }
-                cvarflag = true;//check if _ANYTHING_ matched.
-                if (irc.vocalMode)
-                {
-                    if (irc.moderators.Contains(formattedMessage.user) && check_lazy("!help")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
-                    if (irc.moderators.Contains(formattedMessage.user) && check_lazy("!commands")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
-                    if (check_lazy("!ask ")) _ask.answerAsk(irc, formattedMessage);
-                    if (check_lazy("!addCvar ")) _customCvars.addCustomCvar(irc, formattedMessage);
-                    if (check_lazy("!removeCvar ")) _customCvars.removeCustomCvar(irc, formattedMessage);
-                    if (check_lazy("!customCvars")) _customCvars.showCustomCvars(irc, formattedMessage);
-                }
-                if (irc.quoteEnabled)
-                {
-                    if (check_lazy("!addquote ")) _quotes.addQuote(irc, formattedMessage);
-                    if (check_lazy("!quoteID ")) _quotes.getQuotebyID(irc, formattedMessage);
-                    if (check_lazy("!quote")) _quotes.getQuote(irc, formattedMessage.message);
-                    if (check_lazy("!removeQuote")) _quotes.removeQuote(irc, formattedMessage);
-                    if (check_lazy("!getNumberOfQuotes")) _quotes.getNumberOfQuotes(irc);
-                }
-                if (irc.intervalMessagesEnabled)
-                {
-                    if (check_lazy("!intervalMessageAdd")) _intervals.AddIntervalMessage(irc, formattedMessage);
-                    if (check_lazy("!intervalMessageShow")) _intervals.ShowIntervalMessageID(irc, formattedMessage);
-                    if (check_lazy("!intervalMessageRemove")) _intervals.RemoveIntervalMessage(irc, formattedMessage);
-                }
-                if (irc.slotsEnable)
-                {
-                    if (check_lazy("!slots ")) _slots.PlaySlots(irc, formattedMessage);
-                    if (check_lazy("!coins")) _coins.DisplayCoins(irc, formattedMessage);
-                    if (check_lazy("!addCoins ")) _coins.AddCoins(irc, formattedMessage);
-                }
-                if (irc.voteEnabled)
-                {
-                    if (check_lazy("!callVote ")) _votes.callVote(irc, formattedMessage);
-                    if (check_lazy("!voteOptions ")) _votes.setOptions(irc, formattedMessage);
-                    if (check_lazy("!voteOpen")) _votes.voteOpen(irc, formattedMessage);
-                    if (check_lazy("!voteClose")) _votes.voteClose(irc, formattedMessage);
-                    if (check_lazy("!voteDisplay")) _votes.displayVote(irc, formattedMessage);
-                    if (check_lazy("!voteResults")) _votes.displayResults(irc, formattedMessage);
-                    if (check_lazy("!vote ")) _votes.Vote(irc, formattedMessage);
-                }
-                if (irc.deathCounterEnabled)
-                {
-                    if (check_lazy("!deathCounter")) irc.DeathCounterDisplay(formattedMessage);
-                    if (check_lazy("!deathAdd")) irc.DeathCounterAdd(formattedMessage);
-                    if (check_lazy("!deathRemove")) irc.DeathCounterRemove(formattedMessage);
-                }
-                if (irc.viewerPBActive)
-                {
-                    if (check_lazy("!viewerPB")) _viewerPB.displayViewerPB(formattedMessage);
-                }
-                if (irc.filteringEnabled)
-                {
-                    if (check_lazy("!filterAdd ")) _blacklist.AddFilter(formattedMessage);
-                    if (check_lazy("!filterRemove ")) _blacklist.RemoveFilter(formattedMessage);
-                    if (check_lazy("!allowToPostLinks")) _blacklist.addToAllowedToPostLinks(formattedMessage);
-                    if (check_lazy("!resetAllowToPostLinks")) _blacklist.resetFromAllowedToPostLinks(formattedMessage);  //No idea why
-                }
-                if (irc.leaderBoardEnabled)
-                {
-                    if (check_lazy("!forceSpeedrunPage")) _jsonStatus.forcedGameFunction(formattedMessage);
-                    if (check_lazy("!speedrunName ")) irc.updateSpeedrunName(formattedMessage);
-
-                    if (check_lazy("!pb"))
-                    {
-                        Thread lbThread = new Thread(new ThreadStart(_leaderboards.getPB));
-                        _leaderboards.recieveData(irc, formattedMessage);
-                        lbThread.Start();
-                    }
-
-                    if (check_exact("!wr") || check_lazy("!wr "))
-                    {
-                        Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
-                        _leaderboards.recieveData(irc, formattedMessage);
-                        lbThread.Start();
-                    }
-                }
-                if (irc.fortuneTellerEnabled)
-                {
-                    if (check_exact("!fortune") || check_exact("!tellfortune"))
-                        _fortuneTeller.FortuneTelling(irc, formattedMessage);
-                }
-
-
-                //ones we do regardless
-                if (check_lazy("!ignoreAdd ")) irc.ignoreListAdd(formattedMessage);
-                if (check_lazy("!ignoreRemove ")) irc.ignoreListRemove(formattedMessage);
-                if (check_lazy("!trustedAdd ")) irc.trustedUserAdd(formattedMessage);
-                if (check_lazy("!permit ")) irc.trustedUserAdd(formattedMessage);
-                if (check_lazy("!trustedRemove ")) irc.trustedUsersRemove(formattedMessage);
-
-
-                //mod only!
-                if (irc.moderators.Contains(formattedMessage.user))
-                {
-                    if (check_lazy("!updateJsonInfo")) _jsonStatus.requestUpdate();
-                    if (check_lazy("!version")) irc.version();
-                    if (check_lazy("!highlight")) irc.createHighlight(formattedMessage, _jsonStatus);
-                }
-                //supermod only!
-                if (irc.supermod.Contains(formattedMessage.user))
-                {
-                    if (check_lazy("!killBot"))
-                    {
-                        irc.sendChatMessage("Goodbye! BibleThump");
-
-                        if (irc.filteringEnabled)
-                            _blacklist.saveUserInfo();
-                        irc.meebyIrc.Disconnect();
-
-                        return false;
-                    }
-                    if (check_lazy("!reloadBot")) reloadBot();
-                }
-                
-                //Property
-                if (check_lazy("!getProperty")) irc.getParameter(formattedMessage);
-                if (check_lazy("!setProperty")) irc.setParameter(formattedMessage);
-
-                if (cvarflag)
-                {
-                    _customCvars.cvarPerform(irc, formattedMessage);
-                }
-
+            if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && (reason = _blacklist.checkForAnnoyingTrash(formattedMessage)) != TimeOutReason.NoPurge)
+            {
+                irc.purgeMessage(formattedMessage.user, reason);
+                if (irc.filteringRespond) irc.sendChatMessage("Don't do that again! DansGame");
                 return true;
-            
+            }
+
+            if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && (reason = _blacklist.checkForSpam(formattedMessage)) != TimeOutReason.NoPurge)
+            {
+                irc.purgeMessage(formattedMessage.user, reason);
+                if (irc.filteringRespond) irc.sendChatMessage("Probably spam FrankerZ");
+                return true;
+            }
+
+            if (irc.filteringEnabled && !(irc.moderators.Contains(formattedMessage.user) || irc.trustedUsers.Contains(formattedMessage.user)) && (reason = _blacklist.checkForBanWorthyContent(formattedMessage)) != TimeOutReason.NoPurge)
+            {
+                irc.banMessage(formattedMessage.user, reason);
+                if (irc.filteringRespond) irc.sendChatMessage("And he/she is gone! FrankerZ");
+                return true;
+            }
+            //the goal here is going to be trying to group things
+            if (!formattedMessage.message.StartsWith("!") || irc.ignorelist.Contains(formattedMessage.user))
+            {
+                //literally nothing else happens in your code if this is false
+                return true;
+            }
+            cvarflag = true;//check if _ANYTHING_ matched.
+            if (irc.vocalMode)
+            {
+                if (irc.moderators.Contains(formattedMessage.user) && check_lazy("!help")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
+                if (irc.moderators.Contains(formattedMessage.user) && check_lazy("!commands")) irc.sendChatMessage("The list of commands is available at https://github.com/SuiMachine/SuiBot_Console/wiki/List-of-all-commands");
+                if (check_lazy("!ask ")) _ask.answerAsk(irc, formattedMessage);
+                if (check_lazy("!addCvar ")) _customCvars.addCustomCvar(irc, formattedMessage);
+                if (check_lazy("!removeCvar ")) _customCvars.removeCustomCvar(irc, formattedMessage);
+                if (check_lazy("!customCvars")) _customCvars.showCustomCvars(irc, formattedMessage);
+            }
+            if (irc.quoteEnabled)
+            {
+                if (check_lazy("!addquote ")) _quotes.addQuote(irc, formattedMessage);
+                if (check_lazy("!quoteID ")) _quotes.getQuotebyID(irc, formattedMessage);
+                if (check_lazy("!quote")) _quotes.getQuote(irc, formattedMessage.message);
+                if (check_lazy("!removeQuote")) _quotes.removeQuote(irc, formattedMessage);
+                if (check_lazy("!getNumberOfQuotes")) _quotes.getNumberOfQuotes(irc);
+            }
+            if (irc.intervalMessagesEnabled)
+            {
+                if (check_lazy("!intervalMessageAdd")) _intervals.AddIntervalMessage(irc, formattedMessage);
+                if (check_lazy("!intervalMessageShow")) _intervals.ShowIntervalMessageID(irc, formattedMessage);
+                if (check_lazy("!intervalMessageRemove")) _intervals.RemoveIntervalMessage(irc, formattedMessage);
+            }
+            if (irc.slotsEnable)
+            {
+                if (check_lazy("!slots ")) _slots.PlaySlots(irc, formattedMessage);
+                if (check_lazy("!coins")) _coins.DisplayCoins(irc, formattedMessage);
+                if (check_lazy("!addCoins ")) _coins.AddCoins(irc, formattedMessage);
+            }
+            if (irc.voteEnabled)
+            {
+                if (check_lazy("!callVote ")) _votes.callVote(irc, formattedMessage);
+                if (check_lazy("!voteOptions ")) _votes.setOptions(irc, formattedMessage);
+                if (check_lazy("!voteOpen")) _votes.voteOpen(irc, formattedMessage);
+                if (check_lazy("!voteClose")) _votes.voteClose(irc, formattedMessage);
+                if (check_lazy("!voteDisplay")) _votes.displayVote(irc, formattedMessage);
+                if (check_lazy("!voteResults")) _votes.displayResults(irc, formattedMessage);
+                if (check_lazy("!vote ")) _votes.Vote(irc, formattedMessage);
+            }
+            if (irc.deathCounterEnabled)
+            {
+                if (check_lazy("!deathCounter")) irc.DeathCounterDisplay(formattedMessage);
+                if (check_lazy("!deathAdd")) irc.DeathCounterAdd(formattedMessage);
+                if (check_lazy("!deathRemove")) irc.DeathCounterRemove(formattedMessage);
+            }
+            if (irc.viewerPBActive)
+            {
+                if (check_lazy("!viewerPB")) _viewerPB.displayViewerPB(formattedMessage);
+            }
+            if (irc.filteringEnabled)
+            {
+                if (check_lazy("!filterAdd ")) _blacklist.AddFilter(formattedMessage);
+                if (check_lazy("!filterRemove ")) _blacklist.RemoveFilter(formattedMessage);
+                if (check_lazy("!allowToPostLinks")) _blacklist.addToAllowedToPostLinks(formattedMessage);
+                if (check_lazy("!resetAllowToPostLinks")) _blacklist.resetFromAllowedToPostLinks(formattedMessage);  //No idea why
+            }
+            if (irc.leaderBoardEnabled)
+            {
+                if (check_lazy("!forceSpeedrunPage")) _jsonStatus.forcedGameFunction(formattedMessage);
+                if (check_lazy("!speedrunName ")) irc.updateSpeedrunName(formattedMessage);
+
+                if (check_lazy("!pb"))
+                {
+                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getPB));
+                    _leaderboards.recieveData(irc, formattedMessage);
+                    lbThread.Start();
+                }
+
+                if (check_exact("!wr") || check_lazy("!wr "))
+                {
+                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
+                    _leaderboards.recieveData(irc, formattedMessage);
+                    lbThread.Start();
+                }
+            }
+            if (irc.fortuneTellerEnabled)
+            {
+                if (check_exact("!fortune") || check_exact("!tellfortune"))
+                    _fortuneTeller.FortuneTelling(irc, formattedMessage);
+            }
+
+
+            //ones we do regardless
+            if (check_lazy("!ignoreAdd ")) irc.ignoreListAdd(formattedMessage);
+            if (check_lazy("!ignoreRemove ")) irc.ignoreListRemove(formattedMessage);
+            if (check_lazy("!trustedAdd ")) irc.trustedUserAdd(formattedMessage);
+            if (check_lazy("!permit ")) irc.trustedUserAdd(formattedMessage);
+            if (check_lazy("!trustedRemove ")) irc.trustedUsersRemove(formattedMessage);
+
+
+            //mod only!
+            if (irc.moderators.Contains(formattedMessage.user))
+            {
+                if (check_lazy("!updateJsonInfo")) _jsonStatus.requestUpdate();
+                if (check_lazy("!version")) irc.version();
+                if (check_lazy("!highlight")) irc.createHighlight(formattedMessage, _jsonStatus);
+            }
+            //supermod only!
+            if (irc.supermod.Contains(formattedMessage.user))
+            {
+                if (check_lazy("!killBot"))
+                {
+                    irc.sendChatMessage("Goodbye! BibleThump");
+
+                    if (irc.filteringEnabled)
+                        _blacklist.saveUserInfo();
+                    irc.meebyIrc.Disconnect();
+
+                    return false;
+                }
+                if (check_lazy("!reloadBot")) reloadBot();
+            }
+
+            //Property
+            if (check_lazy("!getProperty")) irc.getParameter(formattedMessage);
+            if (check_lazy("!setProperty")) irc.setParameter(formattedMessage);
+
+            if (cvarflag)
+            {
+                _customCvars.cvarPerform(irc, formattedMessage);
+            }
+
+            return true;
+
         }
 
         static void Main(string[] args)
