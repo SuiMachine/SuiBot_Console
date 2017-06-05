@@ -44,7 +44,19 @@ namespace TwitchBotConsole
             {
                 isOnline = true;
                 string temp = Convert.ToString(res);
-                int indexStart = temp.IndexOf("game");
+                int indexStart = temp.IndexOf("stream_type");
+                if (indexStart > 0)
+                {
+                    indexStart += "stream_type".Length + 3;
+                    int indexEnd = temp.IndexOf(",", indexStart);
+                    string thatThing = temp.Substring(indexStart, indexEnd - indexStart - 1).ToLower();
+                    if (thatThing == "live")
+                        isOnline = true;
+                    else
+                        isOnline = false;
+                }
+
+                indexStart = temp.IndexOf("game");
                 if(indexStart>0)
                 {
                     indexStart = indexStart + 7;
@@ -133,7 +145,7 @@ namespace TwitchBotConsole
             getStatus();
             if(game!=string.Empty)
             {
-                irc.sendChatMessage("New isOnline status is - " + isOnline.ToString() + " and the game is: " + game);
+                irc.sendChatMessage("New isOnline status is - \'" + isOnline.ToString() + "\' and the game is: " + game);
             }
             else
             {
