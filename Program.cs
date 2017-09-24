@@ -22,7 +22,7 @@ namespace TwitchBotConsole
         private static Intervals _intervals;
         private static ViewerPB _viewerPB;
         private static Json_status _jsonStatus;
-        private static FortuneTeller _fortuneTeller;
+		private static SRL _srl;
         private static System.Timers.Timer _statusCheckTimer;
         private static Leaderboards _leaderboards;
         private static System.Timers.Timer _timer;
@@ -67,7 +67,7 @@ namespace TwitchBotConsole
             _statusCheckTimer = new System.Timers.Timer();
             _timer = new System.Timers.Timer();
             _leaderboards = new Leaderboards();
-            _fortuneTeller = new FortuneTeller();            
+			_srl = new SRL();
 
 
             _quotes.loadQuotesFromFile();
@@ -253,6 +253,7 @@ namespace TwitchBotConsole
             if (irc.leaderBoardEnabled)
             {
                 if (check_lazy("!forceSpeedrunPage")) _jsonStatus.forcedGameFunction(formattedMessage);
+                if (check_lazy("!setCategory ") || check_lazy("!setCathegory ")) _jsonStatus.forceCategoryFunction(formattedMessage);
                 if (check_lazy("!speedrunName ")) irc.updateSpeedrunName(formattedMessage);
 
                 if (check_lazy("!pb"))
@@ -269,15 +270,16 @@ namespace TwitchBotConsole
                     lbThread.Start();
                 }
             }
-            if (irc.fortuneTellerEnabled)
-            {
-                if (check_exact("!fortune") || check_exact("!tellfortune"))
-                    _fortuneTeller.FortuneTelling(irc, formattedMessage);
-            }
+
+			if (true)
+			{
+				if (check_lazy("!srl"))
+					_srl.getRaces(irc);
+			}
 
 
-            //ones we do regardless
-            if (check_lazy("!ignoreAdd ")) irc.ignoreListAdd(formattedMessage);
+			//ones we do regardless
+			if (check_lazy("!ignoreAdd ")) irc.ignoreListAdd(formattedMessage);
             if (check_lazy("!ignoreRemove ")) irc.ignoreListRemove(formattedMessage);
             if (check_lazy("!trustedAdd ")) irc.trustedUserAdd(formattedMessage);
             if (check_lazy("!permit ")) irc.trustedUserAdd(formattedMessage);
@@ -290,6 +292,7 @@ namespace TwitchBotConsole
                 if (check_lazy("!updateJsonInfo")) _jsonStatus.requestUpdate();
                 if (check_lazy("!version")) irc.version();
                 if (check_lazy("!highlight")) irc.createHighlight(formattedMessage, _jsonStatus);
+                if (check_lazy("!sellout") || check_lazy("!subscribe")) irc.postSubscribeMessage();
             }
             //supermod only!
             if (irc.supermod.Contains(formattedMessage.user))
@@ -354,7 +357,7 @@ namespace TwitchBotConsole
                 }
             }
             cachedMessage = _cachedMessage;
-            irc.meebyIrc.Listen();
+			irc.meebyIrc.Listen();
         }
 
         private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)

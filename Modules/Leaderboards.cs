@@ -106,14 +106,14 @@ namespace TwitchBotConsole
                 }
             }
             else
-            {   //Find a best time from default cathegory, based on currently played game on Twitch
+            {   //Find a best time from default category, based on currently played game on Twitch
                 if (json.isForcedPage)
                 {
-                    displayBestTimeFromDefaultCategory(json.forcedGame);
+                    displayBestTimeFromGivenCategory(json.forcedGame, json.category.ToString());
                 }
                 else if (json.game != String.Empty)
                 {
-                    displayBestTimeFromDefaultCategory(json.game);
+                    displayBestTimeFromGivenCategory(json.game, json.category.ToString());
                 }
                 else
                     irc.sendChatMessage("Currently there is no active game.");

@@ -1,5 +1,10 @@
 <updates>
 	<update>
+		<version>1.5.0.0</version>
+		<file>TwitchBotConsole.exe</file>
+		<file>Newtonsoft.Json.dll</file>
+	</update>
+	<update>
 		<version>1.4.1.0</version>
 		<file>TwitchBotConsole.exe</file>
 	</update>

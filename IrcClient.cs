@@ -371,6 +371,11 @@ namespace TwitchBotConsole
             File.WriteAllText(@configfile, output);
         }
 
+        internal void postSubscribeMessage()
+        {
+            sendChatMessage("You should totally subscribe to " + _config.channel + ": https://www.twitch.tv/" + _config.channel + "/subscribe");
+        }
+
         public void SaveConfig()
         {
             string output = "Version:" + Assembly.GetExecutingAssembly().GetName().Version.ToString()

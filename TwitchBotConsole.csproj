@@ -56,13 +56,20 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\SocialMedia-Notification-Tool\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="SpeedrunComSharp">
       <HintPath>SpeedrunComSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -72,7 +79,7 @@
   <ItemGroup>
     <Compile Include="CleverBot\CleverbotSui.cs" />
     <Compile Include="CleverBot\JsonHelpers.cs" />
-    <Compile Include="Modules\FortuneTeller.cs" />
+    <Compile Include="JsonGrabber.cs" />
     <Compile Include="Modules\Coins\Coins.cs" />
     <Compile Include="Modules\Coins\Bet.cs" />
     <Compile Include="Json_status.cs" />
@@ -88,6 +95,7 @@
     <Compile Include="Modules\Quotes.cs" />
     <Compile Include="Modules\Coins\Slots.cs" />
     <Compile Include="Modules\Votes.cs" />
+    <Compile Include="SRL.cs" />
     <Compile Include="Updater.cs" />
   </ItemGroup>
   <ItemGroup>
