@@ -214,7 +214,7 @@ namespace TwitchBotConsole
             if (irc.intervalMessagesEnabled)
             {
                 if (check_lazy("!intervalMessageAdd")) _intervals.AddIntervalMessage(irc, formattedMessage);
-                if (check_lazy("!intervalMessageShow")) _intervals.ShowIntervalMessageID(irc, formattedMessage);
+                if (check_lazy("!intervalMessageShow ")) _intervals.ShowIntervalMessageID(irc, formattedMessage);
                 if (check_lazy("!intervalMessageRemove")) _intervals.RemoveIntervalMessage(irc, formattedMessage);
             }
             if (irc.slotsEnable)
@@ -357,6 +357,7 @@ namespace TwitchBotConsole
                 }
             }
             cachedMessage = _cachedMessage;
+
 			irc.meebyIrc.Listen();
         }
 

@@ -105,7 +105,7 @@ namespace TwitchBotConsole
         {
             string[] helper = msg.message.Split(new char[] { ' ' }, 2);
             int id = -1;
-            if (int.TryParse(helper[1], out id))
+            if (helper.Length > 1 && int.TryParse(helper[1], out id))
             {
                 if(id >= 0)
                 {
@@ -133,7 +133,7 @@ namespace TwitchBotConsole
 
                 int id = -1;
                 
-                if (int.TryParse(helper[1], out id))
+                if (helper.Length > 1 && int.TryParse(helper[1], out id))
                 {
                     if(id< time.Count && id< srcTime.Count &&id<intervalMessage.Count)
                     {
