@@ -15,7 +15,7 @@ namespace TwitchBotConsole
         public string game = "";
         public string forcedGame = "";
 		Uri sUrl = null;
-        public uint category = 0;
+        public uint category = 1;
 		Dictionary<string, string> RequestHeaders;
 
 
