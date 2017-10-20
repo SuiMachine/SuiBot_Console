@@ -28,6 +28,7 @@ namespace TwitchBotConsole
         private static System.Timers.Timer _timer;
         private static string cachedMessage;
         private static ReadMessage FormattedMessage;
+        private static PyramidBreaker _pyramidBreaker;
 
         private static bool cvarflag;
 
@@ -68,6 +69,7 @@ namespace TwitchBotConsole
             _timer = new System.Timers.Timer();
             _leaderboards = new Leaderboards();
 			_srl = new SRL();
+            _pyramidBreaker = new PyramidBreaker(irc);
 
 
             _quotes.loadQuotesFromFile();
@@ -187,6 +189,8 @@ namespace TwitchBotConsole
                 if (irc.filteringRespond) irc.sendChatMessage("And he/she is gone! FrankerZ");
                 return true;
             }
+            if (irc.breakPyramids) _pyramidBreaker.breakPyramid(formattedMessage);
+
             //the goal here is going to be trying to group things
             if (!formattedMessage.message.StartsWith("!") || irc.ignorelist.Contains(formattedMessage.user))
             {

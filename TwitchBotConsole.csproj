@@ -89,6 +89,7 @@
     <Compile Include="Modules\Blacklist.cs" />
     <Compile Include="Modules\Intervals.cs" />
     <Compile Include="IrcClient.cs" />
+    <Compile Include="Modules\PyramidBreaker.cs" />
     <Compile Include="Modules\ViewerPB.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

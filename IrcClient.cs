@@ -69,8 +69,8 @@ namespace TwitchBotConsole
         public bool vocalMode { get; set; }
         public bool voteEnabled { get; set; }
         public bool breakPyramids { get; set; }
+        public float breakPyramidsChance { get; set; }
         public bool viewerPBActive { get; set; }
-        public bool fortuneTellerEnabled { get; set; }
         public bool adjustGamesDelayBasedOnChatActivity { get; set; }
         public bool disableFunctionsWithHighlyActiveChat { get; set; }
         #endregion
@@ -406,7 +406,7 @@ namespace TwitchBotConsole
                 + "\nViewerPBEnabled:" + viewerPBActive.ToString()
                 + "\nLeaderboardEnabled:" + leaderBoardEnabled.ToString()
                 + "\nVotesEnabled:" + voteEnabled.ToString()
-                + "\nFortuneTeller:" + fortuneTellerEnabled.ToString()
+                + "\nBreakPyramids:" + breakPyramids.ToString()
                 + "\n\nUseCleverBot:" + askUseCleverBot.ToString()
                 + "\nCleverBotAPIKey:" + CleverBotAPIKey.ToString();
 
@@ -619,8 +619,8 @@ namespace TwitchBotConsole
                 else if (_configParseBool(line, "IntervalMessagesEnabled:", false, out tempBool)) intervalMessagesEnabled = tempBool;
                 else if (_configParseBool(line, "DeathCounterEnabled:", false, out tempBool)) deathCounterEnabled = tempBool;
                 else if (_configParseBool(line, "ViewerPBEnabled:", false, out tempBool)) viewerPBActive = tempBool;
-                else if (_configParseBool(line, "FortuneTeller:", false, out tempBool)) fortuneTellerEnabled = tempBool;
                 else if (_configParseBool(line, "LeaderboardEnabled:", false, out tempBool)) leaderBoardEnabled = tempBool;
+                else if (_configParseBool(line, "BreakPyramids:", false, out tempBool)) breakPyramids = tempBool;
                 else if (_configParseBool(line, "VotesEnabled:", false, out tempBool)) voteEnabled = tempBool;
                 else if (_configParseBool(line, "AdjustGamesDelayBasedOnChatActivity:", true, out tempBool)) adjustGamesDelayBasedOnChatActivity = tempBool;
                 else if (_configParseBool(line, "DisableFunctionsWithHighlyActiveChat:", false, out tempBool)) disableFunctionsWithHighlyActiveChat = tempBool;
@@ -712,6 +712,7 @@ namespace TwitchBotConsole
             vocalMode = true;
             voteEnabled = false;
             breakPyramids = false;
+            breakPyramidsChance = 100;
             viewerPBActive = true;
             adjustGamesDelayBasedOnChatActivity = true;
             disableFunctionsWithHighlyActiveChat = false;
