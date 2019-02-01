@@ -150,7 +150,7 @@ namespace TwitchBotConsole
         {
             if(true)
             {
-                //string sUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=m5fhbaoh4ca8bhl23u5escfn5583fq4&redirect_uri=https://suimachine.github.io/twitchauthy/scope=chat_login+channel_editor+channel_subscriptions+user_follows_edit";
+                //string sUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=m5fhbaoh4ca8bhl23u5escfn5583fq4&redirect_uri=https://suimachine.github.io/twitchauthy/&scope=chat_login+channel_editor+channel_subscriptions+user_follows_edit";
                 //Process.Start(sUrl);
             }
         }

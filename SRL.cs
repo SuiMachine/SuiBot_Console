@@ -1,13 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using Newtonsoft.Json;
-using System.Xml;
 using Newtonsoft.Json.Linq;
 
 namespace TwitchBotConsole

@@ -70,9 +70,13 @@ namespace TwitchBotConsole
                     else
                     {
                         string[] lastPart = start[1].Split(new char[] { ':' }, 2);
-                        cvarslist.Add(lastPart[0].ToLower(), lastPart[1]);
-
-                        irc.sendChatMessage("Custom cvar added!");
+                        if(cvarslist.ContainsKey(lastPart[0]))
+                            irc.sendChatMessage(msg.user + ": Such Command already exists!");
+                        else
+                        {
+                            cvarslist.Add(lastPart[0].ToLower(), lastPart[1]);
+                            irc.sendChatMessage("Custom cvar added!");
+                        }
                     }
                 }
                 else

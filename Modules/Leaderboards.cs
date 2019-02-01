@@ -53,6 +53,7 @@ namespace TwitchBotConsole
             proxyName.Add("Star Wars: Knights of the Old Republic II - The Sith Lords", "Star Wars: Knights of the Old Republic 2 - The Sith Lords");
 			proxyName.Add("Quake II", "Quake II (PC)");                             //Screw N64 version
             proxyName.Add("DMC", "DmC: Devil May Cry");
+			proxyName.Add("Hexen 2", "Hexen II");
         }
 
         public void recieveData(oldIRCClient _irc, ReadMessage _msg)

@@ -14,6 +14,7 @@ namespace TwitchBotConsole
         public bool isForcedPage = false;
         public string game = "";
         public string forcedGame = "";
+        private string oldId = "x";
 		Uri sUrl = null;
         public uint category = 1;
 		Dictionary<string, string> RequestHeaders;
@@ -30,7 +31,7 @@ namespace TwitchBotConsole
 
         public void SendChannel(string channel)
         {
-            sUrl = new Uri("https://api.twitch.tv/kraken/streams/" + channel);
+            sUrl = new Uri("https://api.twitch.tv/helix/streams?user_login=" + channel);
         }
 
         public void getStatus()
@@ -38,14 +39,14 @@ namespace TwitchBotConsole
 			string res = "";
 			if(JsonGrabber.GrabJson(sUrl, RequestHeaders, "application/json", "application/vnd.twitchtv.v3+json", "GET", out res))
 			{
-				if (res.Contains("display_name"))
+				if (res.Contains("title"))
 				{
 					isOnline = true;
 					string temp = Convert.ToString(res);
-					int indexStart = temp.IndexOf("stream_type");
+					int indexStart = temp.IndexOf("type");
 					if (indexStart > 0)
 					{
-						indexStart += "stream_type".Length + 3;
+						indexStart += "type".Length + 3;
 						int indexEnd = temp.IndexOf(",", indexStart);
 						string thatThing = temp.Substring(indexStart, indexEnd - indexStart - 1).ToLower();
 						if (thatThing == "live")
@@ -54,12 +55,12 @@ namespace TwitchBotConsole
 							isOnline = false;
 					}
 
-					indexStart = temp.IndexOf("game");
+					indexStart = temp.IndexOf("game_id");
 					if (indexStart > 0)
 					{
-						indexStart = indexStart + 7;
-						int indexEnd = temp.IndexOf(",", indexStart) - 1;
-						game = temp.Substring(indexStart, indexEnd - indexStart);
+						indexStart += "game_id".Length+3;
+                        int indexEnd = temp.IndexOf(",", indexStart) - 1;
+						game = resolveNameFromId(temp.Substring(indexStart, indexEnd - indexStart));
 						if (game == "ul")
 						{
 							game = String.Empty;
@@ -76,12 +77,11 @@ namespace TwitchBotConsole
 					{
 						indexStart = indexStart + 9;
 						int indexEnd = temp.IndexOf(",", indexStart);
-						uint Value;
-						if (uint.TryParse(temp.Substring(indexStart, indexEnd - indexStart), out Value))
-						{
-							viewerPB.CheckViewerPB(Value);
-						}
-					}
+                        if (uint.TryParse(temp.Substring(indexStart, indexEnd - indexStart), out uint Value))
+                        {
+                            viewerPB.CheckViewerPB(Value);
+                        }
+                    }
 				}
 				else
 				{
@@ -93,9 +93,30 @@ namespace TwitchBotConsole
 			{
 				Console.WriteLine("Error checking Json");
 			}
+        }
 
+        public string resolveNameFromId(string id)
+        {
+            if(oldId == id)
+            {
+                return game;
+            }
+            else
+            {
+                if (JsonGrabber.GrabJson(new Uri("https://api.twitch.tv/helix/games?id=" + id), RequestHeaders, "application/json", "application/vnd.twitchtv.v3+json", "GET", out string res))
+                {
+                    oldId = id;
+                    int indexStart = res.IndexOf("name");
+                    if (indexStart > 0)
+                    {
+                        indexStart += "name".Length + 3;
+                        int indexEnd = res.IndexOf(",", indexStart);
+                        return res.Substring(indexStart, indexEnd - indexStart - 1);
+                    }
+                }
+                return "";
+            }
 
-			
         }
 
         public string getStreamTime()

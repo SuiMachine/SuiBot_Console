@@ -1,4 +1,4 @@
-﻿SuiBot
+﻿SuiBot (deprecated, see [Suibot V2](https://github.com/SuiMachine/SuiBot-V2))
 =====================
 SuiBot is simplistic IRC bot written in C#.
 

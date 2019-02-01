@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Timers;
 using System.IO;
@@ -70,13 +70,16 @@ namespace TwitchBotConsole
             _leaderboards = new Leaderboards();
 			_srl = new SRL();
             _pyramidBreaker = new PyramidBreaker(irc);
+            
 
 
             _quotes.loadQuotesFromFile();
-            _jsonStatus.SendChannel(irc._config.channel);
+            _jsonStatus.SendChannel("cadarev");
+            //_jsonStatus.SendChannel(irc._config.channel);
             _statusCheckTimer.Interval = 5 * 60 * 1000; // 5 minutes
             _statusCheckTimer.Start();
             _statusCheckTimer.Elapsed += new ElapsedEventHandler(_jsonStatus.TimerTick);
+            _jsonStatus.TimerTick(null, null);
             _timer.Interval = 60 * 1000;
             _leaderboards.SendJsonPointer(_jsonStatus);
         }
@@ -262,16 +265,20 @@ namespace TwitchBotConsole
 
                 if (check_lazy("!pb"))
                 {
-                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getPB));
                     _leaderboards.recieveData(irc, formattedMessage);
-                    lbThread.Start();
+                    Task.Factory.StartNew(() =>
+                    {
+                        _leaderboards.getPB();
+                    });
                 }
 
                 if (check_exact("!wr") || check_lazy("!wr "))
                 {
-                    Thread lbThread = new Thread(new ThreadStart(_leaderboards.getLeaderboard));
                     _leaderboards.recieveData(irc, formattedMessage);
-                    lbThread.Start();
+                    Task.Factory.StartNew(() =>
+                    {
+                        _leaderboards.getLeaderboard();
+                    });
                 }
             }
 

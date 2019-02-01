@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using TwitchBotConsole; //and this way it's useless to make it in seperate namespace... oh well
 
 namespace Cleverbot
